@@ -1,0 +1,92 @@
+{
+  "_id": "6830fd87e70e351c09d65dd8",
+  "userId": "6825df2cb5d58974f71413d3",
+  "toolkitType": "NPC",
+  "title": "Valla Rynn",
+  "content": {
+    "name": "Valla Rynn",
+    "title": "Valla Rynn",
+    "race": "Human",
+    "class": "Fighter",
+    "gender": "Female",
+    "age": "52",
+    "background": "Folk Hero",
+    "occupation": "Mayor of Umbravale",
+    "size": "Medium",
+    "tokenSize": "Medium",
+    "type": "Humanoid",
+    "alignment": "Lawful Neutral",
+    "armorClass": "16 (Chain shirt, hardened with silver plating",
+    "hitPoints": "65",
+    "hitDice": "8d10",
+    "initiative": "",
+    "speed": {
+      "walk": "30",
+      "fly": "",
+      "swim": "",
+      "climb": "",
+      "burrow": ""
+    },
+    "proficiencyBonus": "+2",
+    "challengeRating": "3",
+    "languages": "Common, Dwarvish",
+    "abilityScores": {
+      "str": 14,
+      "dex": 12,
+      "con": 14,
+      "int": 11,
+      "wis": 13,
+      "cha": 16
+    },
+    "savingThrows": {
+      "CHA": "+5",
+      "STR": "+4"
+    },
+    "skills": {
+      "Intimidation": "+5",
+      "Persuasion": "+5",
+      "Insight": "+3",
+      "Athletics": "+4"
+    },
+    "senses": {
+      "darkvision": "",
+      "blindsight": "",
+      "tremorsense": "",
+      "truesight": "",
+      "passivePerception": ""
+    },
+    "damageVulnerabilities": [],
+    "damageResistances": [],
+    "damageImmunities": [],
+    "conditionImmunities": [],
+    "traits": [
+      {
+        "name": "Silver-Willed",
+        "desc": "Immune to magical fear effects. She’s seen too much to be shaken."
+      },
+      {
+        "name": "Tactical Presence",
+        "desc": "Once per short rest, she can grant an ally within 30 ft. advantage on …"
+      }
+    ],
+    "actions": [
+      {
+        "name": "Commanding Slash (Melee)",
+        "desc": "+5 to hit, 1d8+2 slashing damage. If hit lands, an ally within 5 ft. o…"
+      },
+      {
+        "name": "Brace the Line (Recharge 5–6)",
+        "desc": "Allies within 10 feet of Valla gain +1 AC until the start of her next …"
+      }
+    ],
+    "reactions": [],
+    "legendaryResistances": [],
+    "legendaryActions": [],
+    "lairActions": [],
+    "regionalEffects": [],
+    "description": "Valla is a grizzled woman with short, silver-streaked black hair, a li…",
+    "image": "/images/VallaFace.jpg",
+    "extraSections": [],
+    "campaigns": ["Whispers Beneath the Moon"]
+  }
+}

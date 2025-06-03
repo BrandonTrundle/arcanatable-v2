@@ -11,6 +11,9 @@ import JoinCampaign from "./Pages/Campaigns/JoinCampaign";
 import DMToolkitLayout from "./Pages/DMToolkit/DMToolkitLayout";
 import DMToolkitDashboard from "./Components/DMToolkit/DMToolkitGeneral/DMToolkitDashboard";
 import Monsters from "./Pages/DMToolkit/Monsters/Monsters";
+import NPCs from "./Pages/DMToolkit/NPCs/NPCs";
+import Potions from "./Pages/DMToolkit/Potions/Potions";
+import Items from "./Pages/DMToolkit/Items/Items";
 
 function App() {
   return (
@@ -28,7 +31,9 @@ function App() {
         <Route path="/dmtoolkit" element={<DMToolkitLayout />}>
           <Route index element={<DMToolkitDashboard />} />
           <Route path="monsters" element={<Monsters />} />
-          {/* Add this once Monsters page is in */}
+          <Route path="npcs" element={<NPCs />} />
+          <Route path="potions" element={<Potions />} />
+          <Route path="items" element={<Items />} />
           {/* <Route path="monsters" element={<Monsters />} /> */}
         </Route>
       </Routes>

@@ -1,0 +1,32 @@
+{
+  "_id": "item-placeholder-id",
+  "userId": "user-placeholder-id",
+  "toolkitType": "Item",
+  "title": "Flamebrand Sword",
+  "content": {
+    "name": "Flamebrand Sword",
+    "title": "Flamebrand Sword",
+    "type": "Weapon",
+    "rarity": "Rare",
+    "isMagical": true,
+    "attunementRequired": true,
+    "damage": "1d8 + 1 fire",
+    "properties": "Versatile (1d10)",
+    "charges": 0,
+    "effects": [
+      {
+        "name": "Flaming Blade",
+        "desc": "When you hit with this weapon, it deals an additional 1d6 fire damage."
+      },
+      {
+        "name": "Ignite",
+        "desc": "Once per day, you can cast *Burning Hands* (DC 13) from the sword."
+      }
+    ],
+    "description": "A blade forged in elemental fire, warm to the touch and etched with glowing runes. Legends say it was wielded by a hero of the Flame Pact.",
+    "weight": "3 lbs",
+    "value": "500 gp",
+    "image": "/images/flamebrand-sword.jpeg",
+    "campaigns": ["example-campaign-id"]
+  }
+}

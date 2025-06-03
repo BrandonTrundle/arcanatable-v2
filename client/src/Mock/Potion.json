@@ -1,0 +1,20 @@
+{
+  "_id": "potion-uuid-placeholder",
+  "userId": "user-uuid-placeholder",
+  "toolkitType": "Potion",
+  "title": "Potion of Healing",
+  "content": {
+    "name": "Potion of Healing",
+    "rarity": "Common",
+    "type": "Consumable",
+    "effect": "Restores 2d4 + 2 hit points when consumed.",
+    "duration": "Instantaneous",
+    "sideEffects": "",
+    "description": "This red liquid glimmers when agitated. A staple among adventurers.",
+    "cost": "50 gp",
+    "weight": "0.5 lbs",
+    "uses": 1,
+    "image": "/images/PotionHealing.jpeg",
+    "campaigns": ["example-campaign-id"]
+  }
+}
