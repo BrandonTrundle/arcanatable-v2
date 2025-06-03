@@ -1,0 +1,30 @@
+[
+  {
+    "_id": "user1",
+    "username": "GM_Jane",
+    "email": "jane@example.com",
+    "role": "dm",
+    "campaigns": ["camp1"]
+  },
+  {
+    "_id": "user2",
+    "username": "DungeonBoss",
+    "email": "boss@example.com",
+    "role": "dm",
+    "campaigns": ["camp2"]
+  },
+  {
+    "_id": "user3",
+    "username": "KnightGuy",
+    "email": "knight@example.com",
+    "role": "player",
+    "campaigns": ["camp1"]
+  },
+  {
+    "_id": "user4",
+    "username": "MysticCat",
+    "email": "mystic@example.com",
+    "role": "player",
+    "campaigns": ["camp2"]
+  }
+]

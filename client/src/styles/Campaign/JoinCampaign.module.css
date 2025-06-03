@@ -1,0 +1,61 @@
+@import "../Main/variables.css";
+
+.joinPage {
+  background-color: var(--color-background);
+  color: var(--color-light);
+  min-height: 100vh;
+  padding: 6rem 2rem 4rem;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+}
+
+.wrapper {
+  width: 100%;
+  max-width: 600px;
+  background-color: var(--color-surface);
+  padding: 2rem;
+  border-radius: var(--border-radius);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+.title {
+  font-size: 2rem;
+  margin-bottom: 2rem;
+  text-align: center;
+  font-family: var(--font-accent);
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+input {
+  padding: 0.75rem;
+  border: 1px solid var(--color-muted);
+  border-radius: var(--border-radius);
+  background-color: var(--color-dark);
+  color: var(--color-light);
+  font-size: 1rem;
+}
+
+input::placeholder {
+  color: var(--color-muted);
+}
+
+.joinBtn {
+  background-color: var(--color-success);
+  color: var(--color-light);
+  font-weight: bold;
+  padding: 0.75rem;
+  border: none;
+  border-radius: var(--border-radius);
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.joinBtn:hover {
+  background-color: var(--color-accent);
+}

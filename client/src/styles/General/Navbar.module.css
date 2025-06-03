@@ -1,0 +1,188 @@
+@import "../Main/variables.css";
+
+/* Base (mobile-first or narrow layout) */
+.navbar {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 2rem;
+  background-color: var(--color-surface);
+  border-bottom: 1px solid var(--color-neutral);
+}
+
+.logo img {
+  height: 40px;
+  object-fit: contain;
+}
+
+.links {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.navButton {
+  background-color: var(--color-primary);
+  color: var(--color-light);
+  padding: 0.5rem 1rem;
+  border-radius: var(--border-radius);
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.navButton:hover {
+  background-color: var(--color-accent);
+}
+
+.navButtonAlt {
+  background-color: var(--color-dark);
+  color: var(--color-light);
+  padding: 0.5rem 1rem;
+  border-radius: var(--border-radius);
+  font-weight: 600;
+  border: 1px solid var(--color-muted);
+  cursor: pointer;
+  margin-top: 0.5rem;
+}
+
+.navButtonSecondary {
+  background-color: transparent;
+  color: var(--color-light);
+  padding: 0.5rem 1rem;
+  border: 1px solid var(--color-muted);
+  border-radius: var(--border-radius);
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.userSection {
+  position: relative;
+}
+
+.signInMenu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: 0.5rem;
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-neutral);
+  border-radius: var(--border-radius);
+  padding: 1rem;
+  z-index: 10;
+  min-width: 200px;
+}
+
+.signInForm {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.formGroup {
+  display: flex;
+  flex-direction: column;
+}
+
+.formGroup label {
+  margin-bottom: 0.25rem;
+  font-size: 0.875rem;
+  color: var(--color-light);
+}
+
+.formGroup input {
+  padding: 0.5rem;
+  border-radius: var(--border-radius);
+  border: 1px solid var(--color-muted);
+  background-color: var(--color-dark);
+  color: var(--color-light);
+}
+
+.signInLinks {
+  margin-top: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+/* Sign-In Dropdown Fly-in Animation */
+.signInMenu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: 0.5rem;
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-neutral);
+  border-radius: var(--border-radius);
+  padding: 1rem;
+  z-index: 10;
+  min-width: 220px;
+
+  opacity: 0;
+  transform: translateX(100%);
+  pointer-events: none;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.signInMenuActive {
+  opacity: 1;
+  transform: translateX(0);
+  pointer-events: auto;
+}
+
+/* --- Responsive Layouts --- */
+
+@media (min-width: 768px) {
+  .navbar {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+
+  .links {
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 1rem;
+  }
+
+  .userSection {
+    margin-left: auto;
+  }
+}
+
+@media (min-width: 1024px) {
+  .navbar {
+    padding: 1rem 4rem;
+    position: relative;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+  }
+
+  .links {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: wrap;
+    gap: 1rem 2rem;
+    white-space: nowrap;
+    width: 100%;
+  }
+
+  .navButton,
+  .navButtonAlt,
+  .navButtonSecondary {
+    font-size: 1rem;
+    padding: 0.5rem 1.25rem;
+  }
+
+  .logo img {
+    height: 48px;
+  }
+}

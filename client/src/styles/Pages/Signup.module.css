@@ -1,0 +1,59 @@
+@import "../Main/variables.css";
+
+.page {
+  position: relative;
+  min-height: 100vh;
+  overflow: hidden;
+  background-color: var(--color-primary);
+}
+
+.background {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
+  z-index: 0;
+}
+
+.container {
+  position: relative;
+  z-index: 1;
+  padding: 2rem;
+  max-width: 500px;
+  margin: 10rem auto;
+  background-color: rgba(0, 0, 0, 0.8);
+  border-radius: 1rem;
+}
+
+.title {
+  font-size: 2rem;
+  text-align: center;
+  color: var(--color-light);
+  margin-bottom: 1.5rem;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.formGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  color: var(--color-light);
+}
+
+input {
+  padding: 0.75rem;
+  border: 1px solid var(--color-muted);
+  border-radius: var(--border-radius);
+  background-color: var(--color-dark);
+  color: var(--color-light);
+}
+
+.buttons {
+  display: flex;
+  justify-content: center;
+}

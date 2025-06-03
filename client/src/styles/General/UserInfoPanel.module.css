@@ -1,0 +1,78 @@
+@import "../Main/variables.css";
+
+.toggleTab {
+  position: fixed;
+  top: 5.6rem;
+  right: 0.25rem; /* ← important: always offset from edge */
+  background-color: var(--color-highlight);
+  color: var(--color-light);
+  padding: 1rem 1rem;
+  border-top-left-radius: 0.5rem;
+  border-bottom-left-radius: 0.5rem;
+  font-weight: bold;
+  cursor: pointer;
+  z-index: 1050;
+  transition: background-color 0.2s ease;
+}
+
+.toggleTab:hover {
+  background-color: var(--color-accent);
+}
+
+.panel {
+  position: fixed;
+  top: 6.25rem; /* slightly under the toggleTab */
+  right: 1rem;
+  background-color: var(--color-surface);
+  border-radius: 1rem;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  padding: 1rem;
+  opacity: 0;
+  transform: translateX(120%);
+  transition: transform 0.3s ease, opacity 0.3s ease;
+  z-index: 10;
+}
+
+.panelOpen {
+  opacity: 1;
+  transform: translateX(0%);
+}
+@media (max-width: 1900px) {
+  .wrapper {
+    width: 100%;
+    position: relative;
+    margin-top: 0.5rem;
+  }
+
+  .toggleTab {
+    position: relative;
+    top: 0;
+    right: 0;
+    border-radius: 0;
+    border-top: 1px solid var(--color-neutral);
+    border-bottom: 1px solid var(--color-neutral);
+    width: 100%;
+    text-align: center;
+    background-color: var(--color-highlight);
+    z-index: 10;
+  }
+
+  .panel {
+    position: relative;
+    top: 0;
+    right: 0;
+    left: 0;
+    width: 100%;
+    transform: none;
+    opacity: 1;
+    display: none;
+    border-radius: 0;
+    box-shadow: none;
+    padding: 1rem;
+    z-index: 9;
+  }
+
+  .panelOpen {
+    display: block;
+  }
+}

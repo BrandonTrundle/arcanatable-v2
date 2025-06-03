@@ -1,0 +1,89 @@
+/* CreateCampaign.module.css */
+@import "../Main/variables.css";
+
+.createcampaign {
+  background-color: var(--color-background);
+}
+
+.wrapper {
+  padding: 6rem 2rem 4rem;
+  max-width: 800px;
+  margin: 0 auto;
+  color: var(--color-secondary);
+  background-color: var(--color-primary);
+}
+
+h1 {
+  text-align: center;
+  font-size: 2rem;
+  margin-bottom: 2rem;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+input,
+textarea {
+  padding: 0.75rem;
+  border-radius: var(--border-radius);
+  background-color: var(--color-dark);
+  border: 1px solid var(--color-muted);
+  color: var(--color-light);
+  font-size: 1rem;
+}
+textarea {
+  resize: vertical;
+}
+
+.imagePicker {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.preview {
+  width: 300px;
+  height: 300px;
+  object-fit: cover;
+  border-radius: var(--border-radius);
+  border: 1px solid var(--color-neutral);
+}
+
+.uploadBtn {
+  background-color: var(--color-dark);
+  color: var(--color-light);
+  padding: 0.5rem 1rem;
+  border-radius: var(--border-radius);
+  border: 1px solid var(--color-muted);
+  font-weight: 600;
+  margin-left: 2rem;
+}
+
+.uploadBtn:hover {
+  background-color: var(--color-muted);
+}
+
+.submitBtn {
+  margin-top: 2rem;
+  padding: 0.75rem;
+  background-color: var(--color-background);
+  color: var(--color-light);
+  font-weight: bold;
+  border-radius: var(--border-radius);
+  border: none;
+  cursor: pointer;
+}
+
+.submitBtn:hover {
+  background-color: var(--color-accent);
+}

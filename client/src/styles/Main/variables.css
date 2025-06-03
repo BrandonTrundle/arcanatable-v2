@@ -1,0 +1,23 @@
+:root {
+  /* Typography */
+  --font-main: "Segoe UI", sans-serif;
+  --font-accent: "Tagesschrift", serif;
+
+  /* Core Palette - Updated */
+  --color-primary: #1e3a8a; /* Deep Blue */
+  --color-secondary: #111111; /* True Black */
+  --color-accent: #991b1b; /* Blood Red */
+  --color-dark: #0a0a0a; /* Night Black */
+  --color-light: #f4f4f4; /* Off White */
+  --color-muted: #6b7280; /* Cool Gray */
+
+  /* Expanded Shades */
+  --color-surface: #1f1f1f; /* Dark Surface */
+  --color-highlight: #3b82f6; /* Vivid Blue */
+  --color-neutral: #374151; /* Slate Gray */
+  --color-success: #10b981; /* Emerald */
+  --color-warning: #f59e0b; /* Amber */
+  --color-danger: #dc2626; /* Red-600 */
+  --color-info: #60a5fa; /* Light Blue */
+  --color-background: #0f172a; /* Midnight Navy */
+}

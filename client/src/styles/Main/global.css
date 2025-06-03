@@ -1,0 +1,72 @@
+@import "./variables.css";
+
+/* Global Reset + Font */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: var(--font-accent);
+}
+
+/* Body */
+html,
+body,
+#root {
+  width: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+/* Headings (override for accent font) */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+  font-family: var(--accent);
+}
+
+/* Links */
+a {
+  color: var(--color-primary);
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+/* Buttons */
+button {
+  font-size: 1rem;
+  cursor: pointer;
+  border: none;
+  border-radius: var(--border-radius);
+}
+
+/* Lists */
+ul,
+ol {
+  padding-left: 1.5rem;
+}
+
+/* Images */
+img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* Layout Helpers */
+.section {
+  padding: var(--spacing-unit);
+}
+
+.container {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+}

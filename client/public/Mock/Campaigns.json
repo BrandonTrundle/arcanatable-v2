@@ -1,0 +1,27 @@
+[
+  {
+    "_id": "camp1",
+    "name": "Dark of the Moon",
+    "gameSystem": "D&D 5e",
+    "inviteCode": "DRK123",
+    "creatorId": "user1",
+    "nextSession": "2025-06-22T18:00:00Z",
+    "players": [
+      { "_id": "user1", "username": "GM_Jane" },
+      { "_id": "user2", "username": "ElfMage" },
+      { "_id": "user3", "username": "KnightGuy" }
+    ]
+  },
+  {
+    "_id": "camp2",
+    "name": "The Broken Crown",
+    "gameSystem": "Pathfinder 2e",
+    "inviteCode": "BRC456",
+    "creatorId": "user2",
+    "nextSession": "2025-07-01T21:00:00Z",
+    "players": [
+      { "_id": "user2", "username": "DungeonBoss" },
+      { "_id": "user4", "username": "MysticCat" }
+    ]
+  }
+]
