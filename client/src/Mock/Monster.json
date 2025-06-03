@@ -1,0 +1,94 @@
+{
+  "_id": "6834adf81bdc5fec32846d23",
+  "userId": "6825df2cb5d58974f71413d3",
+  "toolkitType": "Monster",
+  "title": "Shroom Decacap",
+  "content": {
+    "name": "Shroom Decacap",
+    "title": "Shroom Decacap",
+    "size": "Small",
+    "initiative": "+1",
+    "tokenSize": "",
+    "type": "Plant",
+    "alignment": "Unaligned",
+    "armorClass": "13",
+    "hitPoints": "22",
+    "hitDice": "4d6 + 8",
+    "speed": {
+      "walk": "30",
+      "fly": "0",
+      "swim": "0",
+      "climb": "20",
+      "burrow": "10"
+    },
+    "abilityScores": {
+      "str": "14",
+      "dex": "12",
+      "con": "14",
+      "int": "2",
+      "wis": "10",
+      "cha": "3"
+    },
+    "savingThrows": {
+      "CON": "+4"
+    },
+    "skills": {
+      "Stealth": "+3"
+    },
+    "damageVulnerabilities": [],
+    "damageResistances": [],
+    "damageImmunities": [],
+    "conditionImmunities": [],
+    "senses": {
+      "darkvision": "60",
+      "blindsight": "",
+      "tremorsense": "30",
+      "truesight": "",
+      "passivePerception": "10"
+    },
+    "languages": "",
+    "challengeRating": "1/2 (100 XP)",
+    "proficiencyBonus": "+2",
+    "traits": [
+      {
+        "name": "Damage Resistances",
+        "desc": "Poison, Psychic"
+      },
+      {
+        "name": "Damage Vulnerabilities",
+        "desc": "Fire"
+      },
+      {
+        "name": "Condition Immunity",
+        "desc": "Charmed, Blinded, Frightened"
+      },
+      {
+        "name": "Fungal Ambush",
+        "desc": "If hidden among fungal terrain or near other mushrooms, a Shroom Decacap has advantage on Stealth checks."
+      },
+      {
+        "name": "Spore Trail",
+        "desc": "As it moves, the Decacap can leave a trail of bioluminescent spores. Any creature entering this trail must succeed on a DC 12 CON save or be lightly obscured."
+      }
+    ],
+    "actions": [
+      {
+        "name": "Bite",
+        "desc": "Melee Weapon Attack: +4 to hit, reach 5 ft., one target. Hit: 9 (2d6 + 2) piercing damage."
+      },
+      {
+        "name": "Lurch and Snap",
+        "desc": "The Shroom Decacap can move up to 10 feet in a straight line without provoking opportunity attacks and make one Bite attack at the end of the movement."
+      }
+    ],
+    "reactions": [],
+    "legendaryResistances": [],
+    "legendaryActions": [],
+    "lairActions": [],
+    "regionalEffects": [],
+    "description": "Tactics:\nDecacaps try to surround and isolate prey.\n\nThey are drawn to vibrant fungi and humid regions.",
+    "image": "/images/Decacap1.png",
+    "extraSections": [],
+    "campaigns": ["68349aed1bdc5fec32846c73", "6830f434e70e351c09d65d68"]
+  }
+}

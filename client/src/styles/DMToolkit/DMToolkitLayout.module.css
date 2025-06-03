@@ -1,0 +1,14 @@
+@import "../Main/variables.css";
+
+.container {
+  display: flex;
+}
+
+.content {
+  margin-left: 250px; /* navbar width */
+  padding: 2rem;
+  flex: 1;
+  background-color: var(--color-background);
+  color: var(--color-light);
+  min-height: 100vh;
+}

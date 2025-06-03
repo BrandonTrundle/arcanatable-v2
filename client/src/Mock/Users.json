@@ -1,0 +1,62 @@
+[
+  {
+    "id": 1,
+    "username": "GM_Jane",
+    "email": "jane@example.com",
+    "password": "hashed_password_1",
+    "avatar": "BrennorFace.jpeg",
+    "tier": "Gold",
+    "memberSince": "2022-03-01",
+    "hoursPlayed": 250,
+    "onboarded": true,
+    "experience": ["Experienced"],
+    "preferredRole": ["GM"],
+    "playStyle": ["Meet new people"],
+    "campaigns": ["camp1"]
+  },
+  {
+    "id": 2,
+    "username": "DungeonBoss",
+    "email": "boss@example.com",
+    "password": "hashed_password_2",
+    "avatar": "DethrickFace.jpeg",
+    "tier": "Silver",
+    "memberSince": "2023-01-15",
+    "hoursPlayed": 90,
+    "onboarded": false,
+    "experience": ["Intermediate"],
+    "preferredRole": ["Both"],
+    "playStyle": ["Both"],
+    "campaigns": ["camp2"]
+  },
+  {
+    "id": 3,
+    "username": "KnightGuy",
+    "email": "knight@example.com",
+    "password": "hashed_password_3",
+    "avatar": "GarranFace.jpeg",
+    "tier": "Bronze",
+    "memberSince": "2023-11-10",
+    "hoursPlayed": 30,
+    "onboarded": true,
+    "experience": ["Beginner"],
+    "preferredRole": ["Player"],
+    "playStyle": ["With Friends"],
+    "campaigns": ["camp1"]
+  },
+  {
+    "id": 4,
+    "username": "MysticCat",
+    "email": "mystic@example.com",
+    "password": "hashed_password_4",
+    "avatar": "LeedraFace.jpeg",
+    "tier": "Gold",
+    "memberSince": "2021-09-05",
+    "hoursPlayed": 400,
+    "onboarded": true,
+    "experience": ["Experienced"],
+    "preferredRole": ["Both"],
+    "playStyle": ["Meet new people"],
+    "campaigns": ["camp2"]
+  }
+]

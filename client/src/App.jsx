@@ -8,13 +8,15 @@ import CampaignDashboard from "./Pages/Campaigns/CampaignDashboard";
 import CreateCampaign from "./Pages/Campaigns/CreateCampaign";
 import ManageCampaigns from "./Pages/Campaigns/ManageCampaigns";
 import JoinCampaign from "./Pages/Campaigns/JoinCampaign";
+import DMToolkitLayout from "./Pages/DMToolkit/DMToolkitLayout";
+import DMToolkitDashboard from "./Components/DMToolkit/DMToolkitGeneral/DMToolkitDashboard";
+import Monsters from "./Pages/DMToolkit/Monsters/Monsters";
 
 function App() {
   return (
     <Router>
       <Routes>
         <Route path="/" element={<HomePage />} />
-        {/* Future routes can be added here */}
         <Route path="/user-onboarding" element={<UserOnboarding />} />
         <Route path="/sign-up" element={<Signup />} />
         <Route path="/dashboard" element={<Dashboard />} />
@@ -22,6 +24,13 @@ function App() {
         <Route path="/create-campaign" element={<CreateCampaign />} />
         <Route path="/manage-campaign" element={<ManageCampaigns />} />
         <Route path="/join-campaign" element={<JoinCampaign />} />
+
+        <Route path="/dmtoolkit" element={<DMToolkitLayout />}>
+          <Route index element={<DMToolkitDashboard />} />
+          <Route path="monsters" element={<Monsters />} />
+          {/* Add this once Monsters page is in */}
+          {/* <Route path="monsters" element={<Monsters />} /> */}
+        </Route>
       </Routes>
     </Router>
   );
