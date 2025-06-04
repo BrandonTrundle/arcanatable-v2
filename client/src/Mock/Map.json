@@ -1,0 +1,69 @@
+{
+  "id": "map-001",
+  "name": "Cavern of Whispers",
+  "image": "/images/The Shrine of Eshbamhuus the Necromancer 01 (35 x 35).png",
+  "userId": "user123",
+  "campaignId": "campaign456",
+  "width": 35,
+  "height": 35,
+  "gridSize": 70,
+  "gridType": "square",
+  "fogOfWarEnabled": true,
+  "snapToGrid": true,
+  "visibleLayers": ["base", "lighting", "effects"],
+  "layers": {
+    "player": {
+      "tokens": [
+        {
+          "id": "token-001",
+          "entityType": "Creature",
+          "entityId": "creature-002",
+          "name": "Shroom Decacap",
+          "displayName": "Shroom Decacap",
+          "image": "/images/Decacap1.png",
+          "position": {
+            "x": 5,
+            "y": 7
+          },
+          "size": {
+            "width": 1,
+            "height": 1
+          },
+          "rotation": 0,
+          "hp": 22,
+          "maxHp": 30,
+          "initiative": 12,
+          "statusConditions": ["Poisoned", "Blinded"],
+          "effects": [
+            {
+              "name": "Bless",
+              "icon": "/icons/bless.png",
+              "duration": 3
+            }
+          ],
+          "ownerIds": ["user1", "user2"],
+          "isVisible": true,
+          "activeToken": false,
+          "lightEmit": {
+            "radius": 20,
+            "color": "#ffaa33",
+            "intensity": 0.8,
+            "flicker": true
+          },
+          "notes": "Ambush from behind crate"
+        }
+      ],
+      "assets": []
+    },
+    "dm": {
+      "tokens": [],
+      "assets": []
+    },
+    "hidden": {
+      "tokens": [],
+      "assets": []
+    }
+  },
+  "lastEditedAt": "2025-06-03T21:23:33.553358Z",
+  "notes": "Boss enters from NE at round 3"
+}

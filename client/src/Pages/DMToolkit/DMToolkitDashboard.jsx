@@ -1,5 +1,5 @@
 import React from "react";
-import styles from "../../../styles/DMToolkit/DMToolkitDashboard.module.css";
+import styles from "../../styles/DMToolkit/DMToolkitDashboard.module.css";
 
 export default function DMToolkitDashboard() {
   return (

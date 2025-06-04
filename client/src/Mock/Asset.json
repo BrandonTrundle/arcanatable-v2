@@ -1,0 +1,18 @@
+{
+  "id": "asset-001",
+  "name": "Crate",
+  "image": "/assets/crate.png",
+  "position": {
+    "x": 12,
+    "y": 8
+  },
+  "size": {
+    "width": 1,
+    "height": 1
+  },
+  "rotation": 0,
+  "locked": false,
+  "layer": "player",
+  "mapId": "map-001",
+  "userId": "user123"
+}

@@ -3,6 +3,7 @@ import { NavLink } from "react-router-dom";
 import styles from "../../../styles/DMToolkit/DMToolkitNavbar.module.css";
 import Navbar from "../../General/Navbar";
 import { FaArrowLeft } from "react-icons/fa";
+import { useNavigate } from "react-router-dom";
 
 const SECTIONS = [
   "Monsters",
@@ -17,6 +18,8 @@ const SECTIONS = [
 ];
 
 export default function DMToolkitNavbar({ currentCampaign, onCampaignChange }) {
+  const navigate = useNavigate();
+
   return (
     <>
       <nav className={styles.navbar}>
@@ -51,7 +54,10 @@ export default function DMToolkitNavbar({ currentCampaign, onCampaignChange }) {
           ))}
         </ul>
         <ul className={styles.navList}>
-          <button className={styles.backButton}>
+          <button
+            className={styles.backButton}
+            onClick={() => navigate("/dashboard")}
+          >
             <FaArrowLeft style={{ marginRight: "2rem" }} />
             Dashboard
           </button>

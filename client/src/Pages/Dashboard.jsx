@@ -1,9 +1,11 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 import Navbar from "../Components/General/Navbar";
 import styles from "../styles/Pages/Dashboard.module.css";
 import UserInfoPanel from "../Components/General/UserInfoPanel";
 
 const Dashboard = () => {
+  const navigate = useNavigate();
   return (
     <>
       <Navbar />
@@ -17,7 +19,11 @@ const Dashboard = () => {
         </div>
 
         <div className={styles.tiles}>
-          <div className={styles.tile}>
+          <div
+            className={styles.tile}
+            onClick={() => navigate("/campaign-dashboard")}
+            style={{ cursor: "pointer" }}
+          >
             <h2>Campaigns</h2>
             <p>Manage your adventures.</p>
           </div>
@@ -25,7 +31,11 @@ const Dashboard = () => {
             <h2>Characters</h2>
             <p>Customize your heroes.</p>
           </div>
-          <div className={styles.tile}>
+          <div
+            className={styles.tile}
+            onClick={() => navigate("/dmtoolkit")}
+            style={{ cursor: "pointer" }}
+          >
             <h2>DM Toolkit</h2>
             <p>Your source for all of your adventure needs.</p>
           </div>

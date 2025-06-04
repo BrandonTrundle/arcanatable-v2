@@ -16,7 +16,12 @@ const Navbar = () => {
       </div>
 
       <div className={styles.links}>
-        <button className={styles.navButton}>Play Now</button>
+        <button
+          className={styles.navButton}
+          onClick={() => navigate("/dashboard")}
+        >
+          Play Now
+        </button>
         <button className={styles.navButton}>Marketplace</button>
         <button className={styles.navButton}>Tools</button>
         <button className={styles.navButton}>Community</button>

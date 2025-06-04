@@ -1,0 +1,61 @@
+@import "../Main/variables.css";
+
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.6);
+  z-index: 1000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.container {
+  background-color: var(--color-surface);
+  padding: 2rem;
+  border-radius: 0.5rem;
+  max-width: 800px;
+  width: 90%;
+  max-height: 90vh;
+  overflow-y: auto;
+  position: relative;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8);
+}
+
+.closeBtn {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  color: var(--color-danger);
+  cursor: pointer;
+}
+
+.title {
+  font-size: 2rem;
+  margin-bottom: 1rem;
+  color: var(--color-highlight);
+  text-align: center;
+}
+
+.image {
+  width: 100%;
+  border-radius: 0.25rem;
+  margin-bottom: 1rem;
+}
+
+.details p {
+  margin: 0.5rem 0;
+  color: var(--color-light);
+}
+
+.notes {
+  margin-top: 1rem;
+  font-style: italic;
+  color: var(--color-muted);
+}

@@ -9,11 +9,13 @@ import CreateCampaign from "./Pages/Campaigns/CreateCampaign";
 import ManageCampaigns from "./Pages/Campaigns/ManageCampaigns";
 import JoinCampaign from "./Pages/Campaigns/JoinCampaign";
 import DMToolkitLayout from "./Pages/DMToolkit/DMToolkitLayout";
-import DMToolkitDashboard from "./Components/DMToolkit/DMToolkitGeneral/DMToolkitDashboard";
+import DMToolkitDashboard from "./Pages/DMToolkit/DMToolkitDashboard";
 import Monsters from "./Pages/DMToolkit/Monsters/Monsters";
 import NPCs from "./Pages/DMToolkit/NPCs/NPCs";
 import Potions from "./Pages/DMToolkit/Potions/Potions";
 import Items from "./Pages/DMToolkit/Items/Items";
+import Maps from "./Pages/DMToolkit/Maps/Maps";
+import ToolkitMapEditor from "./Pages/DMToolkit/Maps/ToolkitMapEditor";
 
 function App() {
   return (
@@ -34,8 +36,10 @@ function App() {
           <Route path="npcs" element={<NPCs />} />
           <Route path="potions" element={<Potions />} />
           <Route path="items" element={<Items />} />
+          <Route path="maps" element={<Maps />} />
           {/* <Route path="monsters" element={<Monsters />} /> */}
         </Route>
+        <Route path="/dmtoolkit/maps/editor" element={<ToolkitMapEditor />} />
       </Routes>
     </Router>
   );

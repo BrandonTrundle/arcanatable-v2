@@ -1,5 +1,6 @@
 // CampaignDashboard.jsx
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import styles from "../../styles/Campaign/CampaignDashboard.module.css";
 import defaultAvatar from "../../assets/defaultav.png";
 import placeholderImg from "../../assets/FantasyMapBackground.png";
@@ -20,6 +21,7 @@ const MOCK_CAMPAIGNS = Array.from({ length: 8 }, (_, i) => ({
 }));
 
 const CampaignDashboard = () => {
+  const navigate = useNavigate();
   const [selectedCampaign, setSelectedCampaign] = useState(null);
 
   return (
@@ -28,11 +30,24 @@ const CampaignDashboard = () => {
       <div className={styles.dashboard}>
         <h1 className={styles.title}>Your Campaigns</h1>
         <div className={styles.actions}>
-          <button className={styles.createBtn}>Create New Campaign</button>
-          <button className={styles.manageBtn}>
+          <button
+            className={styles.createBtn}
+            onClick={() => navigate("/create-campaign")}
+          >
+            Create New Campaign
+          </button>
+          <button
+            className={styles.manageBtn}
+            onClick={() => navigate("/manage-campaign")}
+          >
             Manage Your DM'd Campaigns
           </button>
-          <button className={styles.joinBtn}>Join Campaign</button>
+          <button
+            className={styles.joinBtn}
+            onClick={() => navigate("/join-campaign")}
+          >
+            Join Campaign
+          </button>
         </div>
 
         <ul className={styles.campaignList}>
