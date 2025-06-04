@@ -39,9 +39,9 @@ export default function MapCanvas({
             oldToken.position.y === clampedY
           ) {
             console.log(
-              "⚠️ Token already at snapped position. Skipping update."
+              "⚠️ Token already at snapped position, but forcing update for animation."
             );
-            return prevMap;
+            // Continue anyway to allow visual update.
           }
 
           const updatedToken = {
