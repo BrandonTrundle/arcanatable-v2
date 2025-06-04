@@ -1,19 +1,19 @@
-import React, { useRef, useState } from "react";
+import React, { useRef, useState, useEffect, useMemo } from "react";
 import { Image as KonvaImage, Rect, Group } from "react-konva";
-import useImage from "use-image";
-import Konva from "konva";
 import { useTokenAnimation } from "../../../../hooks/tokens/useTokenAnimation";
 import { useTokenDrag } from "../../../../hooks/tokens/useTokenDrag";
 import { getHpColor } from "../../../../utils/token/tokenUtils";
+import { getCachedImage } from "../../../../utils/image/imageCache";
 
-export default function TokenSprite({
+function TokenSpriteComponent({
   token,
   gridSize,
   onTokenMove = () => {},
   isSelected = false,
   onSelect = () => {},
 }) {
-  const [image] = useImage(token.image);
+  const image = useMemo(() => getCachedImage(token.image), [token.image]);
+
   const groupRef = useRef();
   const width = token.size.width * gridSize;
   const height = token.size.height * gridSize;
@@ -35,6 +35,11 @@ export default function TokenSprite({
     setIsDragging,
   } = useTokenDrag({ token, gridSize, onTokenMove });
 
+  const hasMoved =
+    ghostPos &&
+    startCell &&
+    (ghostPos.x !== startCell.x || ghostPos.y !== startCell.y);
+
   useTokenAnimation({
     groupRef,
     tokenPosition: token.position,
@@ -44,17 +49,71 @@ export default function TokenSprite({
     setVisualPos,
   });
 
+  useEffect(() => {
+    if (!isSelected && isDragging && !hasMoved) {
+      setIsDragging(false);
+    }
+  }, [isSelected, isDragging, hasMoved, token.id]);
+
+  const ghostToken = useMemo(() => {
+    if (!isDragging || !image) return null;
+
+    return (
+      <KonvaImage
+        image={image}
+        x={ghostPos?.x * gridSize || 0}
+        y={ghostPos?.y * gridSize || 0}
+        width={width}
+        height={height}
+        opacity={hasMoved ? 0.5 : 0.01}
+        stroke={hasMoved ? "gold" : null}
+        strokeWidth={hasMoved ? 4 : 0}
+        shadowColor="black"
+        shadowBlur={hasMoved ? 4 : 0}
+        shadowOffset={{ x: 0, y: 0 }}
+        shadowOpacity={hasMoved ? 0.6 : 0}
+        draggable
+        dragBoundFunc={(pos) => pos}
+        onDragMove={moveGhost}
+        onDragEnd={() => {
+          if (!hasMoved) {
+            setIsDragging(false);
+          } else {
+            endDrag(groupRef);
+            setTimeout(() => onSelect(null), 0);
+          }
+        }}
+      />
+    );
+  }, [isDragging, image, ghostPos, width, height, hasMoved]);
+
   return (
     <>
-      {/* Base token (static position) */}
       {image && (
         <Group
           ref={groupRef}
           x={visualPos.x}
           y={visualPos.y}
-          onClick={() => onSelect(token.id)}
-          opacity={1}
+          scaleX={1}
+          scaleY={1}
+          onClick={(e) => {
+            e.cancelBubble = true;
+            onSelect(token.id);
+          }}
+          listening={true}
         >
+          {isSelected && (
+            <Rect
+              x={0}
+              y={0}
+              width={width}
+              height={height}
+              fill="yellow"
+              opacity={0.2}
+              cornerRadius={4}
+            />
+          )}
+
           <KonvaImage
             image={image}
             width={width}
@@ -70,6 +129,7 @@ export default function TokenSprite({
             listening={!isDragging}
           />
 
+          {/* HP Bar */}
           <Rect
             x={0}
             y={0}
@@ -97,29 +157,8 @@ export default function TokenSprite({
         </Group>
       )}
 
-      {/* Ghost token during drag */}
-      {isDragging && ghostPos && image && (
-        <KonvaImage
-          image={image}
-          x={ghostPos.x * gridSize}
-          y={ghostPos.y * gridSize}
-          width={width}
-          height={height}
-          opacity={0.5}
-          stroke="gold"
-          strokeWidth={4}
-          shadowColor="black"
-          shadowBlur={4}
-          shadowOffset={{ x: 0, y: 0 }}
-          shadowOpacity={0.6}
-          draggable
-          dragBoundFunc={(pos) => pos}
-          onDragMove={moveGhost}
-          onDragEnd={() => endDrag(groupRef)}
-        />
-      )}
+      {ghostToken}
 
-      {/* Transparent drag initiator */}
       {!isDragging && (
         <Rect
           x={token.position.x * gridSize}
@@ -128,9 +167,27 @@ export default function TokenSprite({
           height={height}
           opacity={0.01}
           listening={true}
-          onMouseDown={startDrag}
+          onMouseDown={(e) => {
+            e.cancelBubble = true;
+            if (!isSelected) {
+              onSelect(token.id);
+              setTimeout(() => {
+                startDrag();
+              }, 0);
+            } else {
+              startDrag();
+            }
+          }}
         />
       )}
     </>
   );
 }
+
+export default React.memo(TokenSpriteComponent, (prevProps, nextProps) => {
+  return (
+    prevProps.token === nextProps.token &&
+    prevProps.gridSize === nextProps.gridSize &&
+    prevProps.isSelected === nextProps.isSelected
+  );
+});

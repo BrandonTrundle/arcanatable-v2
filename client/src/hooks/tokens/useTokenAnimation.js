@@ -18,7 +18,7 @@ export function useTokenAnimation({
       !isDragging &&
       (visualPos.x !== targetX || visualPos.y !== targetY)
     ) {
-      console.log("🎯 Animating token to:", tokenPosition);
+      //   console.log("🎯 Animating token to:", tokenPosition);
 
       groupRef.current.to({
         x: targetX,

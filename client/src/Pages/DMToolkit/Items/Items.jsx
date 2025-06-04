@@ -13,7 +13,7 @@ export default function Items() {
   const [selectedItem, setSelectedItem] = useState(null);
 
   const handleItemSubmit = (formData, campaign) => {
-    console.log("Submitting Item:", formData, "for campaign:", campaign);
+    //   console.log("Submitting Item:", formData, "for campaign:", campaign);
     setShowForm(false);
     // TODO: Hook into backend or local state store
   };

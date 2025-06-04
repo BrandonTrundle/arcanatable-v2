@@ -13,7 +13,7 @@ export default function Potions() {
   const [selectedPotion, setSelectedPotion] = useState(null);
 
   const handlePotionSubmit = (formData, campaign) => {
-    console.log("Submitting Potion:", formData, "for campaign:", campaign);
+    //  console.log("Submitting Potion:", formData, "for campaign:", campaign);
     setShowForm(false);
     // TODO: Hook into backend or local state store
   };

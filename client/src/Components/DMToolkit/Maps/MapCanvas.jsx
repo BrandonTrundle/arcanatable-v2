@@ -4,34 +4,39 @@ import useImage from "use-image";
 import GridLayer from "./Layers/GridLayer";
 import TokenSprite from "./MapTokens/TokenSprite";
 import { moveTokenOnMap } from "../../../utils/token/tokenMovement";
+import { useEscapeDeselect } from "../../../hooks/tokens/useEscapeDeselect";
 
 export default function MapCanvas({
   map,
   gridVisible,
   onCanvasDrop,
   setMapData,
+  activeLayer,
 }) {
-  const [image] = useImage(map.image);
+  const isFirefox =
+    typeof navigator !== "undefined" && /firefox/i.test(navigator.userAgent);
+  const scaleFactor = isFirefox ? 1 : 1;
+
+  const [mapImage] = useImage(map.image, "anonymous");
+  const imageReady = !!mapImage;
+
   const stageRef = useRef();
   const [selectedTokenId, setSelectedTokenId] = useState(null);
+  useEscapeDeselect(() => setSelectedTokenId(null));
 
-  const stageWidth = map.width * map.gridSize;
-  const stageHeight = map.height * map.gridSize;
+  const stageWidth = map.width * map.gridSize * scaleFactor;
+  const stageHeight = map.height * map.gridSize * scaleFactor;
 
   const handleTokenMove = (id, newPos) => {
-    console.log(`🔁 Attempting to move token: ${id} to new position:`, newPos);
-
-    setMapData((prevMap) => {
-      const updatedMap = moveTokenOnMap(prevMap, id, newPos);
-      console.log(`🗺️ Updated map state returned.`);
-      return updatedMap;
-    });
+    setMapData((prevMap) => moveTokenOnMap(prevMap, id, newPos));
   };
 
   return (
     <Stage
       width={stageWidth}
       height={stageHeight}
+      scaleX={1 / scaleFactor}
+      scaleY={1 / scaleFactor}
       ref={stageRef}
       style={{ border: "2px solid #444" }}
       onMouseUp={(e) => {
@@ -39,25 +44,31 @@ export default function MapCanvas({
         onCanvasDrop(pointer);
       }}
     >
-      {/* 1. Map Image Layer */}
+      {/* Background Map Layer */}
       <Layer>
-        {image && (
-          <KonvaImage image={image} width={stageWidth} height={stageHeight} />
+        {imageReady && (
+          <KonvaImage
+            image={mapImage}
+            width={stageWidth}
+            height={stageHeight}
+            perfectDrawEnabled={false}
+          />
         )}
       </Layer>
 
-      {/* 2. Grid Layer */}
-      <GridLayer
-        width={map.width}
-        height={map.height}
-        gridSize={map.gridSize}
-        color="#444"
-        opacity={gridVisible ? 1 : 0}
-      />
+      {/* Flattened Grid + Token Layer */}
+      {gridVisible && (
+        <GridLayer
+          width={map.width}
+          height={map.height}
+          gridSize={map.gridSize}
+          color="#444"
+          opacity={1}
+        />
+      )}
 
-      {/* 3. DM Token Layer */}
       <Layer>
-        {map.layers?.dm?.tokens?.map((token) => (
+        {(map.layers?.[activeLayer]?.tokens || []).map((token) => (
           <TokenSprite
             key={token.id}
             token={token}
@@ -69,24 +80,10 @@ export default function MapCanvas({
         ))}
       </Layer>
 
-      {/* 4. Player Token Layer */}
-      <Layer>
-        {map.layers?.player?.tokens?.map((token) => (
-          <TokenSprite
-            key={token.id}
-            token={token}
-            gridSize={map.gridSize}
-            isSelected={token.id === selectedTokenId}
-            onSelect={setSelectedTokenId}
-            onTokenMove={handleTokenMove}
-          />
-        ))}
-      </Layer>
-
-      {/* 5. AoE Layer */}
+      {/* Placeholder: AoE Layer */}
       <Layer>{/* TODO: drawing tools */}</Layer>
 
-      {/* 6. FX Layer (optional) */}
+      {/* Optional FX Layer */}
       {/* <Layer></Layer> */}
     </Stage>
   );

@@ -13,7 +13,7 @@ export default function Maps() {
   const [selectedMap, setSelectedMap] = useState(null);
 
   const handleMapSubmit = (formData, campaign) => {
-    console.log("Submitting Map:", formData, "for campaign:", campaign);
+    //   console.log("Submitting Map:", formData, "for campaign:", campaign);
     setShowForm(false);
     // TODO: Connect to backend or local state
   };

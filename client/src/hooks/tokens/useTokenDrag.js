@@ -1,53 +1,59 @@
-import { useState } from "react";
+import { useState, useCallback, useRef } from "react";
 
 export function useTokenDrag({ token, gridSize, onTokenMove }) {
   const [ghostPos, setGhostPos] = useState(null);
   const [startCell, setStartCell] = useState(null);
   const [isDragging, setIsDragging] = useState(false);
+  const rafIdRef = useRef(null);
 
-  const startDrag = () => {
+  const startDrag = useCallback(() => {
     const { x, y } = token.position;
-    console.log("🟡 Starting ghost drag from:", x, y);
     setStartCell({ x, y });
     setGhostPos({ x, y });
     setIsDragging(true);
-  };
+  }, [token]);
 
-  const moveGhost = (e) => {
-    const x = Math.round(e.target.x() / gridSize);
-    const y = Math.round(e.target.y() / gridSize);
-    console.log("🟢 Drag move:", x, y);
-    setGhostPos({ x, y });
-  };
+  const throttleRef = useRef(null);
 
-  const endDrag = (groupRef) => {
-    console.log("🔴 Drag ended");
+  const moveGhost = useCallback(
+    (e) => {
+      if (throttleRef.current) return;
 
-    if (
-      ghostPos &&
-      startCell &&
-      (ghostPos.x !== startCell.x || ghostPos.y !== startCell.y)
-    ) {
-      console.log("🚚 Moving token from", startCell, "to", ghostPos);
+      throttleRef.current = setTimeout(() => {
+        const x = Math.round(e.target.x() / gridSize);
+        const y = Math.round(e.target.y() / gridSize);
+        setGhostPos({ x, y });
+        throttleRef.current = null;
+      }, 50); // Update every 50ms
+    },
+    [gridSize]
+  );
 
-      if (groupRef.current) {
-        groupRef.current.setAttrs({
-          x: startCell.x * gridSize,
-          y: startCell.y * gridSize,
+  const endDrag = useCallback(
+    (groupRef) => {
+      if (
+        ghostPos &&
+        startCell &&
+        (ghostPos.x !== startCell.x || ghostPos.y !== startCell.y)
+      ) {
+        if (groupRef?.current) {
+          groupRef.current.setAttrs({
+            x: startCell.x * gridSize,
+            y: startCell.y * gridSize,
+          });
+        }
+
+        requestAnimationFrame(() => {
+          onTokenMove(token.id, ghostPos);
         });
       }
 
-      requestAnimationFrame(() => {
-        onTokenMove(token.id, ghostPos);
-      });
-    } else {
-      console.log("⛔ Cancelled — no movement");
-    }
-
-    setGhostPos(null);
-    setStartCell(null);
-    setIsDragging(false);
-  };
+      setGhostPos(null);
+      setStartCell(null);
+      setIsDragging(false);
+    },
+    [ghostPos, startCell, gridSize, onTokenMove, token.id]
+  );
 
   return {
     ghostPos,

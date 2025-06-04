@@ -13,7 +13,7 @@ export default function Monsters() {
   const [selectedMonster, setSelectedMonster] = useState(null);
 
   const handleMonsterSubmit = (formData, campaign) => {
-    console.log("Submitting Monster:", formData, "for campaign:", campaign);
+    //    console.log("Submitting Monster:", formData, "for campaign:", campaign);
     setShowForm(false);
     // TODO: Hook into backend or local state store
   };

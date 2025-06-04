@@ -8,7 +8,7 @@ const JoinCampaign = () => {
 
   const handleJoin = (e) => {
     e.preventDefault();
-    console.log("Joining campaign with code:", code);
+    //  console.log("Joining campaign with code:", code);
     // Placeholder for API integration
   };
 

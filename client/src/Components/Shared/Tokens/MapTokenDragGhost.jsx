@@ -1,6 +1,5 @@
-import React from "react";
-
-export default function DragPreview({ token, position }) {
+export default function MapTokenDragGhost({ token, positionRef }) {
+  const position = positionRef.current;
   if (!token || !position) return null;
 
   return (
@@ -9,8 +8,7 @@ export default function DragPreview({ token, position }) {
       alt={token.name}
       style={{
         position: "fixed",
-        top: position.y + 10,
-        left: position.x + 10,
+        transform: `translate(${position.x + 10}px, ${position.y + 10}px)`,
         pointerEvents: "none",
         width: 48,
         height: 48,

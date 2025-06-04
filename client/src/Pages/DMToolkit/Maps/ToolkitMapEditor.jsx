@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { useLocation } from "react-router-dom";
 import ToolkitMapEditorToolbar from "../../../Components/DMToolkit/Maps/ToolkitMapEditorToolbar";
 import MapCanvas from "../../../Components/DMToolkit/Maps/MapCanvas";
@@ -16,7 +16,8 @@ export default function ToolkitMapEditor() {
   const [showSizePanel, setShowSizePanel] = useState(false);
   const [showTokenPanel, setShowTokenPanel] = useState(false);
   const [draggingToken, setDraggingToken] = useState(null); // token object
-  const [draggingPosition, setDraggingPosition] = useState({ x: 0, y: 0 }); // screen coords
+  const draggingPositionRef = useRef({ x: 0, y: 0 });
+  const [, forceUpdate] = useState(0); // dummy state to force render
   const [activeLayer, setActiveLayer] = useState("player"); // "player" | "dm" | "hidden"
 
   const handleSizeUpdate = (newSize) => {
@@ -77,7 +78,10 @@ export default function ToolkitMapEditor() {
         <TokenPanel
           onClose={() => setShowTokenPanel(false)}
           onStartDrag={(token) => setDraggingToken(token)}
-          onDragMove={(pos) => setDraggingPosition(pos)}
+          onDragMove={(pos) => {
+            draggingPositionRef.current = pos;
+            requestAnimationFrame(() => forceUpdate((n) => n + 1));
+          }}
           onEndDrag={() => setDraggingToken(null)}
         />
       )}
@@ -91,6 +95,7 @@ export default function ToolkitMapEditor() {
               gridVisible={gridVisible}
               onCanvasDrop={handleCanvasDrop}
               setMapData={setMapData}
+              activeLayer={activeLayer}
             />
           </>
         ) : (
@@ -98,7 +103,10 @@ export default function ToolkitMapEditor() {
         )}
       </div>
       {draggingToken && (
-        <MapTokenDragGhost token={draggingToken} position={draggingPosition} />
+        <MapTokenDragGhost
+          token={draggingToken}
+          positionRef={draggingPositionRef}
+        />
       )}
     </div>
   );

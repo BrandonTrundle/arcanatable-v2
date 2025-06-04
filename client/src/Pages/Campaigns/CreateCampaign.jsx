@@ -18,7 +18,7 @@ const CreateCampaign = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    console.log("Creating campaign:", form);
+    //   console.log("Creating campaign:", form);
     // API logic will go here
   };
 

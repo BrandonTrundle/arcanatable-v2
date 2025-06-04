@@ -63,7 +63,7 @@ export default function Tokens() {
   ];
 
   const handleTokenSubmit = (formData) => {
-    console.log("Token created:", formData);
+    //   console.log("Token created:", formData);
     setShowForm(false);
     // TODO: add to state when backend is integrated
   };
