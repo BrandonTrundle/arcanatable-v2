@@ -1,7 +1,10 @@
-import React, { useRef, useEffect, useState } from "react";
+import React, { useRef, useState } from "react";
 import { Image as KonvaImage, Rect, Group } from "react-konva";
 import useImage from "use-image";
 import Konva from "konva";
+import { useTokenAnimation } from "../../../../hooks/tokens/useTokenAnimation";
+import { useTokenDrag } from "../../../../hooks/tokens/useTokenDrag";
+import { getHpColor } from "../../../../utils/token/tokenUtils";
 
 export default function TokenSprite({
   token,
@@ -12,92 +15,34 @@ export default function TokenSprite({
 }) {
   const [image] = useImage(token.image);
   const groupRef = useRef();
-
   const width = token.size.width * gridSize;
   const height = token.size.height * gridSize;
 
-  const [isDragging, setIsDragging] = useState(false);
-  const [ghostPos, setGhostPos] = useState(null);
-  const [startCell, setStartCell] = useState(null);
   const [visualPos, setVisualPos] = useState({
     x: token.position.x * gridSize,
     y: token.position.y * gridSize,
   });
 
-  // Animate real token to new position after map data updates
-  useEffect(() => {
-    const targetX = token.position.x * gridSize;
-    const targetY = token.position.y * gridSize;
+  const {
+    ghostPos,
+    startCell,
+    isDragging,
+    startDrag,
+    moveGhost,
+    endDrag,
+    setStartCell,
+    setGhostPos,
+    setIsDragging,
+  } = useTokenDrag({ token, gridSize, onTokenMove });
 
-    if (
-      groupRef.current &&
-      !isDragging &&
-      (visualPos.x !== targetX || visualPos.y !== targetY)
-    ) {
-      console.log("🎯 Animating token to:", token.position);
-
-      groupRef.current.to({
-        x: targetX,
-        y: targetY,
-        duration: 0.25,
-        easing: Konva.Easings.EaseInOut,
-        onFinish: () => {
-          // ONLY update visualPos after animation completes
-          setVisualPos({ x: targetX, y: targetY });
-        },
-      });
-    }
-  }, [token.position, isDragging, visualPos, gridSize]);
-
-  // Handle start of drag
-  const startDrag = () => {
-    const x = token.position.x;
-    const y = token.position.y;
-    console.log("🟡 Starting ghost drag from:", x, y);
-    setStartCell({ x, y });
-    setGhostPos({ x, y });
-    setIsDragging(true);
-  };
-
-  // Handle ghost movement
-  const moveGhost = (e) => {
-    const x = Math.round(e.target.x() / gridSize);
-    const y = Math.round(e.target.y() / gridSize);
-    console.log("🟢 Drag move:", x, y);
-    setGhostPos({ x, y });
-  };
-
-  // Handle end of drag
-  const endDrag = () => {
-    console.log("🔴 Drag ended");
-
-    if (
-      ghostPos &&
-      startCell &&
-      (ghostPos.x !== startCell.x || ghostPos.y !== startCell.y)
-    ) {
-      console.log("🚚 Moving token from", startCell, "to", ghostPos);
-
-      // Set the group manually to old position before position updates
-      if (groupRef.current) {
-        groupRef.current.setAttrs({
-          x: startCell.x * gridSize,
-          y: startCell.y * gridSize,
-        });
-      }
-
-      // Slightly delay to allow DOM to re-render before token state updates
-      requestAnimationFrame(() => {
-        onTokenMove(token.id, ghostPos);
-      });
-    } else {
-      console.log("⛔ Cancelled — no movement");
-    }
-
-    setGhostPos(null);
-    setStartCell(null);
-    setIsDragging(false);
-  };
+  useTokenAnimation({
+    groupRef,
+    tokenPosition: token.position,
+    isDragging,
+    gridSize,
+    visualPos,
+    setVisualPos,
+  });
 
   return (
     <>
@@ -138,13 +83,7 @@ export default function TokenSprite({
             y={(1 - token.hp / token.maxHp) * height}
             width={6}
             height={(token.hp / token.maxHp) * height}
-            fill={
-              token.hp / token.maxHp <= 0.33
-                ? "red"
-                : token.hp / token.maxHp <= 0.66
-                ? "yellow"
-                : "green"
-            }
+            fill={getHpColor(token.hp, token.maxHp)}
             opacity={0.75}
           />
           <Rect
@@ -158,6 +97,7 @@ export default function TokenSprite({
         </Group>
       )}
 
+      {/* Ghost token during drag */}
       {isDragging && ghostPos && image && (
         <KonvaImage
           image={image}
@@ -175,7 +115,7 @@ export default function TokenSprite({
           draggable
           dragBoundFunc={(pos) => pos}
           onDragMove={moveGhost}
-          onDragEnd={endDrag}
+          onDragEnd={() => endDrag(groupRef)}
         />
       )}
 
@@ -188,14 +128,7 @@ export default function TokenSprite({
           height={height}
           opacity={0.01}
           listening={true}
-          onMouseDown={(e) => {
-            // Set up for ghost manually on mousedown
-            const x = token.position.x;
-            const y = token.position.y;
-            setStartCell({ x, y });
-            setGhostPos({ x, y });
-            setIsDragging(true);
-          }}
+          onMouseDown={startDrag}
         />
       )}
     </>

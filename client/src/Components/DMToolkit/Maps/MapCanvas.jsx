@@ -3,6 +3,7 @@ import { Stage, Layer, Image as KonvaImage } from "react-konva";
 import useImage from "use-image";
 import GridLayer from "./Layers/GridLayer";
 import TokenSprite from "./MapTokens/TokenSprite";
+import { moveTokenOnMap } from "../../../utils/token/tokenMovement";
 
 export default function MapCanvas({
   map,
@@ -21,54 +22,7 @@ export default function MapCanvas({
     console.log(`🔁 Attempting to move token: ${id} to new position:`, newPos);
 
     setMapData((prevMap) => {
-      const updatedMap = { ...prevMap };
-      const clampedX = Math.max(0, Math.min(newPos.x, prevMap.width - 1));
-      const clampedY = Math.max(0, Math.min(newPos.y, prevMap.height - 1));
-
-      for (const layerKey of ["player", "dm", "hidden"]) {
-        const tokens = updatedMap.layers[layerKey].tokens;
-        const index = tokens.findIndex((t) => t.id === id);
-
-        console.log(`🔍 Checking layer: "${layerKey}"... Token index:`, index);
-
-        if (index !== -1) {
-          const oldToken = tokens[index];
-
-          if (
-            oldToken.position.x === clampedX &&
-            oldToken.position.y === clampedY
-          ) {
-            console.log(
-              "⚠️ Token already at snapped position, but forcing update for animation."
-            );
-            // Continue anyway to allow visual update.
-          }
-
-          const updatedToken = {
-            ...oldToken,
-            position: { x: clampedX, y: clampedY },
-          };
-
-          console.log(
-            `✅ Found token in "${layerKey}" layer. Old:`,
-            oldToken.position,
-            "→ New:",
-            updatedToken.position
-          );
-
-          const updatedTokens = [...tokens];
-          updatedTokens[index] = updatedToken;
-
-          updatedMap.layers[layerKey] = {
-            ...updatedMap.layers[layerKey],
-            tokens: updatedTokens,
-          };
-
-          console.log(`📦 Layer "${layerKey}" tokens updated.`);
-          break;
-        }
-      }
-
+      const updatedMap = moveTokenOnMap(prevMap, id, newPos);
       console.log(`🗺️ Updated map state returned.`);
       return updatedMap;
     });

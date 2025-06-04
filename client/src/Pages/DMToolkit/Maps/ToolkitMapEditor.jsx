@@ -5,11 +5,12 @@ import MapCanvas from "../../../Components/DMToolkit/Maps/MapCanvas";
 import MapSizePanel from "../../../Components/DMToolkit/Maps/Panels/MapSizePanel";
 import TokenPanel from "../../../Components/DMToolkit/Maps/Panels/TokenPanel";
 import styles from "../../../styles/DMToolkit/ToolkitMapEditor.module.css";
+import { createTokenOnDrop } from "../../../utils/token/tokenCreation";
+import MapTokenDragGhost from "../../../Components/Shared/Tokens/MapTokenDragGhost";
 
 export default function ToolkitMapEditor() {
   const { state } = useLocation();
   const map = state?.map;
-
   const [mapData, setMapData] = useState(map); // editable map state
   const [gridVisible, setGridVisible] = useState(true);
   const [showSizePanel, setShowSizePanel] = useState(false);
@@ -28,41 +29,15 @@ export default function ToolkitMapEditor() {
   const handleCanvasDrop = (pointer) => {
     if (!draggingToken) return;
 
-    const baseToken = draggingToken;
-
-    console.log("📦 Dragging Base Token:", baseToken);
-    console.log("📍 Drop Position (pixels):", pointer);
-
-    const gridX = Math.floor(pointer.x / mapData.gridSize);
-    const gridY = Math.floor(pointer.y / mapData.gridSize);
-
-    const newToken = {
-      ...baseToken,
-      id: `token-${Date.now()}`,
-      position: {
-        x: gridX,
-        y: gridY,
-      },
-      hp: baseToken.hp,
-      maxHp: baseToken.maxHp,
-      statusConditions: [],
-      effects: [],
-      initiative: 0,
-      notes: "",
-      activeToken: false,
-      rotation: 0,
-      isVisible: activeLayer === "player",
-    };
-
-    console.log("🧠 New Token to Add:", newToken);
+    const newToken = createTokenOnDrop({
+      baseToken: draggingToken,
+      pointer,
+      gridSize: mapData.gridSize,
+      activeLayer,
+    });
 
     setMapData((prev) => {
       const updatedTokens = [...prev.layers[activeLayer].tokens, newToken];
-
-      console.log(
-        `📋 Updated Token List for "${activeLayer}" layer:`,
-        updatedTokens
-      );
 
       return {
         ...prev,
@@ -123,20 +98,7 @@ export default function ToolkitMapEditor() {
         )}
       </div>
       {draggingToken && (
-        <img
-          src={draggingToken.image}
-          alt={draggingToken.name}
-          style={{
-            position: "fixed",
-            top: draggingPosition.y + 10,
-            left: draggingPosition.x + 10,
-            pointerEvents: "none",
-            width: 48,
-            height: 48,
-            opacity: 0.75,
-            zIndex: 10000,
-          }}
-        />
+        <MapTokenDragGhost token={draggingToken} position={draggingPosition} />
       )}
     </div>
   );
