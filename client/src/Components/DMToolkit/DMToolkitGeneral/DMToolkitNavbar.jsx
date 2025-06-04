@@ -11,9 +11,10 @@ const SECTIONS = [
   "Potions",
   "Items",
   "Maps",
+  "Tokens",
+  "Assets",
   "World",
   "Rules",
-  "Tokens",
   "CheatSheet",
 ];
 

@@ -6,7 +6,7 @@
   "campaignId": "campaign456",
   "width": 35,
   "height": 35,
-  "gridSize": 70,
+  "gridSize": 120,
   "gridType": "square",
   "fogOfWarEnabled": true,
   "snapToGrid": true,
@@ -22,15 +22,15 @@
           "displayName": "Shroom Decacap",
           "image": "/images/Decacap1.png",
           "position": {
-            "x": 5,
-            "y": 7
+            "x": 10,
+            "y": 10
           },
           "size": {
             "width": 1,
             "height": 1
           },
           "rotation": 0,
-          "hp": 22,
+          "hp": 15,
           "maxHp": 30,
           "initiative": 12,
           "statusConditions": ["Poisoned", "Blinded"],

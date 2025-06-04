@@ -1,0 +1,32 @@
+[
+  {
+    "id": "token-001",
+    "name": "Shroom Decacap",
+    "displayName": "Shroom Decacap",
+    "image": "/images/Decacap1.png",
+    "hp": 22,
+    "maxHp": 30,
+    "initiative": 12,
+    "size": { "width": 1, "height": 1 }
+  },
+  {
+    "id": "token-002",
+    "name": "Goblin Brute",
+    "displayName": "Goblin Brute",
+    "image": "/images/VallaFace.jpg",
+    "hp": 15,
+    "maxHp": 15,
+    "initiative": 8,
+    "size": { "width": 1, "height": 1 }
+  },
+  {
+    "id": "token-003",
+    "name": "Elven Archer",
+    "displayName": "Elven Archer",
+    "image": "/images/MarlaFace.jpeg",
+    "hp": 18,
+    "maxHp": 20,
+    "initiative": 14,
+    "size": { "width": 1, "height": 1 }
+  }
+]

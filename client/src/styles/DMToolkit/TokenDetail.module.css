@@ -1,0 +1,66 @@
+@import "../Main/variables.css";
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+  z-index: 1000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.container {
+  background-color: var(--color-surface);
+  border-radius: 0.5rem;
+  padding: 2rem;
+  width: 90%;
+  max-width: 800px;
+  max-height: 90vh;
+  overflow-y: auto;
+  position: relative;
+  box-shadow: 0 0 20px black;
+}
+
+.closeBtn {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  color: var(--color-danger);
+  cursor: pointer;
+}
+
+.title {
+  text-align: center;
+  color: var(--color-highlight);
+  margin-bottom: 1rem;
+}
+
+.image {
+  width: 100%;
+  max-height: 200px;
+  object-fit: contain;
+  margin-bottom: 1rem;
+  background-color: var(--color-dark);
+  border-radius: 0.25rem;
+}
+
+.details p {
+  margin: 0.5rem 0;
+  color: var(--color-light);
+}
+
+.section {
+  margin-top: 1rem;
+  color: var(--color-light);
+}
+
+.effectIcon {
+  width: 1.25rem;
+  height: 1.25rem;
+  vertical-align: middle;
+  margin-right: 0.5rem;
+}

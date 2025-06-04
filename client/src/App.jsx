@@ -16,6 +16,7 @@ import Potions from "./Pages/DMToolkit/Potions/Potions";
 import Items from "./Pages/DMToolkit/Items/Items";
 import Maps from "./Pages/DMToolkit/Maps/Maps";
 import ToolkitMapEditor from "./Pages/DMToolkit/Maps/ToolkitMapEditor";
+import Tokens from "./Pages/DMToolkit/Tokens/Tokens";
 
 function App() {
   return (
@@ -37,6 +38,7 @@ function App() {
           <Route path="potions" element={<Potions />} />
           <Route path="items" element={<Items />} />
           <Route path="maps" element={<Maps />} />
+          <Route path="tokens" element={<Tokens />} />
           {/* <Route path="monsters" element={<Monsters />} /> */}
         </Route>
         <Route path="/dmtoolkit/maps/editor" element={<ToolkitMapEditor />} />
