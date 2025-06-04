@@ -11,6 +11,7 @@ function TokenSpriteComponent({
   onTokenMove = () => {},
   isSelected = false,
   onSelect = () => {},
+  immediatePositionOverride = null,
 }) {
   const image = useMemo(() => getCachedImage(token.image), [token.image]);
 
@@ -48,6 +49,38 @@ function TokenSpriteComponent({
     visualPos,
     setVisualPos,
   });
+
+  useEffect(() => {
+    if (!immediatePositionOverride) return;
+
+    const targetX = immediatePositionOverride.x * gridSize;
+    const targetY = immediatePositionOverride.y * gridSize;
+
+    let animationFrame;
+    const duration = 120; // milliseconds
+    const startTime = performance.now();
+
+    const startX = visualPos.x;
+    const startY = visualPos.y;
+
+    const animate = (now) => {
+      const elapsed = now - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+
+      const newX = startX + (targetX - startX) * progress;
+      const newY = startY + (targetY - startY) * progress;
+
+      setVisualPos({ x: newX, y: newY });
+
+      if (progress < 1) {
+        animationFrame = requestAnimationFrame(animate);
+      }
+    };
+
+    animationFrame = requestAnimationFrame(animate);
+
+    return () => cancelAnimationFrame(animationFrame);
+  }, [immediatePositionOverride, gridSize]);
 
   useEffect(() => {
     if (!isSelected && isDragging && !hasMoved) {
