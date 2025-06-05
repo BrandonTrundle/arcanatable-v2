@@ -11,7 +11,10 @@ import MapTokenDragGhost from "../../../Components/Shared/Tokens/MapTokenDragGho
 export default function ToolkitMapEditor() {
   const { state } = useLocation();
   const map = state?.map;
-  const [mapData, setMapData] = useState(map); // editable map state
+  const [mapData, setMapData] = useState({
+    ...map,
+    fogOfWar: map.fogOfWar || { revealedCells: [] },
+  });
   const [gridVisible, setGridVisible] = useState(true);
   const [showSizePanel, setShowSizePanel] = useState(false);
   const [showTokenPanel, setShowTokenPanel] = useState(false);
@@ -19,6 +22,8 @@ export default function ToolkitMapEditor() {
   const draggingPositionRef = useRef({ x: 0, y: 0 });
   const [, forceUpdate] = useState(0); // dummy state to force render
   const [activeLayer, setActiveLayer] = useState("player"); // "player" | "dm" | "hidden"
+  const [fogVisible, setFogVisible] = useState(true);
+  const [toolMode, setToolMode] = useState("select");
 
   const handleSizeUpdate = (newSize) => {
     setMapData((prev) => ({
@@ -64,6 +69,10 @@ export default function ToolkitMapEditor() {
         onTokenClick={() => setShowTokenPanel(true)}
         activeLayer={activeLayer}
         setActiveLayer={setActiveLayer}
+        fogVisible={fogVisible}
+        setFogVisible={setFogVisible}
+        toolMode={toolMode}
+        setToolMode={setToolMode}
       />
 
       {showSizePanel && (
@@ -96,6 +105,8 @@ export default function ToolkitMapEditor() {
               onCanvasDrop={handleCanvasDrop}
               setMapData={setMapData}
               activeLayer={activeLayer}
+              fogVisible={fogVisible}
+              toolMode={toolMode}
             />
           </>
         ) : (

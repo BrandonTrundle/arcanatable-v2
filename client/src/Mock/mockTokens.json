@@ -7,17 +7,21 @@
     "hp": 22,
     "maxHp": 30,
     "initiative": 12,
-    "size": { "width": 1, "height": 1 }
+    "size": { "width": 1, "height": 1 },
+    "type": "creature",
+    "viewableDistance": 0
   },
   {
     "id": "token-002",
-    "name": "Goblin Brute",
-    "displayName": "Goblin Brute",
+    "name": "Valla Rynn",
+    "displayName": "Valla Rynn",
     "image": "/images/VallaFace.jpg",
     "hp": 15,
     "maxHp": 15,
     "initiative": 8,
-    "size": { "width": 1, "height": 1 }
+    "size": { "width": 1, "height": 1 },
+    "type": "player",
+    "viewableDistance": 6
   },
   {
     "id": "token-003",
@@ -27,6 +31,8 @@
     "hp": 18,
     "maxHp": 20,
     "initiative": 14,
-    "size": { "width": 1, "height": 1 }
+    "size": { "width": 1, "height": 1 },
+    "type": "creature",
+    "viewableDistance": 0
   }
 ]

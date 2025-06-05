@@ -9,11 +9,16 @@ export default function ToolkitMapEditorToolbar({
   onTokenClick,
   activeLayer,
   setActiveLayer,
+  fogVisible,
+  setFogVisible,
+  toolMode,
+  setToolMode,
 }) {
   const navigate = useNavigate();
   const [showGridMenu, setShowGridMenu] = useState(false);
   const toggleGridMenu = () => setShowGridMenu((prev) => !prev);
   const [showLayerMenu, setShowLayerMenu] = useState(false);
+  const [showFogMenu, setShowFogMenu] = useState(false);
 
   const toggleLayerMenu = () => setShowLayerMenu((prev) => !prev);
 
@@ -94,7 +99,40 @@ export default function ToolkitMapEditorToolbar({
       <button onClick={onTokenClick} className={styles.toolButton}>
         Token
       </button>
-      <button className={styles.toolButton}>Fog</button>
+      <div className={styles.dropdownWrapper}>
+        <button
+          onClick={() => setShowFogMenu((prev) => !prev)}
+          className={styles.toolButton}
+        >
+          Fog ▾
+        </button>
+
+        {showFogMenu && (
+          <div className={styles.dropdown}>
+            <button
+              className={styles.dropdownItem}
+              onClick={() => {
+                setFogVisible((prev) => !prev);
+                setShowFogMenu(false);
+              }}
+            >
+              {fogVisible ? "Hide Fog" : "Show Fog"}
+            </button>
+            <button
+              className={styles.dropdownItem}
+              onClick={() => {
+                setToolMode((prev) =>
+                  prev === "paint-blockers" ? "select" : "paint-blockers"
+                );
+                setShowFogMenu(false);
+              }}
+            >
+              {toolMode === "paint-blockers" ? "✓ " : ""}Paint Blockers
+            </button>
+          </div>
+        )}
+      </div>
+
       <button className={styles.toolButton}>Notes</button>
       <button className={styles.toolButton}>Save</button>
     </div>

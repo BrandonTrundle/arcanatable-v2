@@ -12,6 +12,7 @@ function TokenSpriteComponent({
   isSelected = false,
   onSelect = () => {},
   immediatePositionOverride = null,
+  opacity = 1,
 }) {
   const image = useMemo(() => getCachedImage(token.image), [token.image]);
 
@@ -129,6 +130,7 @@ function TokenSpriteComponent({
           y={visualPos.y}
           scaleX={1}
           scaleY={1}
+          opacity={opacity}
           onClick={(e) => {
             e.cancelBubble = true;
             onSelect(token.id);

@@ -20,5 +20,7 @@ export function createTokenOnDrop({
     activeToken: false,
     rotation: 0,
     isVisible: activeLayer === "player",
+    viewableDistance: 6, // default vision range in grid cells
+    type: "player", // or "npc" or "creature" etc.
   };
 }
