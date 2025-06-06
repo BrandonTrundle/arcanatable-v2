@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import ToolkitMapEditorToolbar from "../../../Components/DMToolkit/Maps/ToolkitMapEditorToolbar";
 import MapCanvas from "../../../Components/DMToolkit/Maps/MapCanvas";
@@ -13,6 +13,7 @@ export default function ToolkitMapEditor() {
   const { state } = useLocation();
   const map = state?.map;
   const [activeNoteCell, setActiveNoteCell] = useState(null);
+  const [selectedNoteCell, setSelectedNoteCell] = useState(null);
 
   const [mapData, setMapData] = useState(() => ({
     ...map,
@@ -48,6 +49,14 @@ export default function ToolkitMapEditor() {
   const [activeLayer, setActiveLayer] = useState("player"); // "player" | "dm" | "hidden"
   const [fogVisible, setFogVisible] = useState(true);
   const [toolMode, setToolMode] = useState("select");
+
+  useEffect(() => {
+    console.log("🎯 activeNoteCell changed:", activeNoteCell);
+  }, [activeNoteCell]);
+
+  useEffect(() => {
+    if (toolMode !== "notes") setSelectedNoteCell(null);
+  }, [toolMode]);
 
   const handleSizeUpdate = (newSize) => {
     setMapData((prev) => ({
@@ -125,8 +134,15 @@ export default function ToolkitMapEditor() {
           activeNoteCell={activeNoteCell}
           onClose={() => setToolMode("select")}
           onUpdateNotes={(updatedNotes) => {
-            console.log("Notes updated in editor:", updatedNotes);
+            console.log("📋 Notes updated in editor:", updatedNotes);
             setMapData((prev) => ({ ...prev, notes: updatedNotes }));
+            setActiveNoteCell(null);
+          }}
+          onSelectNote={(note) => {
+            if (note.cell) {
+              console.log("🟥 Selected note from list:", note);
+              setSelectedNoteCell(note.cell);
+            }
           }}
         />
       )}
@@ -144,6 +160,9 @@ export default function ToolkitMapEditor() {
               activeLayer={activeLayer}
               fogVisible={fogVisible}
               toolMode={toolMode}
+              setActiveNoteCell={setActiveNoteCell}
+              activeNoteCell={activeNoteCell}
+              selectedNoteCell={selectedNoteCell}
             />
           </>
         ) : (

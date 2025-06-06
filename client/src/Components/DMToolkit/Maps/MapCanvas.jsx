@@ -14,6 +14,7 @@ import FogLayer from "./Layers/FogLayer";
 import MapTokenLayer from "../Maps/Layers/MapTokenLayer";
 import MapImageLayer from "./Layers/MapImageLayer";
 import BlockerLayer from "./Layers/BlockerLayer";
+import NoteMarkersLayer from "./Layers/NoteMarkersLayer";
 
 export default function MapCanvas({
   map,
@@ -25,6 +26,8 @@ export default function MapCanvas({
   fogVisible,
   toolMode,
   setActiveNoteCell,
+  activeNoteCell,
+  selectedNoteCell,
 }) {
   const isFirefox =
     typeof navigator !== "undefined" && /firefox/i.test(navigator.userAgent);
@@ -114,13 +117,13 @@ export default function MapCanvas({
     }
 
     if (toolMode === "notes") {
-      setMapData((prevMap) => {
-        const updated = placeNoteAtCell({ map: prevMap, cell });
-        if (updated !== prevMap && setActiveNoteCell) {
-          setActiveNoteCell(cell);
-        }
-        return updated;
-      });
+      console.log("📝 Notes tool active — clicked cell:", cell);
+
+      if (setActiveNoteCell) {
+        console.log("📍 Starting new note at:", cell);
+        setActiveNoteCell(cell);
+      }
+
       return;
     }
 
@@ -168,6 +171,35 @@ export default function MapCanvas({
           gridSize={map.gridSize}
           revealedCells={map.fogOfWar?.revealedCells || []}
         />
+      )}
+
+      <NoteMarkersLayer notes={notes} gridSize={map.gridSize} />
+
+      {toolMode === "notes" && activeNoteCell && (
+        <Layer>
+          <Rect
+            x={activeNoteCell.x * map.gridSize}
+            y={activeNoteCell.y * map.gridSize}
+            width={map.gridSize}
+            height={map.gridSize}
+            stroke="yellow"
+            strokeWidth={2}
+            dash={[4, 4]}
+          />
+        </Layer>
+      )}
+
+      {toolMode === "notes" && selectedNoteCell && (
+        <Layer listening={false}>
+          <Rect
+            x={selectedNoteCell.x * map.gridSize}
+            y={selectedNoteCell.y * map.gridSize}
+            width={map.gridSize}
+            height={map.gridSize}
+            stroke="red"
+            strokeWidth={2}
+          />
+        </Layer>
       )}
 
       <Layer>

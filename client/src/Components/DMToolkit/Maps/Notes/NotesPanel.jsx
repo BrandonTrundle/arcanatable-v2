@@ -1,26 +1,25 @@
 import React, { useState, useEffect } from "react";
 import styles from "../../../../styles/DMToolkit/NotesPanel.module.css";
 
-export default function NotesPanel({ notes = [], onClose, onUpdateNotes }) {
+export default function NotesPanel({
+  notes = [],
+  activeNoteCell,
+  onClose,
+  onUpdateNotes,
+  onSelectNote,
+}) {
   const [newNote, setNewNote] = useState({ name: "", body: "" });
   const [mode, setMode] = useState("list");
-  const [lastUnplacedCell, setLastUnplacedCell] = useState(null);
   console.log("NotesPanel received notes:", notes);
 
   const handleSave = () => {
-    if (!newNote.name.trim()) return;
+    if (!newNote.name.trim() || !activeNoteCell) return;
 
     const id = Date.now().toString();
-    onUpdateNotes([...notes, { ...newNote, id, cell: null }]);
+    onUpdateNotes([...notes, { ...newNote, id, cell: activeNoteCell }]);
     setNewNote({ name: "", body: "" });
     setMode("list");
   };
-
-  useEffect(() => {
-    const lastUnplaced = notes.findLast((n) => !n.cell);
-    setLastUnplacedCell(lastUnplaced?.cell || null);
-    console.log("Updated lastUnplacedCell:", lastUnplaced?.cell);
-  }, [notes]);
 
   return (
     <div className={styles.panel} style={{ top: 100, left: 100 }}>
@@ -36,8 +35,8 @@ export default function NotesPanel({ notes = [], onClose, onUpdateNotes }) {
               }}
             >
               –{" "}
-              {lastUnplacedCell
-                ? `Cell: ${lastUnplacedCell.x}, ${lastUnplacedCell.y}`
+              {activeNoteCell
+                ? `Cell: ${activeNoteCell.x}, ${activeNoteCell.y}`
                 : "(Click cell to place...)"}
             </span>
           )}
@@ -70,7 +69,12 @@ export default function NotesPanel({ notes = [], onClose, onUpdateNotes }) {
             </p>
           )}
           {notes.map((note) => (
-            <div key={note.id} className={styles.noteItem}>
+            <div
+              key={note.id}
+              className={styles.noteItem}
+              onClick={() => onSelectNote?.(note)}
+              style={{ cursor: note.cell ? "pointer" : "default" }}
+            >
               <div className={styles.noteTitle}>{note.name}</div>
               <p>{note.body}</p>
               <div className={styles.noteMeta}>
