@@ -14,10 +14,10 @@ export function placeNoteAtCell({ map, cell }) {
     cell: { x: cell.x, y: cell.y },
   };
 
-  console.log(
-    `✍️ Assigned cell to note [${targetNote.name}] at index ${unplacedIndex}`
-  );
-  console.log("🗒️ New notes array:", updatedNotes);
+  //  console.log(
+  //    `✍️ Assigned cell to note [${targetNote.name}] at index ${unplacedIndex}`
+  //  );
+  //  console.log("🗒️ New notes array:", updatedNotes);
 
   return {
     ...map,

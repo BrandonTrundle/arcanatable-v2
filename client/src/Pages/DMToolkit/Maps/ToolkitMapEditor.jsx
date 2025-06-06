@@ -7,7 +7,7 @@ import TokenPanel from "../../../Components/DMToolkit/Maps/Panels/TokenPanel";
 import styles from "../../../styles/DMToolkit/ToolkitMapEditor.module.css";
 import { createTokenOnDrop } from "../../../utils/token/tokenCreation";
 import MapTokenDragGhost from "../../../Components/Shared/Tokens/MapTokenDragGhost";
-import NotesPanel from "../../../Components/DMToolkit/Maps/Notes/NotesPanel";
+import NotesPanel from "../../../Components/DMToolkit/Maps/Panels/NotesPanel";
 
 export default function ToolkitMapEditor() {
   const { state } = useLocation();
@@ -49,10 +49,6 @@ export default function ToolkitMapEditor() {
   const [activeLayer, setActiveLayer] = useState("player"); // "player" | "dm" | "hidden"
   const [fogVisible, setFogVisible] = useState(true);
   const [toolMode, setToolMode] = useState("select");
-
-  useEffect(() => {
-    console.log("🎯 activeNoteCell changed:", activeNoteCell);
-  }, [activeNoteCell]);
 
   useEffect(() => {
     if (toolMode !== "notes") setSelectedNoteCell(null);
@@ -134,13 +130,13 @@ export default function ToolkitMapEditor() {
           activeNoteCell={activeNoteCell}
           onClose={() => setToolMode("select")}
           onUpdateNotes={(updatedNotes) => {
-            console.log("📋 Notes updated in editor:", updatedNotes);
+            //      console.log("📋 Notes updated in editor:", updatedNotes);
             setMapData((prev) => ({ ...prev, notes: updatedNotes }));
             setActiveNoteCell(null);
           }}
           onSelectNote={(note) => {
             if (note.cell) {
-              console.log("🟥 Selected note from list:", note);
+              //S       console.log("🟥 Selected note from list:", note);
               setSelectedNoteCell(note.cell);
             }
           }}

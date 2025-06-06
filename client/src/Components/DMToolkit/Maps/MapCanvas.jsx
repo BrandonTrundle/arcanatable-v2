@@ -1,20 +1,13 @@
 import React, { useRef, useState, useEffect } from "react";
 import { Stage, Layer, Rect, Image as KonvaImage } from "react-konva";
-import { moveTokenOnMap } from "../../../utils/token/tokenMovement";
 import { useEscapeDeselect } from "../../../hooks/tokens/useEscapeDeselect";
-import { calculateVisibleCells } from "../../../utils/fogOfWar/calculateVisibleCells";
 import { getCellFromPointer } from "../../../utils/grid/coordinates";
 import { useKeyboardTokenControl } from "../../../hooks/tokens/useKeyboardTokenControl";
 import { handleTokenMoveWithFog } from "../../../utils/token/tokenMoveWithFog";
-import { placeNoteAtCell } from "../../../utils/notes/placeNoteAtCell";
 import useImage from "use-image";
-import GridLayer from "./Layers/GridLayer";
-import TokenSprite from "./MapTokens/TokenSprite";
-import FogLayer from "./Layers/FogLayer";
 import MapTokenLayer from "../Maps/Layers/MapTokenLayer";
-import MapImageLayer from "./Layers/MapImageLayer";
-import BlockerLayer from "./Layers/BlockerLayer";
-import NoteMarkersLayer from "./Layers/NoteMarkersLayer";
+import StaticMapLayer from "./Layers/StaticMapLayer";
+import FogAndBlockerLayer from "./Layers/FogAndBlockerLayer";
 
 export default function MapCanvas({
   map,
@@ -82,18 +75,18 @@ export default function MapCanvas({
     }
 
     if (toolMode === "paint-blockers") {
-      console.log("🛠 Tool mode: paint-blockers");
+      //   console.log("🛠 Tool mode: paint-blockers");
 
-      console.log("📍 Cell to toggle:", cell);
+      //   console.log("📍 Cell to toggle:", cell);
 
       setMapData((prevMap) => {
         const blocking = prevMap.fogOfWar?.blockingCells || [];
-        console.log("📦 Existing blocking cells:", blocking);
+        //   console.log("📦 Existing blocking cells:", blocking);
 
         const key = `${cell.x},${cell.y}`;
         const existing = new Set(blocking.map((c) => `${c.x},${c.y}`));
         const isAlreadyBlocked = existing.has(key);
-        console.log(`🔍 Is cell already blocked?`, isAlreadyBlocked);
+        //     console.log(`🔍 Is cell already blocked?`, isAlreadyBlocked);
 
         let updated;
         if (isAlreadyBlocked) {
@@ -102,7 +95,7 @@ export default function MapCanvas({
           updated = [...blocking, { x: cell.x, y: cell.y }];
         }
 
-        console.log("✅ Updated blocking cells:", updated);
+        //     console.log("✅ Updated blocking cells:", updated);
 
         return {
           ...prevMap,
@@ -117,10 +110,10 @@ export default function MapCanvas({
     }
 
     if (toolMode === "notes") {
-      console.log("📝 Notes tool active — clicked cell:", cell);
+      //   console.log("📝 Notes tool active — clicked cell:", cell);
 
       if (setActiveNoteCell) {
-        console.log("📍 Starting new note at:", cell);
+        //       console.log("📍 Starting new note at:", cell);
         setActiveNoteCell(cell);
       }
 
@@ -140,67 +133,25 @@ export default function MapCanvas({
       style={{ border: "2px solid #444" }}
       onMouseUp={handleCanvasMouseUp}
     >
-      <MapImageLayer
-        image={mapImage}
-        width={stageWidth}
-        height={stageHeight}
+      <StaticMapLayer
+        mapImage={mapImage}
         imageReady={imageReady}
+        gridVisible={gridVisible}
+        map={map}
+        notes={notes}
+        activeNoteCell={toolMode === "notes" ? activeNoteCell : null}
+        selectedNoteCell={toolMode === "notes" ? selectedNoteCell : null}
       />
 
-      {gridVisible && (
-        <GridLayer
-          width={map.width}
-          height={map.height}
-          gridSize={map.gridSize}
-          color="#444"
-          opacity={1}
-        />
-      )}
-
-      {toolMode === "paint-blockers" && (
-        <BlockerLayer
-          blockingCells={map.fogOfWar?.blockingCells}
-          gridSize={map.gridSize}
-        />
-      )}
-
-      {fogVisible && (
-        <FogLayer
-          width={map.width}
-          height={map.height}
-          gridSize={map.gridSize}
-          revealedCells={map.fogOfWar?.revealedCells || []}
-        />
-      )}
-
-      <NoteMarkersLayer notes={notes} gridSize={map.gridSize} />
-
-      {toolMode === "notes" && activeNoteCell && (
-        <Layer>
-          <Rect
-            x={activeNoteCell.x * map.gridSize}
-            y={activeNoteCell.y * map.gridSize}
-            width={map.gridSize}
-            height={map.gridSize}
-            stroke="yellow"
-            strokeWidth={2}
-            dash={[4, 4]}
-          />
-        </Layer>
-      )}
-
-      {toolMode === "notes" && selectedNoteCell && (
-        <Layer listening={false}>
-          <Rect
-            x={selectedNoteCell.x * map.gridSize}
-            y={selectedNoteCell.y * map.gridSize}
-            width={map.gridSize}
-            height={map.gridSize}
-            stroke="red"
-            strokeWidth={2}
-          />
-        </Layer>
-      )}
+      <FogAndBlockerLayer
+        width={map.width}
+        height={map.height}
+        gridSize={map.gridSize}
+        revealedCells={map.fogOfWar?.revealedCells || []}
+        blockingCells={map.fogOfWar?.blockingCells || []}
+        showFog={fogVisible}
+        showBlockers={toolMode === "paint-blockers"}
+      />
 
       <Layer>
         <MapTokenLayer

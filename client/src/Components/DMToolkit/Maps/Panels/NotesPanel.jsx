@@ -10,7 +10,7 @@ export default function NotesPanel({
 }) {
   const [newNote, setNewNote] = useState({ name: "", body: "" });
   const [mode, setMode] = useState("list");
-  console.log("NotesPanel received notes:", notes);
+  //  console.log("NotesPanel received notes:", notes);
 
   const handleSave = () => {
     if (!newNote.name.trim() || !activeNoteCell) return;
