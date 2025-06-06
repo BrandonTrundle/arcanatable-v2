@@ -7,14 +7,38 @@ import TokenPanel from "../../../Components/DMToolkit/Maps/Panels/TokenPanel";
 import styles from "../../../styles/DMToolkit/ToolkitMapEditor.module.css";
 import { createTokenOnDrop } from "../../../utils/token/tokenCreation";
 import MapTokenDragGhost from "../../../Components/Shared/Tokens/MapTokenDragGhost";
+import NotesPanel from "../../../Components/DMToolkit/Maps/Notes/NotesPanel";
 
 export default function ToolkitMapEditor() {
   const { state } = useLocation();
   const map = state?.map;
-  const [mapData, setMapData] = useState({
+  const [activeNoteCell, setActiveNoteCell] = useState(null);
+
+  const [mapData, setMapData] = useState(() => ({
     ...map,
     fogOfWar: map.fogOfWar || { revealedCells: [] },
-  });
+    notes: [
+      {
+        id: "note-001",
+        name: "Hidden Trap",
+        body: "A pressure plate activates a dart trap from the far wall.",
+        cell: { x: 3, y: 5 },
+      },
+      {
+        id: "note-002",
+        name: "Secret Door",
+        body: "The mossy wall at this spot hides a hinged secret passage.",
+        cell: { x: 7, y: 2 },
+      },
+      {
+        id: "note-003",
+        name: "Treasure Cache",
+        body: "Behind loose stones is a pouch with 75gp and a potion of climbing.",
+        cell: { x: 11, y: 6 },
+      },
+    ],
+  }));
+
   const [gridVisible, setGridVisible] = useState(true);
   const [showSizePanel, setShowSizePanel] = useState(false);
   const [showTokenPanel, setShowTokenPanel] = useState(false);
@@ -95,12 +119,25 @@ export default function ToolkitMapEditor() {
         />
       )}
 
+      {toolMode === "notes" && (
+        <NotesPanel
+          notes={mapData.notes}
+          activeNoteCell={activeNoteCell}
+          onClose={() => setToolMode("select")}
+          onUpdateNotes={(updatedNotes) => {
+            console.log("Notes updated in editor:", updatedNotes);
+            setMapData((prev) => ({ ...prev, notes: updatedNotes }));
+          }}
+        />
+      )}
+
       <div className={styles.canvasArea}>
         {mapData ? (
           <>
             <h2 className={styles.mapTitle}>{mapData.name}</h2>
             <MapCanvas
               map={mapData}
+              notes={mapData.notes}
               gridVisible={gridVisible}
               onCanvasDrop={handleCanvasDrop}
               setMapData={setMapData}

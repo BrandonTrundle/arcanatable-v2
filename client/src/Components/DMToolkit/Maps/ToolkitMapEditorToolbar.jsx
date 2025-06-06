@@ -133,7 +133,15 @@ export default function ToolkitMapEditorToolbar({
         )}
       </div>
 
-      <button className={styles.toolButton}>Notes</button>
+      <button
+        className={styles.toolButton}
+        onClick={() =>
+          setToolMode((prev) => (prev === "notes" ? "select" : "notes"))
+        }
+      >
+        {toolMode === "notes" ? "✓ " : ""}Notes
+      </button>
+
       <button className={styles.toolButton}>Save</button>
     </div>
   );

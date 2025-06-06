@@ -33,28 +33,39 @@ export function calculateVisibleCells(
   blockingCells = []
 ) {
   const { position, viewableDistance = 6 } = token;
-  const visible = new Set();
-  const blocked = new Set(blockingCells.map((c) => `${c.x},${c.y}`));
+  const visible = [];
   const radius = viewableDistance;
 
-  for (let dy = -radius; dy <= radius; dy++) {
-    for (let dx = -radius; dx <= radius; dx++) {
-      const x = position.x + dx;
-      const y = position.y + dy;
+  const centerX = position.x;
+  const centerY = position.y;
 
+  // Convert blockingCells into a Set for fast lookup
+  const blockSet = new Set(blockingCells.map((cell) => `${cell.x},${cell.y}`));
+
+  for (let y = centerY - radius; y <= centerY + radius; y++) {
+    for (let x = centerX - radius; x <= centerX + radius; x++) {
       if (x < 0 || y < 0 || x >= mapWidth || y >= mapHeight) continue;
 
-      const line = bresenhamLine(position.x, position.y, x, y);
+      const dx = x - centerX;
+      const dy = y - centerY;
+      const distance = Math.sqrt(dx * dx + dy * dy);
+      if (distance > radius) continue;
 
-      for (const { x: lx, y: ly } of line) {
-        visible.add(`${lx},${ly}`);
-        if (blocked.has(`${lx},${ly}`)) break;
+      const line = bresenhamLine(centerX, centerY, x, y);
+      let blocked = false;
+
+      for (const point of line) {
+        if (blockSet.has(`${point.x},${point.y}`)) {
+          blocked = true;
+          break;
+        }
+      }
+
+      if (!blocked) {
+        visible.push({ x, y });
       }
     }
   }
 
-  return Array.from(visible).map((s) => {
-    const [x, y] = s.split(",").map(Number);
-    return { x, y };
-  });
+  return visible;
 }
