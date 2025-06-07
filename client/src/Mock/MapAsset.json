@@ -1,0 +1,15 @@
+{
+  "_id": "mapasset-001",
+  "userId": "demo-user",
+  "toolkitType": "MapAsset",
+  "title": "Wagon",
+  "content": {
+    "name": "Wagon",
+    "width": 2,
+    "height": 1,
+    "description": "A rugged wooden wagon, perfect for cargo or ambushes.",
+    "tags": ["vehicle", "wood", "road"],
+    "image": "/images/wagon.png",
+    "campaigns": ["Stormreach"]
+  }
+}

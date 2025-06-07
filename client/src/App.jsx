@@ -17,6 +17,7 @@ import Items from "./Pages/DMToolkit/Items/Items";
 import Maps from "./Pages/DMToolkit/Maps/Maps";
 import ToolkitMapEditor from "./Pages/DMToolkit/Maps/ToolkitMapEditor";
 import Tokens from "./Pages/DMToolkit/Tokens/Tokens";
+import MapAssets from "./Pages/DMToolkit/MapAssets/MapAssets";
 
 function App() {
   return (
@@ -39,6 +40,7 @@ function App() {
           <Route path="items" element={<Items />} />
           <Route path="maps" element={<Maps />} />
           <Route path="tokens" element={<Tokens />} />
+          <Route path="assets" element={<MapAssets />} />
           {/* <Route path="monsters" element={<Monsters />} /> */}
         </Route>
         <Route path="/dmtoolkit/maps/editor" element={<ToolkitMapEditor />} />
