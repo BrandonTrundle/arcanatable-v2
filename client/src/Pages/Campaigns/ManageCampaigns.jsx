@@ -1,6 +1,24 @@
 import React, { useState } from "react";
 import styles from "../../styles/Campaign/ManageCampaigns.module.css";
 import Navbar from "../../Components/General/Navbar";
+import ManageCampaignCard from "../../Components/Campaign/ManageCampaignCard";
+import EditCampaignOverlay from "../../Components/Campaign/EditCampaignOverlay";
+
+// Simulated rules from the user's toolkit
+const MOCK_RULES = [
+  {
+    _id: "rule-001",
+    title: "Lingering Injuries",
+    description: "Drop to 0 HP? Roll for lasting wounds.",
+    tags: ["combat"],
+  },
+  {
+    _id: "rule-002",
+    title: "Critical Fumbles",
+    description: "Natural 1 means trouble.",
+    tags: ["fumble", "combat"],
+  },
+];
 
 const MOCK_CAMPAIGNS = Array.from({ length: 4 }, (_, i) => ({
   _id: `manage-${i}`,
@@ -13,6 +31,7 @@ const MOCK_CAMPAIGNS = Array.from({ length: 4 }, (_, i) => ({
     { _id: "u2", username: "BardBarian" },
     { _id: "u3", username: "Clerica" },
   ],
+  rules: i === 0 ? ["rule-001"] : [],
 }));
 
 const ManageCampaigns = () => {
@@ -22,7 +41,7 @@ const ManageCampaigns = () => {
 
   const startEditing = (campaign) => {
     setEditingCampaign(campaign._id);
-    setFormData({ ...campaign }); // shallow copy
+    setFormData({ ...campaign });
   };
 
   const stopEditing = () => {
@@ -31,7 +50,7 @@ const ManageCampaigns = () => {
       setEditingCampaign(null);
       setFormData(null);
       setIsClosing(false);
-    }, 300); // match fade-out duration
+    }, 300);
   };
 
   const handleFormChange = (e) => {
@@ -45,6 +64,20 @@ const ManageCampaigns = () => {
     }));
   };
 
+  const addRule = (ruleId) => {
+    setFormData((prev) => ({
+      ...prev,
+      rules: [...(prev.rules || []), ruleId],
+    }));
+  };
+
+  const removeRule = (ruleId) => {
+    setFormData((prev) => ({
+      ...prev,
+      rules: prev.rules.filter((id) => id !== ruleId),
+    }));
+  };
+
   return (
     <>
       <Navbar />
@@ -53,98 +86,25 @@ const ManageCampaigns = () => {
 
         <ul className={styles.grid}>
           {MOCK_CAMPAIGNS.map((c) => (
-            <li key={c._id} className={styles.card}>
-              <div>
-                <h2>{c.name}</h2>
-                <p>{c.gameSystem}</p>
-              </div>
-
-              <div>
-                <p>
-                  <strong>Invite Code:</strong> {c.inviteCode}
-                </p>
-                <p>
-                  <strong>Next Session:</strong> {c.nextSession}
-                </p>
-              </div>
-
-              <div className={styles.players}>
-                <strong>Players:</strong>
-                <ul>
-                  {c.players.map((p) => (
-                    <li key={p._id}>{p.username}</li>
-                  ))}
-                </ul>
-              </div>
-
-              <div className={styles.actions}>
-                <button
-                  className={styles.editButton}
-                  onClick={() => startEditing(c)}
-                >
-                  Edit
-                </button>
-                <button className={styles.editButton}>Leave</button>
-              </div>
-            </li>
+            <ManageCampaignCard
+              key={c._id}
+              campaign={c}
+              onEdit={startEditing}
+            />
           ))}
         </ul>
-        {editingCampaign && (
-          <div
-            className={`${styles.overlay} ${isClosing ? styles.fadeOut : ""}`}
-            onClick={stopEditing}
-          >
-            <div
-              className={styles.editPanel}
-              onClick={(e) => e.stopPropagation()}
-            >
-              <h2>Edit Campaign</h2>
 
-              <label>
-                TTRPG System:
-                <input
-                  type="text"
-                  name="gameSystem"
-                  value={formData.gameSystem}
-                  onChange={handleFormChange}
-                />
-              </label>
-
-              <label>
-                Next Session:
-                <input
-                  type="text"
-                  name="nextSession"
-                  value={formData.nextSession}
-                  onChange={handleFormChange}
-                />
-              </label>
-
-              <div className={styles.players}>
-                <strong>Players:</strong>
-                <ul>
-                  {formData.players.map((p) => (
-                    <li key={p._id}>
-                      {p.username}
-                      <button
-                        className={styles.removeBtn}
-                        onClick={() => removePlayer(p._id)}
-                      >
-                        Remove
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-
-              <button className={styles.inviteBtn}>
-                Send Invite (Placeholder)
-              </button>
-              <button className={styles.closeBtn} onClick={stopEditing}>
-                Close
-              </button>
-            </div>
-          </div>
+        {editingCampaign && formData && (
+          <EditCampaignOverlay
+            formData={formData}
+            onChange={handleFormChange}
+            onClose={stopEditing}
+            onRemovePlayer={removePlayer}
+            isClosing={isClosing}
+            availableRules={MOCK_RULES}
+            onAddRule={addRule}
+            onRemoveRule={removeRule}
+          />
         )}
       </div>
     </>
