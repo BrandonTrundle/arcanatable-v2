@@ -18,6 +18,8 @@ import Maps from "./Pages/DMToolkit/Maps/Maps";
 import ToolkitMapEditor from "./Pages/DMToolkit/Maps/ToolkitMapEditor";
 import Tokens from "./Pages/DMToolkit/Tokens/Tokens";
 import MapAssets from "./Pages/DMToolkit/MapAssets/MapAssets";
+import Rules from "./Pages/DMToolkit/Rules/Rules";
+import CheatSheet from "./Pages/DMToolkit/CheatSheet/CheatSheet";
 
 function App() {
   return (
@@ -41,6 +43,8 @@ function App() {
           <Route path="maps" element={<Maps />} />
           <Route path="tokens" element={<Tokens />} />
           <Route path="assets" element={<MapAssets />} />
+          <Route path="rules" element={<Rules />} />
+          <Route path="cheatsheet" element={<CheatSheet />} />
           {/* <Route path="monsters" element={<Monsters />} /> */}
         </Route>
         <Route path="/dmtoolkit/maps/editor" element={<ToolkitMapEditor />} />

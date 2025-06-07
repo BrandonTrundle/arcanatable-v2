@@ -1,0 +1,12 @@
+{
+  "_id": "cheat-001",
+  "userId": "demo-user",
+  "toolkitType": "CheatEntry",
+  "title": "Concentration Rules",
+  "content": {
+    "title": "Concentration Rules",
+    "description": "You can only concentrate on one spell at a time. If you take damage, you must make a Constitution saving throw (DC 10 or half the damage, whichever is higher) to maintain concentration.",
+    "tags": ["spells", "combat", "concentration"],
+    "campaigns": ["Stormreach"]
+  }
+}

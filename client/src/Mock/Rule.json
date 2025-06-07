@@ -1,0 +1,13 @@
+{
+  "_id": "rule-001",
+  "userId": "demo-user",
+  "toolkitType": "Rule",
+  "title": "Lingering Injuries",
+  "content": {
+    "title": "Lingering Injuries",
+    "description": "Whenever a creature drops to 0 hit points but isn’t killed outright, they must roll on the Lingering Injuries table.",
+    "tags": ["combat", "injury", "optional"],
+    "image": "/images/rules/lingering.png",
+    "campaigns": ["Stormreach"]
+  }
+}
