@@ -13,6 +13,7 @@ export default function ToolkitMapEditorToolbar({
   setFogVisible,
   toolMode,
   setToolMode,
+  onAssetClick,
 }) {
   const navigate = useNavigate();
   const [showGridMenu, setShowGridMenu] = useState(false);
@@ -98,6 +99,9 @@ export default function ToolkitMapEditorToolbar({
       <button className={styles.toolButton}>Select</button>
       <button onClick={onTokenClick} className={styles.toolButton}>
         Token
+      </button>
+      <button onClick={onAssetClick} className={styles.toolButton}>
+        Assets
       </button>
       <div className={styles.dropdownWrapper}>
         <button

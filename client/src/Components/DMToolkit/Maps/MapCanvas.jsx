@@ -8,6 +8,7 @@ import useImage from "use-image";
 import MapTokenLayer from "../Maps/Layers/MapTokenLayer";
 import StaticMapLayer from "./Layers/StaticMapLayer";
 import FogAndBlockerLayer from "./Layers/FogAndBlockerLayer";
+import MapAssetLayer from "./Layers/MapAssetLayer";
 
 export default function MapCanvas({
   map,
@@ -31,7 +32,10 @@ export default function MapCanvas({
 
   const stageRef = useRef();
   const [selectedTokenId, setSelectedTokenId] = useState(null);
+  const [selectedAssetId, setSelectedAssetId] = useState(null);
+
   useEscapeDeselect(() => setSelectedTokenId(null));
+  useEscapeDeselect(() => setSelectedAssetId(null));
 
   const stageWidth = map.width * map.gridSize * scaleFactor;
   const stageHeight = map.height * map.gridSize * scaleFactor;
@@ -46,6 +50,49 @@ export default function MapCanvas({
       })
     );
   };
+
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (!selectedAssetId) return;
+
+      const layerAssets = map.layers?.[activeLayer]?.assets || [];
+      const index = layerAssets.findIndex((a) => a.id === selectedAssetId);
+      if (index === -1) return;
+
+      const current = layerAssets[index];
+      let rotation = current.rotation || 0;
+
+      if (e.key === "q") {
+        rotation -= 15;
+      } else if (e.key === "e") {
+        rotation += 15;
+      } else {
+        return;
+      }
+
+      setMapData((prev) => {
+        const updatedAssets = [...prev.layers[activeLayer].assets];
+        updatedAssets[index] = {
+          ...updatedAssets[index],
+          rotation,
+        };
+
+        return {
+          ...prev,
+          layers: {
+            ...prev.layers,
+            [activeLayer]: {
+              ...prev.layers[activeLayer],
+              assets: updatedAssets,
+            },
+          },
+        };
+      });
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [selectedAssetId, map, activeLayer]);
 
   useKeyboardTokenControl({
     selectedTokenId,
@@ -154,6 +201,33 @@ export default function MapCanvas({
       />
 
       <Layer>
+        <MapAssetLayer
+          map={map}
+          gridSize={map.gridSize}
+          activeLayer={activeLayer}
+          selectedAssetId={selectedAssetId}
+          onSelectAsset={setSelectedAssetId}
+          onMoveAsset={(id, newPos) => {
+            setMapData((prev) => {
+              const assets = prev.layers[activeLayer]?.assets || [];
+              const updatedAssets = assets.map((a) =>
+                a.id === id ? { ...a, position: newPos } : a
+              );
+
+              return {
+                ...prev,
+                layers: {
+                  ...prev.layers,
+                  [activeLayer]: {
+                    ...prev.layers[activeLayer],
+                    assets: updatedAssets,
+                  },
+                },
+              };
+            });
+          }}
+        />
+
         <MapTokenLayer
           map={map}
           gridSize={map.gridSize}

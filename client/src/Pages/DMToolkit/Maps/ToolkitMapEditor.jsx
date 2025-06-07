@@ -6,14 +6,18 @@ import MapSizePanel from "../../../Components/DMToolkit/Maps/Panels/MapSizePanel
 import TokenPanel from "../../../Components/DMToolkit/Maps/Panels/TokenPanel";
 import styles from "../../../styles/DMToolkit/ToolkitMapEditor.module.css";
 import { createTokenOnDrop } from "../../../utils/token/tokenCreation";
+import { getCellFromPointer } from "../../../utils/grid/coordinates";
 import MapTokenDragGhost from "../../../Components/Shared/Tokens/MapTokenDragGhost";
 import NotesPanel from "../../../Components/DMToolkit/Maps/Panels/NotesPanel";
+import AssetPanel from "../../../Components/DMToolkit/Maps/Panels/AssetPanel";
 
 export default function ToolkitMapEditor() {
   const { state } = useLocation();
   const map = state?.map;
   const [activeNoteCell, setActiveNoteCell] = useState(null);
   const [selectedNoteCell, setSelectedNoteCell] = useState(null);
+  const [showAssetPanel, setShowAssetPanel] = useState(false);
+  const [draggingAsset, setDraggingAsset] = useState(null);
 
   const [mapData, setMapData] = useState(() => ({
     ...map,
@@ -62,31 +66,62 @@ export default function ToolkitMapEditor() {
   };
 
   const handleCanvasDrop = (pointer) => {
-    if (!draggingToken) return;
+    if (draggingToken) {
+      const newToken = createTokenOnDrop({
+        baseToken: draggingToken,
+        pointer,
+        gridSize: mapData.gridSize,
+        activeLayer,
+      });
 
-    const newToken = createTokenOnDrop({
-      baseToken: draggingToken,
-      pointer,
-      gridSize: mapData.gridSize,
-      activeLayer,
-    });
-
-    setMapData((prev) => {
-      const updatedTokens = [...prev.layers[activeLayer].tokens, newToken];
-
-      return {
-        ...prev,
-        layers: {
-          ...prev.layers,
-          [activeLayer]: {
-            ...prev.layers[activeLayer],
-            tokens: updatedTokens,
+      setMapData((prev) => {
+        const updatedTokens = [...prev.layers[activeLayer].tokens, newToken];
+        return {
+          ...prev,
+          layers: {
+            ...prev.layers,
+            [activeLayer]: {
+              ...prev.layers[activeLayer],
+              tokens: updatedTokens,
+            },
           },
-        },
-      };
-    });
+        };
+      });
 
-    setDraggingToken(null);
+      setDraggingToken(null);
+      return;
+    }
+
+    if (draggingAsset) {
+      const cell = getCellFromPointer(pointer, mapData.gridSize);
+      const newAsset = {
+        id: `asset-${Date.now()}`,
+        image: draggingAsset.image,
+        name: draggingAsset.name,
+        position: cell,
+        size: {
+          width: parseInt(draggingAsset.width, 10),
+          height: parseInt(draggingAsset.height, 10),
+        },
+        rotation: 0,
+      };
+
+      setMapData((prev) => {
+        const updatedAssets = [...prev.layers[activeLayer].assets, newAsset];
+        return {
+          ...prev,
+          layers: {
+            ...prev.layers,
+            [activeLayer]: {
+              ...prev.layers[activeLayer],
+              assets: updatedAssets,
+            },
+          },
+        };
+      });
+
+      setDraggingAsset(null);
+    }
   };
 
   return (
@@ -96,6 +131,7 @@ export default function ToolkitMapEditor() {
         setGridVisible={setGridVisible}
         onSizeClick={() => setShowSizePanel(true)}
         onTokenClick={() => setShowTokenPanel(true)}
+        onAssetClick={() => setShowAssetPanel(true)}
         activeLayer={activeLayer}
         setActiveLayer={setActiveLayer}
         fogVisible={fogVisible}
@@ -121,6 +157,18 @@ export default function ToolkitMapEditor() {
             requestAnimationFrame(() => forceUpdate((n) => n + 1));
           }}
           onEndDrag={() => setDraggingToken(null)}
+        />
+      )}
+
+      {showAssetPanel && (
+        <AssetPanel
+          onClose={() => setShowAssetPanel(false)}
+          onStartDrag={(asset) => setDraggingAsset(asset)}
+          onDragMove={(pos) => {
+            draggingPositionRef.current = pos;
+            requestAnimationFrame(() => forceUpdate((n) => n + 1));
+          }}
+          onEndDrag={() => setDraggingAsset(null)}
         />
       )}
 
