@@ -1,0 +1,674 @@
+@import "../Main/variables.css";
+
+:root {
+  --bg-light: var(--color-light);
+  --bg-surface: var(--color-surface);
+  --bg-muted: var(--color-muted);
+  --bg-highlight: var(--color-highlight);
+  --bg-success: var(--color-success);
+  --text-secondary: var(--color-secondary);
+
+  --border-standard: 2px solid var(--color-muted);
+  --border-radius: 4px;
+  --border-info: 2px solid blue;
+
+  --font-size-sm: 0.85rem;
+  --font-size-base: 1rem;
+  --font-size-lg: 1.25rem;
+  --font-size-xl: 1.5rem;
+
+  --padding-sm: 0.25rem;
+  --padding-md: 0.5rem;
+  --padding-lg: 1rem;
+}
+
+/* Container Setup */
+.main_container {
+  padding: var(--padding-lg);
+  background-color: var(--bg-surface);
+}
+
+.header_section {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  padding: var(--padding-lg);
+  gap: 2rem;
+  background-color: var(--color-muted);
+  border: var(--border-standard);
+  margin-bottom: var(--padding-lg);
+}
+
+.character_name_block {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.character_name_input {
+  height: 3rem;
+  font-size: var(--font-size-lg);
+  padding: var(--padding-md);
+  border: var(--border-standard);
+  border-radius: var(--border-radius);
+  color: var(--color-dark);
+  background-color: var(--color-light);
+}
+
+.character_name_block label {
+  font-size: var(--font-size-sm);
+  font-weight: bold;
+  margin-bottom: var(--padding-sm);
+  color: var(--text-secondary);
+}
+
+.header_grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  flex: 2;
+}
+
+.header_grid > div {
+  display: flex;
+  flex-direction: column;
+}
+
+.header_input {
+  height: 2.5rem;
+  font-size: var(--font-size-base);
+  padding: var(--padding-md);
+  border: 1px solid var(--bg-muted);
+  border-radius: var(--border-radius);
+  color: var(--color-dark);
+  background-color: var(--color-light);
+}
+
+.header_grid label {
+  font-size: var(--font-size-sm);
+  font-weight: bold;
+  margin-bottom: var(--padding-sm);
+  color: var(--text-secondary);
+}
+
+/* Main Flex Container */
+.second_container {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: flex-start;
+}
+
+/* Column Layouts */
+.column1_wrapper {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  height: auto;
+  width: 20%;
+}
+
+.column1 {
+  display: flex;
+  flex-direction: row;
+  gap: 1rem;
+  height: auto;
+  margin-left: var(--padding-lg);
+}
+
+/* Left Side – Abilities */
+.ability_section {
+  width: 125px;
+  height: 62rem;
+  background-color: var(--color-neutral);
+  text-align: center;
+}
+
+.ab_score {
+  height: 10rem;
+  margin-bottom: var(--padding-sm);
+}
+
+.ab_stat {
+  text-align: center;
+  height: 5rem;
+  font-size: 2rem;
+  font-weight: bold;
+  color: var(--color-light);
+}
+
+.ab_mod {
+  border-radius: 15rem;
+  height: 3rem;
+  width: 7rem;
+  background-color: var(--bg-muted);
+  transform: translateY(-0.75rem);
+  margin-left: 0.4rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: var(--font-size-lg);
+}
+
+/* Right Side of Column1 */
+.right_column {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  height: auto;
+  overflow: visible;
+}
+
+/* Block Sections in Right Column */
+.skills_section,
+.savingthrows_section,
+.proficiency_section {
+  display: flex;
+  flex-direction: column;
+  background-color: var(--bg-dark);
+}
+
+.skills_section {
+  gap: var(--padding-sm);
+  padding: var(--padding-md);
+  max-height: 30rem; /* or whatever fits your layout */
+  overflow-y: auto;
+  background-color: var(--bg-dark);
+  border: var(--border-standard);
+  border-radius: var(--border-radius);
+}
+
+.st_row {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 0.5rem;
+  padding: 0.25rem 0;
+  border-bottom: 1px solid var(--bg-muted);
+}
+
+.st_bonus_input {
+  width: 3rem;
+  text-align: center;
+}
+
+.st_label_input {
+  flex: 1;
+  min-width: 10rem;
+
+  background-color: var(--bg-surface);
+}
+
+.skill_row:last-child {
+  border-bottom: none;
+}
+
+.proficiency_section {
+  gap: var(--padding-md);
+  padding: var(--padding-md);
+}
+
+.prof_row {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: var(--padding-md);
+  background-color: var(--color-dark);
+}
+
+.prof_value {
+  font-weight: bold;
+  font-size: var(--font-size-xl);
+  max-width: 60px;
+  color: var(--color-dark);
+  background-color: var(--color-light);
+}
+
+.prof_box {
+  font-size: var(--font-size-base);
+}
+
+.st_row {
+  display: flex;
+  align-items: center;
+  gap: var(--padding-md);
+  margin-bottom: var(--padding-md);
+}
+
+.st_bonus_input,
+.st_label_input {
+  font-size: var(--font-size-base);
+  padding: var(--padding-sm);
+  border: 1px solid var(--bg-muted);
+  border-radius: var(--border-radius);
+  color: var(--color-light);
+}
+
+.st_label_input {
+  flex: 1;
+  color: var(--color-light);
+  font-size: 13px;
+}
+
+.st_label {
+  font-size: var(--font-size-base);
+  color: var(--text-light);
+  min-width: 100px;
+}
+
+.add_skill_button {
+  margin-top: var(--padding-md);
+  padding: var(--padding-sm) 0.75rem;
+  background-color: var(--bg-highlight);
+  color: white;
+  border: none;
+  border-radius: var(--border-radius);
+  cursor: pointer;
+}
+
+.add_skill_button:hover {
+  background-color: var(--bg-success);
+}
+
+.section_label {
+  font-weight: bold;
+  font-size: 1.1rem;
+  margin-bottom: var(--padding-md);
+  display: block;
+  color: var(--color-light);
+}
+
+.st_value {
+  font-weight: bold;
+  font-size: var(--font-size-xl);
+}
+
+.st_box {
+  font-size: var(--font-size-base);
+  min-width: 3rem;
+}
+
+.passive_section,
+.languages_section {
+  height: 5rem;
+  background-color: var(--bg-light);
+  width: 24.56rem;
+  margin-top: var(--padding-lg);
+}
+
+.OPL {
+  text-align: left;
+  margin-bottom: -10px;
+}
+
+.languages_textarea {
+  width: 100%;
+  height: 100%;
+  border: none;
+  background-color: transparent;
+  padding: var(--padding-md);
+  font-family: inherit;
+  font-size: var(--font-size-base);
+  color: var(--color-secondary);
+  resize: vertical;
+}
+
+/* COLUMN 2 */
+.column2 {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  height: auto;
+  overflow: visible;
+  margin-right: 5rem;
+  width: 35%; /* adjust this value to suit your layout */
+}
+
+.defense_section {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: var(--padding-md);
+  background-color: var(--bg-light);
+  border: var(--border-standard);
+}
+
+.defense_box {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border: var(--border-standard);
+  padding: var(--padding-md);
+  background-color: var(--color-dark);
+  border-radius: 8px;
+  text-align: center;
+}
+
+.defense_label {
+  font-size: var(--font-size-sm);
+  font-weight: bold;
+  margin-bottom: var(--padding-sm);
+}
+
+.defense_value {
+  font-size: var(--font-size-lg);
+  font-weight: bold;
+  color: var(--color-dark);
+  background-color: var(--color-light);
+}
+
+.hitdice_section,
+.deathsaves_box,
+.attacks_section {
+  background-color: var(--color-dark);
+  border: var(--border-standard);
+  padding: var(--padding-md);
+  border-radius: 8px;
+}
+
+.hitdice_section {
+  display: flex;
+  gap: 1rem;
+}
+
+.hitdice_box {
+  flex: 1;
+  border: var(--border-standard);
+  padding: var(--padding-md);
+  background-color: var(--bg-light);
+  text-align: center;
+  border-radius: 8px;
+}
+
+.hitdice_label {
+  font-weight: bold;
+  margin-bottom: var(--padding-sm);
+  color: var(--text-secondary);
+}
+
+.hitdice_value {
+  font-size: var(--font-size-lg);
+  color: var(--color-light);
+}
+
+.deathsaves_label {
+  font-weight: bold;
+  margin-bottom: var(--padding-md);
+  text-align: center;
+}
+
+.deathsaves_row {
+  display: flex;
+  align-items: center;
+  gap: var(--padding-sm);
+  margin-bottom: var(--padding-sm);
+}
+
+.deathsaves_subtitle {
+  min-width: 80px;
+  font-size: 0.9rem;
+}
+
+.attacks_section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--padding-sm);
+  max-height: 35rem;
+  overflow-y: auto;
+}
+
+.attack_header {
+  font-weight: bold;
+  margin-bottom: var(--padding-md);
+}
+
+.attack_row {
+  display: flex;
+  gap: var(--padding-sm);
+}
+
+.attack_input {
+  flex: 1;
+  padding: var(--padding-sm);
+  font-size: var(--font-size-base);
+  border: 1px solid var(--bg-muted);
+  border-radius: var(--border-radius);
+  color: var(--color-dark);
+}
+
+.add_attack_button {
+  margin-top: var(--padding-md);
+  padding: var(--padding-sm) 0.75rem;
+  background-color: var(--bg-highlight);
+  color: white;
+  border: none;
+  border-radius: var(--border-radius);
+  cursor: pointer;
+}
+
+.add_attack_button:hover {
+  background-color: var(--bg-success);
+}
+
+.weapons_section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--padding-sm);
+  background-color: var(--bg-light);
+  border: var(--border-standard);
+  padding: var(--padding-md);
+  border-radius: var(--border-radius);
+  width: 100%;
+}
+
+.weapons_header_row {
+  display: flex;
+  justify-content: space-between;
+  font-weight: bold;
+  font-size: var(--font-size-sm);
+  padding-bottom: var(--padding-sm);
+  border-bottom: 1px solid var(--bg-muted);
+}
+
+.weapons_header_cell {
+  flex: 1;
+  text-align: left;
+  padding-right: var(--padding-sm);
+  color: var(--text-secondary);
+}
+
+.weapons_row {
+  display: flex;
+  gap: var(--padding-sm);
+  margin-bottom: var(--padding-sm);
+}
+
+.weapons_input {
+  flex: 1;
+  padding: var(--padding-sm);
+  font-size: var(--font-size-base);
+  border: 1px solid var(--bg-muted);
+  border-radius: var(--border-radius);
+  background-color: var(--bg-surface);
+}
+
+.delete_weapons_button {
+  background-color: red;
+  color: white;
+  border: none;
+  padding: 0 var(--padding-sm);
+  border-radius: var(--border-radius);
+  cursor: pointer;
+  margin-bottom: 30px;
+}
+
+.delete_weapons_button:hover {
+  background-color: darkred;
+}
+
+.add_weapons_button {
+  margin-top: var(--padding-sm);
+  padding: var(--padding-sm) 0.75rem;
+  background-color: var(--bg-highlight);
+  color: white;
+  border: none;
+  border-radius: var(--border-radius);
+  cursor: pointer;
+}
+
+.add_weapons_button:hover {
+  background-color: var(--bg-success);
+}
+
+.weapons_notes_area {
+  margin-top: var(--padding-sm);
+  min-height: 6rem;
+  resize: vertical;
+  font-family: inherit;
+  padding: var(--padding-md);
+  font-size: var(--font-size-base);
+  border-radius: var(--border-radius);
+  border: 1px solid var(--bg-muted);
+  background-color: var(--bg-surface);
+}
+
+.hp_section,
+.temp_hp_section,
+.equipment_section {
+  display: flex;
+  flex-direction: row;
+  gap: 2rem;
+  padding: var(--padding-lg);
+  background-color: var(--bg-light);
+  color: var(--text-secondary);
+  height: auto;
+  flex-wrap: wrap;
+}
+
+.hp_section label {
+  color: var(--text-secondary);
+}
+
+.hp_section input {
+  color: var(--color-light);
+}
+
+.temp_hp_section label {
+  color: var(--text-secondary);
+}
+
+.temp_hp_section input {
+  color: var(--color-light);
+}
+
+.currency_column {
+  display: flex;
+  flex-direction: column;
+  gap: var(--padding-md);
+  width: 100px;
+}
+
+.currency_row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.currency_row label {
+  color: var(--text-secondary);
+  font-weight: bold;
+}
+
+.currency_input {
+  width: 50px;
+  padding: var(--padding-sm);
+  font-size: var(--font-size-base);
+}
+
+.equipment_column {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--padding-md);
+}
+
+.equipment_list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--padding-md);
+}
+
+.equipment_item {
+  display: flex;
+  gap: var(--padding-md);
+}
+
+.equipment_input {
+  flex: 1;
+  padding: var(--padding-sm);
+  font-size: var(--font-size-base);
+  border: 1px solid var(--bg-muted);
+  border-radius: var(--border-radius);
+  background-color: var(--bg-surface);
+}
+
+.add_equipment_button,
+.delete_equipment_button {
+  background-color: red;
+  color: white;
+  border: none;
+  padding: 0 var(--padding-sm);
+  border-radius: var(--border-radius);
+  cursor: pointer;
+  margin-bottom: 30px;
+}
+
+.add_equipment_button {
+  background-color: var(--bg-highlight);
+  color: white;
+}
+
+.add_equipment_button:hover {
+  background-color: var(--bg-success);
+}
+
+.delete_equipment_button {
+  background-color: red;
+  color: white;
+}
+
+.delete_equipment_button:hover {
+  background-color: darkred;
+}
+
+/* COLUMN 3 */
+.column3 {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  width: 33%;
+}
+
+.personality_section {
+  height: 6rem;
+  padding: var(--padding-md);
+  resize: vertical;
+  background-color: var(--bg-light);
+  border: var(--border-standard);
+  color: var(--text-secondary);
+  font-size: var(--font-size-base);
+  border-radius: var(--border-radius);
+  font-family: inherit;
+}
+
+.features_section {
+  height: 15rem;
+  background-color: var(--bg-light);
+  border: var(--border-standard);
+  color: var(--text-secondary);
+}

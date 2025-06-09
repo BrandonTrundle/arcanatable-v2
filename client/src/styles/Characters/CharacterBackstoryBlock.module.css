@@ -1,0 +1,28 @@
+@import "../Main/variables.css";
+
+.wrapper {
+  background-color: var(--color-surface);
+  padding: 1rem;
+  border-radius: var(--border-radius);
+  border: 1px solid var(--color-muted);
+}
+
+.label {
+  font-weight: bold;
+  margin-bottom: 0.5rem;
+  display: block;
+  color: var(--color-light);
+}
+
+.textarea {
+  width: 100%;
+  min-height: 41.3rem;
+  resize: vertical;
+  padding: 0.75rem;
+  font-size: var(--font-size-base);
+  border-radius: var(--border-radius);
+  background-color: var(--bg-light);
+  border: 1px solid var(--color-muted);
+  color: var(--color-dark);
+  font-family: inherit;
+}

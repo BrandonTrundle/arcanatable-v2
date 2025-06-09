@@ -1,0 +1,118 @@
+{
+  "_id": "682adf09bed25392f3744e79",
+  "name": "Blitzy",
+  "playername": "TestUser",
+  "class": "Fighter",
+  "level": 7,
+  "race": "Human",
+  "background": "Bouncer",
+  "alignment": "CG",
+  "experiencepoints": 3200,
+  "portraitImage": "/images/BrennorFace.jpeg",
+  "details": {
+    "age": "",
+    "height": "",
+    "weight": "",
+    "eyes": "",
+    "skin": "",
+    "hair": ""
+  },
+  "abilities": {
+    "Strength": 18,
+    "Dexterity": 18,
+    "Constitution": 18,
+    "Intelligence": 18,
+    "Wisdom": 18,
+    "Charisma": 18
+  },
+  "savingThrows": {
+    "Strength": { "checked": true, "bonus": "2" },
+    "Dexterity": { "checked": true, "bonus": "2" },
+    "Constitution": { "checked": false, "bonus": "0" },
+    "Intelligence": { "checked": false, "bonus": "0" },
+    "Wisdom": { "checked": false, "bonus": "0" },
+    "Charisma": { "checked": false, "bonus": "0" }
+  },
+  "skills": [
+    {
+      "name": "Acrobatics (Dex)",
+      "checked": true,
+      "bonus": "2"
+    },
+    {
+      "name": "Animal Handling (Wis)",
+      "checked": true,
+      "bonus": "2"
+    }
+  ],
+  "inspiration": 2,
+  "proficiencyBonus": 2,
+  "ac": 18,
+  "initiative": 4,
+  "speed": "30ft",
+  "maxHp": 58,
+  "currenthp": 58,
+  "temphp": 0,
+  "hitdice": "5d12",
+  "deathSaves": {
+    "successes": [false, false, false],
+    "failures": [false, false, false]
+  },
+  "attacks": [
+    {
+      "name": "Battle-Axe",
+      "bonus": "+4",
+      "damage": "1d12 +4"
+    }
+  ],
+  "attackNotes": "",
+  "equipment": [""],
+  "currency": {
+    "cp": 8,
+    "sp": 0,
+    "ep": 0,
+    "gp": 0,
+    "pp": 0
+  },
+  "languages": "Spanish",
+  "passiveWisdom": 4,
+  "traits": {
+    "personalityTraits": "",
+    "ideals": "",
+    "bonds": "",
+    "flaws": "",
+    "features": ""
+  },
+  "appearance": "",
+  "backstory": "",
+  "organization": {
+    "name": "",
+    "symbolImage": ""
+  },
+  "additionalFeatures": "",
+  "treasure": "",
+  "spellcasting": {
+    "class": "",
+    "ability": "",
+    "saveDC": "",
+    "attackBonus": ""
+  },
+  "spellLevels": [
+    { "level": 0, "slotsMax": null, "slotsUsed": null, "spells": [] },
+    { "level": 1, "slotsMax": 0, "slotsUsed": 0, "spells": [] },
+    { "level": 2, "slotsMax": 0, "slotsUsed": 0, "spells": [] },
+    { "level": 3, "slotsMax": 0, "slotsUsed": 0, "spells": [] },
+    { "level": 4, "slotsMax": 0, "slotsUsed": 0, "spells": [] },
+    { "level": 5, "slotsMax": 0, "slotsUsed": 0, "spells": [] },
+    { "level": 6, "slotsMax": 0, "slotsUsed": 0, "spells": [] },
+    { "level": 7, "slotsMax": 0, "slotsUsed": 0, "spells": [] },
+    { "level": 8, "slotsMax": 0, "slotsUsed": 0, "spells": [] },
+    { "level": 9, "slotsMax": 0, "slotsUsed": 0, "spells": [] }
+  ],
+  "campaignIds": ["6829c8d5bf1d114cb122e680"],
+  "isPublic": false,
+  "creator": "6829022ca7d620399a6e42a9",
+  "createdAt": "2025-05-19T07:34:33.594Z",
+  "updatedAt": "2025-05-23T06:44:09.928Z",
+  "__v": 2
+}

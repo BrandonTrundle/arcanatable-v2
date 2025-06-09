@@ -1,13 +1,16 @@
 import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+
 import HomePage from "./Pages/HomePage";
 import UserOnboarding from "./Pages/UserOnboarding";
 import Signup from "./Pages/Signup";
 import Dashboard from "./Pages/Dashboard";
+
 import CampaignDashboard from "./Pages/Campaigns/CampaignDashboard";
 import CreateCampaign from "./Pages/Campaigns/CreateCampaign";
 import ManageCampaigns from "./Pages/Campaigns/ManageCampaigns";
 import JoinCampaign from "./Pages/Campaigns/JoinCampaign";
+
 import DMToolkitLayout from "./Pages/DMToolkit/DMToolkitLayout";
 import DMToolkitDashboard from "./Pages/DMToolkit/DMToolkitDashboard";
 import Monsters from "./Pages/DMToolkit/Monsters/Monsters";
@@ -21,6 +24,10 @@ import MapAssets from "./Pages/DMToolkit/MapAssets/MapAssets";
 import Rules from "./Pages/DMToolkit/Rules/Rules";
 import CheatSheet from "./Pages/DMToolkit/CheatSheet/CheatSheet";
 
+import CharacterDashboard from "./Pages/Characters/CharacterDashboard";
+import CreateCharacter from "./Pages/Characters/CreateCharacter";
+import EditCharacter from "./Pages/Characters/EditCharacter";
+
 function App() {
   return (
     <Router>
@@ -33,7 +40,12 @@ function App() {
         <Route path="/create-campaign" element={<CreateCampaign />} />
         <Route path="/manage-campaign" element={<ManageCampaigns />} />
         <Route path="/join-campaign" element={<JoinCampaign />} />
-
+        {/* Characters */}
+        <Route path="/characters" element={<CharacterDashboard />} />
+        <Route path="/characters/create" element={<CreateCharacter />} />{" "}
+        <Route path="/characters/edit/:id" element={<EditCharacter />} />
+        {/* ✅ New route */}
+        {/* DM Toolkit */}
         <Route path="/dmtoolkit" element={<DMToolkitLayout />}>
           <Route index element={<DMToolkitDashboard />} />
           <Route path="monsters" element={<Monsters />} />
@@ -45,7 +57,6 @@ function App() {
           <Route path="assets" element={<MapAssets />} />
           <Route path="rules" element={<Rules />} />
           <Route path="cheatsheet" element={<CheatSheet />} />
-          {/* <Route path="monsters" element={<Monsters />} /> */}
         </Route>
         <Route path="/dmtoolkit/maps/editor" element={<ToolkitMapEditor />} />
       </Routes>

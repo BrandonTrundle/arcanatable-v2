@@ -1,11 +1,12 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "../Components/General/Navbar";
-import styles from "../styles/Pages/Dashboard.module.css";
 import UserInfoPanel from "../Components/General/UserInfoPanel";
+import styles from "../styles/Pages/Dashboard.module.css";
 
 const Dashboard = () => {
   const navigate = useNavigate();
+
   return (
     <>
       <Navbar />
@@ -27,10 +28,16 @@ const Dashboard = () => {
             <h2>Campaigns</h2>
             <p>Manage your adventures.</p>
           </div>
-          <div className={styles.tile}>
+
+          <div
+            className={styles.tile}
+            onClick={() => navigate("/characters")}
+            style={{ cursor: "pointer" }}
+          >
             <h2>Characters</h2>
             <p>Customize your heroes.</p>
           </div>
+
           <div
             className={styles.tile}
             onClick={() => navigate("/dmtoolkit")}
@@ -39,14 +46,17 @@ const Dashboard = () => {
             <h2>DM Toolkit</h2>
             <p>Your source for all of your adventure needs.</p>
           </div>
+
           <div className={styles.tile}>
             <h2>Messages</h2>
             <p>View your inbox.</p>
           </div>
+
           <div className={styles.tile}>
             <h2>News</h2>
             <p>ArcanaTable news!</p>
           </div>
+
           <div className={styles.tile}>
             <h2>Learn</h2>
             <p>Explore ArcanaTable features.</p>

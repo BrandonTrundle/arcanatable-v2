@@ -1,0 +1,14 @@
+@import "../Main/variables.css";
+
+.pageContainer {
+  padding: 2rem;
+  background-color: var(--color-background);
+  color: var(--color-light);
+}
+
+.spellLevels {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  margin-top: 2rem;
+}

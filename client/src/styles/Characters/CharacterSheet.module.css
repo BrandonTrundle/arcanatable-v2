@@ -1,0 +1,65 @@
+@import "../Main/variables.css";
+
+.sheetContainer {
+  padding: 2rem;
+  background-color: var(--color-background);
+  min-height: 100vh;
+  color: var(--color-light);
+}
+
+.tabBar {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.tabButton {
+  background: var(--color-surface);
+  color: var(--color-light);
+  border: 1px solid var(--color-muted);
+  padding: 0.5rem 1rem;
+  border-radius: var(--border-radius);
+  cursor: pointer;
+}
+
+.tabButton:hover {
+  background-color: var(--color-neutral);
+}
+
+.active {
+  background-color: var(--color-highlight);
+  color: white;
+}
+
+.tabContent {
+  background-color: var(--color-surface);
+  padding: 1rem;
+  border-radius: var(--border-radius);
+}
+
+.topBar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.saveContainer {
+  margin-top: 2rem;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.saveButton {
+  background-color: var(--color-success);
+  color: var(--color-light);
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 0.5rem;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.saveButton:hover {
+  background-color: #0f9d7d;
+}

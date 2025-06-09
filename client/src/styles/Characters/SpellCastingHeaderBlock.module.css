@@ -1,0 +1,30 @@
+@import "../Main/variables.css";
+
+.wrapper {
+  background-color: var(--color-surface);
+  padding: 1rem;
+  border: 1px solid var(--color-muted);
+  border-radius: var(--border-radius);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+}
+
+.SHBlabel {
+  display: flex;
+  flex-direction: column;
+  color: var(--color-light);
+  font-size: var(--font-size-sm);
+}
+
+.input {
+  padding: 0.5rem;
+  font-size: var(--font-size-base);
+  background-color: var(--bg-light);
+  border: 1px solid var(--color-muted);
+  border-radius: var(--border-radius);
+  color: var(--color-light);
+}

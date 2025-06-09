@@ -1,0 +1,80 @@
+@import "../Main/variables.css";
+
+.wrapper {
+  padding: 1rem;
+  background-color: var(--color-surface);
+  border-radius: var(--border-radius);
+  border: 1px solid var(--color-muted);
+}
+
+.title {
+  font-size: 1.2rem;
+  margin-bottom: 1rem;
+  color: var(--color-light);
+}
+
+.slotsRow {
+  display: flex;
+  gap: 2rem;
+  margin-bottom: 1rem;
+}
+
+.input {
+  width: 100px;
+  padding: 0.5rem;
+  font-size: var(--font-size-base);
+  background-color: var(--bg-light);
+  border: 1px solid var(--color-muted);
+  border-radius: var(--border-radius);
+  color: var(--color-light);
+}
+
+.SLBlabel {
+  font-size: var(--font-size-sm);
+  color: var(--color-light);
+  display: flex;
+  flex-direction: column;
+}
+
+.spellList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.spellRow {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.spellInput {
+  flex: 1;
+  padding: 0.5rem;
+  font-size: var(--font-size-base);
+  background-color: var(--bg-light);
+  border: 1px solid var(--color-muted);
+  border-radius: var(--border-radius);
+  color: var(--color-dark);
+}
+
+.deleteButton {
+  background-color: var(--color-danger);
+  color: white;
+  border: none;
+  padding: 0 0.75rem;
+  font-weight: bold;
+  border-radius: var(--border-radius);
+  cursor: pointer;
+}
+
+.addButton {
+  margin-top: 0.5rem;
+  padding: 0.5rem 1rem;
+  background-color: var(--color-highlight);
+  color: white;
+  border: none;
+  border-radius: var(--border-radius);
+  cursor: pointer;
+  font-weight: bold;
+}
