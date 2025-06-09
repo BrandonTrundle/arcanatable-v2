@@ -1,11 +1,13 @@
-import React from "react";
+import { useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "../Components/General/Navbar";
 import UserInfoPanel from "../Components/General/UserInfoPanel";
 import styles from "../styles/Pages/Dashboard.module.css";
+import { AuthContext } from "../context/AuthContext";
 
 const Dashboard = () => {
   const navigate = useNavigate();
+  const { user } = useContext(AuthContext);
 
   return (
     <>
@@ -13,7 +15,9 @@ const Dashboard = () => {
       <UserInfoPanel />
       <div className={styles.dashboard}>
         <div className={styles.welcomeCard}>
-          <h1 className={styles.title}>Welcome back, Adventurer!</h1>
+          <h1 className={styles.title}>
+            Welcome back, {user?.username || "Adventurer"}!
+          </h1>
           <p className={styles.subtitle}>
             Your journey continues — choose your next destination.
           </p>

@@ -1,7 +1,11 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 import styles from "../styles/Pages/HomePage.module.css";
 import Navbar from "../Components/General/Navbar";
+
 const HomePage = () => {
+  const navigate = useNavigate();
+
   return (
     <>
       <Navbar />
@@ -9,7 +13,9 @@ const HomePage = () => {
         <h1>Welcome to ArcanaTable</h1>
         <p>Your tabletop adventures await. Discover, create, and play.</p>
         <div className={styles["button-center"]}>
-          <button>Create Free Account</button>
+          <button onClick={() => navigate("/sign-up")}>
+            Create Free Account
+          </button>
         </div>
 
         <section className={styles.section}>
@@ -53,7 +59,9 @@ const HomePage = () => {
           <h2>Ready to Get Started?</h2>
           <p>Join thousands of adventurers on ArcanaTable.</p>
           <div className={styles["button-center"]}>
-            <button>Sign up now for free</button>
+            <button onClick={() => navigate("/sign-up")}>
+              Sign up now for free
+            </button>
           </div>
         </section>
 
