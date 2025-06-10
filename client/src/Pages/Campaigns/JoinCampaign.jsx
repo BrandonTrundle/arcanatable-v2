@@ -1,15 +1,38 @@
 // JoinCampaign.jsx
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import styles from "../../styles/Campaign/JoinCampaign.module.css";
 import Navbar from "../../Components/General/Navbar";
+import { AuthContext } from "../../context/AuthContext";
+import { useNavigate } from "react-router-dom";
 
 const JoinCampaign = () => {
   const [code, setCode] = useState("");
+  const { user } = useContext(AuthContext);
+  const navigate = useNavigate();
 
-  const handleJoin = (e) => {
+  const handleJoin = async (e) => {
     e.preventDefault();
-    //  console.log("Joining campaign with code:", code);
-    // Placeholder for API integration
+
+    try {
+      const res = await fetch("http://localhost:4000/api/campaigns/join", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${user.token}`, // 👈 Ensure AuthContext is available
+        },
+        body: JSON.stringify({ inviteCode: code }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) throw new Error(data.message || "Failed to join campaign");
+
+      alert("Successfully joined campaign!");
+      navigate("/campaign-dashboard");
+    } catch (err) {
+      console.error("Join failed:", err);
+      alert(`Join failed: ${err.message}`);
+    }
   };
 
   return (

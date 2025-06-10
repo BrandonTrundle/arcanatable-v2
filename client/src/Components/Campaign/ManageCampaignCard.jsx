@@ -14,7 +14,17 @@ export default function ManageCampaignCard({ campaign, onEdit }) {
           <strong>Invite Code:</strong> {campaign.inviteCode}
         </p>
         <p>
-          <strong>Next Session:</strong> {campaign.nextSession}
+          <strong>Next Session:</strong>{" "}
+          {campaign.nextSession
+            ? new Date(campaign.nextSession).toLocaleString(undefined, {
+                weekday: "long",
+                year: "numeric",
+                month: "long",
+                day: "numeric",
+                hour: "numeric",
+                minute: "2-digit",
+              })
+            : "Not scheduled"}
         </p>
       </div>
 
@@ -31,7 +41,6 @@ export default function ManageCampaignCard({ campaign, onEdit }) {
         <button className={styles.editButton} onClick={() => onEdit(campaign)}>
           Edit
         </button>
-        <button className={styles.editButton}>Leave</button>
       </div>
     </li>
   );

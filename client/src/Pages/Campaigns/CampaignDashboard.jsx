@@ -1,5 +1,6 @@
-import React, { useState } from "react";
+import React, { useState, useContext, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { AuthContext } from "../../context/AuthContext";
 import styles from "../../styles/Campaign/CampaignDashboard.module.css";
 import Navbar from "../../Components/General/Navbar";
 import CampaignCard from "../../Components/Campaign/CampaignCard";
@@ -7,53 +8,33 @@ import RuleCard from "../../Components/DMToolkit/Rules/RuleCard";
 import placeholderImg from "../../assets/FantasyMapBackground.png";
 import defaultAvatar from "../../assets/defaultav.png";
 
-// Simulated rules data (as if loaded from backend)
-const mockRules = [
-  {
-    _id: "rule-001",
-    title: "Lingering Injuries",
-    description:
-      "Whenever a creature drops to 0 hit points but isn’t killed outright, they must roll on the Lingering Injuries table.",
-    tags: ["combat", "injury", "optional"],
-    image: "/images/rules/lingering.png",
-    campaigns: ["Campaign 1", "Campaign 3"],
-  },
-  {
-    _id: "rule-002",
-    title: "Critical Fumbles",
-    description: "Rolling a natural 1 causes a fumble effect.",
-    tags: ["combat", "fumble"],
-    image: "/images/rules/critfail.png",
-    campaigns: ["Campaign 1"],
-  },
-];
-
-const MOCK_CAMPAIGNS = Array.from({ length: 8 }, (_, i) => ({
-  _id: `mock-${i}`,
-  name: `Campaign ${i + 1}`,
-  gameSystem: "D&D 5e",
-  inviteCode: `ABC123${i}`,
-  imageUrl: "",
-  creator: `user-0`,
-  players: [
-    { _id: `user-0`, username: "DungeonMaster", avatarUrl: "" },
-    { _id: `user-1`, username: "RogueOne", avatarUrl: "" },
-    { _id: `user-2`, username: "WizardGuy", avatarUrl: "" },
-  ],
-}));
-
 const CampaignDashboard = () => {
   const navigate = useNavigate();
   const [selectedCampaign, setSelectedCampaign] = useState(null);
-  const [selectedRuleId, setSelectedRuleId] = useState(null);
+  const [campaigns, setCampaigns] = useState([]);
+  const { user } = useContext(AuthContext);
+  const handleDeleteCampaign = (deletedId) => {
+    setCampaigns((prev) => prev.filter((c) => c._id !== deletedId));
+  };
 
-  const campaignRules =
-    selectedCampaign &&
-    mockRules.filter((rule) => rule.campaigns.includes(selectedCampaign.name));
+  useEffect(() => {
+    const fetchCampaigns = async () => {
+      try {
+        const res = await fetch("http://localhost:4000/api/campaigns", {
+          headers: {
+            Authorization: `Bearer ${user.token}`,
+          },
+        });
+        const data = await res.json();
+        setCampaigns(data.campaigns);
+        console.log("Fetched campaigns:", data.campaigns);
+      } catch (err) {
+        console.error("Failed to load campaigns:", err);
+      }
+    };
 
-  const selectedRule =
-    selectedRuleId &&
-    campaignRules?.find((rule) => rule._id === selectedRuleId);
+    if (user?.token) fetchCampaigns();
+  }, [user]);
 
   return (
     <>
@@ -83,11 +64,12 @@ const CampaignDashboard = () => {
         </div>
 
         <ul className={styles.campaignList}>
-          {MOCK_CAMPAIGNS.map((campaign) => (
+          {campaigns.map((campaign) => (
             <CampaignCard
               key={campaign._id}
               campaign={campaign}
               onInfoClick={setSelectedCampaign}
+              onDelete={handleDeleteCampaign}
             />
           ))}
         </ul>
@@ -97,7 +79,6 @@ const CampaignDashboard = () => {
             className={styles.overlay}
             onClick={() => {
               setSelectedCampaign(null);
-              setSelectedRuleId(null);
             }}
           >
             <div
@@ -121,33 +102,6 @@ const CampaignDashboard = () => {
                 <strong>House Rules:</strong>
               </p>
 
-              {campaignRules?.length ? (
-                <>
-                  <select
-                    className={styles.dropdown}
-                    value={selectedRuleId || ""}
-                    onChange={(e) => setSelectedRuleId(e.target.value)}
-                  >
-                    <option value="">Select a rule...</option>
-                    {campaignRules.map((r) => (
-                      <option key={r._id} value={r._id}>
-                        {r.title}
-                      </option>
-                    ))}
-                  </select>
-                  {selectedRule && (
-                    <div className={styles.ruleCard}>
-                      <div className={styles.ruleDetails}>
-                        <h3>{selectedRule.title}</h3>
-                        <p>{selectedRule.description}</p>
-                      </div>
-                    </div>
-                  )}
-                </>
-              ) : (
-                <p>None assigned yet.</p>
-              )}
-
               <p>
                 <strong>Next Session:</strong> July 15th, 7PM EST
               </p>
@@ -155,7 +109,6 @@ const CampaignDashboard = () => {
               <button
                 onClick={() => {
                   setSelectedCampaign(null);
-                  setSelectedRuleId(null);
                 }}
                 className={styles.closeBtn}
               >

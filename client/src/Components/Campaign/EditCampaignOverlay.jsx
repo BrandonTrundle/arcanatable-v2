@@ -10,6 +10,7 @@ export default function EditCampaignOverlay({
   availableRules = [],
   onAddRule,
   onRemoveRule,
+  onSave,
 }) {
   if (!formData) return null;
 
@@ -34,35 +35,61 @@ export default function EditCampaignOverlay({
           <input
             type="text"
             name="gameSystem"
-            value={formData.gameSystem}
+            value={formData.gameSystem ?? ""}
             onChange={onChange}
           />
         </label>
 
         <label>
-          Next Session:
+          Next Session Date:
           <input
-            type="text"
-            name="nextSession"
-            value={formData.nextSession}
-            onChange={onChange}
+            type="date"
+            name="nextSessionDate"
+            value={formData.nextSessionDate ?? ""}
+            onChange={(e) =>
+              onChange({
+                target: {
+                  name: "nextSessionDate",
+                  value: e.target.value,
+                },
+              })
+            }
+          />
+        </label>
+
+        <label>
+          Time:
+          <input
+            type="time"
+            name="nextSessionTime"
+            value={formData.nextSessionTime ?? ""}
+            onChange={(e) =>
+              onChange({
+                target: {
+                  name: "nextSessionTime",
+                  value: e.target.value,
+                },
+              })
+            }
           />
         </label>
 
         <div className={styles.players}>
           <strong>Players:</strong>
           <ul>
-            {formData.players.map((p) => (
-              <li key={p._id}>
-                {p.username}
-                <button
-                  className={styles.removeBtn}
-                  onClick={() => onRemovePlayer(p._id)}
-                >
-                  Remove
-                </button>
-              </li>
-            ))}
+            {formData.players
+              .filter((p) => p._id !== formData.creatorId)
+              .map((p) => (
+                <li key={p._id}>
+                  {p.username}
+                  <button
+                    className={styles.removeBtn}
+                    onClick={() => onRemovePlayer(p._id)}
+                  >
+                    Remove
+                  </button>
+                </li>
+              ))}
           </ul>
         </div>
 
@@ -110,6 +137,15 @@ export default function EditCampaignOverlay({
         <button className={styles.inviteBtn}>Send Invite (Placeholder)</button>
         <button className={styles.closeBtn} onClick={onClose}>
           Close
+        </button>
+        <button
+          className={styles.saveBtn}
+          onClick={(e) => {
+            e.stopPropagation();
+            onSave?.();
+          }}
+        >
+          Save Changes
         </button>
       </div>
     </div>

@@ -9,6 +9,7 @@ const PORT = process.env.PORT || 4000;
 // App Routes
 const authRoutes = require("./routes/authRoutes");
 const userRoutes = require("./routes/userRoutes");
+const campaignRoutes = require("./routes/campaignRoutes");
 
 //Connect to MongoDB
 connectDB();
@@ -18,6 +19,7 @@ app.use(cors());
 app.use(express.json());
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
+app.use("/api/campaigns", campaignRoutes);
 
 app.get("/", (req, res) => {
   res.send("ArcanaTable API is running.");

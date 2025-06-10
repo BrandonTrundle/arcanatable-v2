@@ -1,7 +1,9 @@
-import React, { useState } from "react";
+import React, { useState, useContext, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import styles from "../../styles/Campaign/CreateCampaign.module.css";
 import Navbar from "../../Components/General/Navbar";
 import placeholderImg from "../../assets/FantasyMapBackground.png";
+import { AuthContext } from "../../context/AuthContext";
 
 // Simulated available rules (replace with backend/API later)
 const MOCK_RULES = [
@@ -16,6 +18,10 @@ const MOCK_RULES = [
 ];
 
 const CreateCampaign = () => {
+  const navigate = useNavigate();
+  const { user } = useContext(AuthContext);
+  const fileInputRef = useRef(null);
+  const [imageFile, setImageFile] = useState(null);
   const [form, setForm] = useState({
     name: "",
     gameSystem: "",
@@ -26,6 +32,15 @@ const CreateCampaign = () => {
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
+  };
+
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setImageFile(file);
+      const previewUrl = URL.createObjectURL(file);
+      setForm((prev) => ({ ...prev, imageUrl: previewUrl }));
+    }
   };
 
   const handleAddRule = (ruleId) => {
@@ -44,10 +59,66 @@ const CreateCampaign = () => {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Submit logic goes here (send form to API/backend)
-    console.log("Campaign created:", form);
+
+    try {
+      let imageUrl = "";
+
+      // Upload image first if one is selected
+      if (imageFile) {
+        const formData = new FormData();
+        formData.append("image", imageFile);
+
+        const uploadRes = await fetch(
+          "http://localhost:4000/api/campaigns/upload",
+          {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${user.token}`,
+            },
+            body: formData,
+          }
+        );
+
+        const uploadData = await uploadRes.json();
+
+        if (!uploadRes.ok) {
+          throw new Error(uploadData.message || "Image upload failed");
+        }
+
+        imageUrl = uploadData.imageUrl;
+      }
+
+      // Proceed with campaign creation
+      const response = await fetch("http://localhost:4000/api/campaigns", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${user.token}`,
+        },
+        body: JSON.stringify({ ...form, imageUrl }),
+      });
+
+      const text = await response.text();
+      let data;
+
+      try {
+        data = JSON.parse(text);
+      } catch {
+        throw new Error("Server returned unexpected response");
+      }
+
+      if (!response.ok) {
+        throw new Error(data.message || "Failed to create campaign");
+      }
+
+      console.log("Campaign created:", data.campaign);
+      navigate("/campaign-dashboard");
+    } catch (err) {
+      console.error("Error creating campaign:", err);
+      alert(`Campaign creation failed: ${err.message}`);
+    }
   };
 
   const assignedRules = MOCK_RULES.filter((r) => form.rules.includes(r._id));
@@ -96,14 +167,29 @@ const CreateCampaign = () => {
             <div className={styles.field}>
               <label>Campaign Image</label>
               <div className={styles.imagePicker}>
-                <img
-                  src={form.imageUrl || placeholderImg}
-                  alt="Preview"
-                  className={styles.preview}
-                />
-                <button type="button" className={styles.uploadBtn}>
-                  Choose Image (Placeholder)
-                </button>
+                <div className={styles.imagePicker}>
+                  <img
+                    src={form.imageUrl || placeholderImg}
+                    alt="Preview"
+                    className={styles.preview}
+                    onClick={() => fileInputRef.current?.click()}
+                    style={{ cursor: "pointer" }}
+                  />
+                  <input
+                    type="file"
+                    accept="image/*"
+                    ref={fileInputRef}
+                    style={{ display: "none" }}
+                    onChange={handleImageChange}
+                  />
+                  <button
+                    type="button"
+                    className={styles.uploadBtn}
+                    onClick={() => fileInputRef.current?.click()}
+                  >
+                    Choose Image
+                  </button>
+                </div>
               </div>
             </div>
 
