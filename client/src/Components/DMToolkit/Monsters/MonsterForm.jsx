@@ -1,10 +1,8 @@
 import React, { useState, useContext } from "react";
 import styles from "../../../styles/DMToolkit/MonsterForm.module.css";
 import { AuthContext } from "../../../context/AuthContext";
-import { createClient } from "@supabase/supabase-js";
 
 export default function MonsterForm({
-  currentCampaign,
   onSubmit,
   onClose,
   campaignList,
@@ -15,10 +13,7 @@ export default function MonsterForm({
   const [imageFile, setImageFile] = useState(null);
   const [previewUrl, setPreviewUrl] = useState(null);
   const { user } = useContext(AuthContext);
-  const supabase = createClient(
-    import.meta.env.VITE_SUPABASE_URL,
-    import.meta.env.VITE_SUPABASE_ANON_KEY
-  );
+
   const [formData, setFormData] = useState(() => {
     const hasDefaultCampaigns =
       defaultValues.campaigns && defaultValues.campaigns.length > 0;

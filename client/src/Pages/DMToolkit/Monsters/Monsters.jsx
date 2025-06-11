@@ -5,6 +5,7 @@ import styles from "../../../styles/DMToolkit/Monsters.module.css";
 import MonsterForm from "../../../Components/DMToolkit/Monsters/MonsterForm";
 import MonsterCard from "../../../Components/DMToolkit/Monsters/MonsterCard";
 import MonsterDetail from "../../../Components/DMToolkit/Monsters/MonsterDetail";
+import { fetchCampaigns } from "../../../hooks/dmtoolkit/fetchCampaigns";
 
 export default function Monsters() {
   const [campaignList, setCampaignList] = useState([]);
@@ -82,28 +83,16 @@ export default function Monsters() {
   }, [currentCampaign, user]);
 
   useEffect(() => {
-    const fetchCampaigns = async () => {
+    const loadCampaigns = async () => {
       try {
-        const res = await fetch(
-          `${import.meta.env.VITE_API_BASE_URL}/api/campaigns`,
-          {
-            headers: {
-              Authorization: `Bearer ${user.token}`,
-            },
-          }
-        );
-
-        if (!res.ok) throw new Error("Failed to fetch campaigns");
-
-        const data = await res.json();
-        console.log("Fetched campaigns:", data);
-        setCampaignList(Array.isArray(data.campaigns) ? data.campaigns : []);
+        const campaigns = await fetchCampaigns(user);
+        setCampaignList(campaigns);
       } catch (err) {
-        console.error("Error fetching campaigns:", err);
+        // Error already logged inside fetchCampaigns
       }
     };
 
-    if (user) fetchCampaigns();
+    if (user) loadCampaigns();
   }, [user]);
 
   return (
