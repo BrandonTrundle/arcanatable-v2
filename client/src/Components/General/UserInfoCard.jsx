@@ -31,7 +31,7 @@ const UserInfoCard = () => {
 
     try {
       const response = await fetch(
-        `http://localhost:4000/api/users/${user.id}/avatar`,
+        `${import.meta.env.VITE_API_BASE_URL}/api/users/${user.id}/avatar`,
         {
           method: "PUT",
           headers: {
@@ -65,7 +65,7 @@ const UserInfoCard = () => {
     }
   };
 
-  console.log("User object from context:", user);
+  //  console.log("User object from context:", user);
 
   return (
     <div className={styles.card}>

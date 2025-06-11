@@ -1,25 +1,41 @@
 import React from "react";
 import styles from "../../../styles/DMToolkit/MonsterCard.module.css";
 
-export default function MonsterCard({ monster, onClick }) {
+export default function MonsterCard({ monster, onClick, onEdit, onDelete }) {
+  const data = monster.content || {};
+
   return (
     <div className={styles.card} onClick={onClick}>
-      <img src={monster.image} alt={monster.name} className={styles.image} />
-      <h3 className={styles.name}>{monster.name}</h3>
+      <img src={data.image} alt={data.name} className={styles.image} />
+      <h3 className={styles.name}>{data.name}</h3>
       <p className={styles.info}>
-        <strong>Type:</strong> {monster.size} {monster.type},{" "}
-        {monster.alignment}
+        <strong>Type:</strong> {data.size} {data.type}, {data.alignment}
       </p>
       <p className={styles.info}>
-        <strong>HP:</strong> {monster.hitPoints} | <strong>AC:</strong>{" "}
-        {monster.armorClass}
+        <strong>HP:</strong> {data.hitPoints} | <strong>AC:</strong>{" "}
+        {data.armorClass}
       </p>
       <p className={styles.info}>
-        <strong>CR:</strong> {monster.challengeRating}
+        <strong>CR:</strong> {data.challengeRating}
       </p>
       <div className={styles.cardbuttons}>
-        <button class="btn-primary">Edit</button>
-        <button class="btn-danger">Delete</button>
+        <button onClick={onClick}>View</button>
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            onEdit(monster);
+          }}
+        >
+          Edit
+        </button>
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            onDelete(monster._id);
+          }}
+        >
+          Delete
+        </button>
       </div>
     </div>
   );

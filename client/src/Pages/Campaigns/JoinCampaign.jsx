@@ -14,15 +14,17 @@ const JoinCampaign = () => {
     e.preventDefault();
 
     try {
-      const res = await fetch("http://localhost:4000/api/campaigns/join", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${user.token}`, // 👈 Ensure AuthContext is available
-        },
-        body: JSON.stringify({ inviteCode: code }),
-      });
-
+      const res = await fetch(
+        `${import.meta.env.VITE_API_BASE_URL}/api/campaigns/join`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${user.token}`, // 👈 Ensure AuthContext is available
+          },
+          body: JSON.stringify({ inviteCode: code }),
+        }
+      );
       const data = await res.json();
 
       if (!res.ok) throw new Error(data.message || "Failed to join campaign");

@@ -50,7 +50,7 @@ function TrackedApp() {
 
       if (user?.id && sessionHours > 0.01) {
         navigator.sendBeacon(
-          `http://localhost:4000/api/users/${user.id}/hours`,
+          `${import.meta.env.VITE_API_BASE_URL}/api/users/${user.id}/hours`,
           JSON.stringify({ hours: sessionHours, token: user.token })
         );
       }

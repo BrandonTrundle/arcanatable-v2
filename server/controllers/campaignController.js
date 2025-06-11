@@ -79,13 +79,13 @@ const uploadCampaignImage = async (req, res) => {
 const getUserCampaigns = async (req, res) => {
   try {
     const userId = req.user.id;
-    console.log("req.user.id:", req.user.id);
-    console.log("typeof req.user.id:", typeof req.user.id);
+    //   console.log("req.user.id:", req.user.id);
+    //   console.log("typeof req.user.id:", typeof req.user.id);
     const campaigns = await Campaign.find({
       $or: [{ creatorId: userId }, { players: userId }],
     }).populate("players", "username avatar");
 
-    console.log("Raw populated campaigns:", JSON.stringify(campaigns, null, 2));
+    // console.log("Raw populated campaigns:", JSON.stringify(campaigns, null, 2));
 
     const updatedCampaigns = campaigns.map((c) => {
       const players = c.players.map((p) => ({
@@ -93,18 +93,18 @@ const getUserCampaigns = async (req, res) => {
         username: p.username,
         avatarUrl: p.avatar, // mapping explicitly
       }));
-      console.log("Mapped players with avatar URLs:", players);
+      //  console.log("Mapped players with avatar URLs:", players);
 
       const obj = {
         ...c.toObject(),
         players,
       };
 
-      console.log("Transformed campaign:", JSON.stringify(obj, null, 2));
+      //  console.log("Transformed campaign:", JSON.stringify(obj, null, 2));
       return obj;
     });
 
-    console.log("Sending campaigns to frontend:", updatedCampaigns);
+    // console.log("Sending campaigns to frontend:", updatedCampaigns);
     res.json({ campaigns: updatedCampaigns });
   } catch (err) {
     console.error("Error fetching campaigns:", err);

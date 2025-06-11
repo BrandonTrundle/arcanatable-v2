@@ -9,6 +9,7 @@
   flex-direction: column;
   align-items: center;
   transition: transform 0.2s ease;
+  width: 300px;
 }
 
 .card:hover {
@@ -16,8 +17,10 @@
   cursor: pointer;
 }
 
-.cardbuttons button {
-  margin-right: 1rem;
+.cardbuttons {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.25rem; /* Optional, to control actual spacing between buttons */
 }
 
 .image {

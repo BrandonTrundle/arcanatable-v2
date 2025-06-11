@@ -20,11 +20,15 @@ const CampaignDashboard = () => {
   useEffect(() => {
     const fetchCampaigns = async () => {
       try {
-        const res = await fetch("http://localhost:4000/api/campaigns", {
-          headers: {
-            Authorization: `Bearer ${user.token}`,
-          },
-        });
+        const res = await fetch(
+          `${import.meta.env.VITE_API_BASE_URL}/api/campaigns`,
+          {
+            headers: {
+              Authorization: `Bearer ${user.token}`,
+            },
+          }
+        );
+
         const data = await res.json();
         setCampaigns(data.campaigns);
         console.log("Fetched campaigns:", data.campaigns);

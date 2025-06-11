@@ -14,7 +14,7 @@ export default function CampaignCard({ campaign, onInfoClick, onDelete }) {
 
     try {
       const res = await fetch(
-        `http://localhost:4000/api/campaigns/${campaign._id}`,
+        `${import.meta.env.VITE_API_BASE_URL}/api/campaigns/${campaign._id}`,
         {
           method: "DELETE",
           headers: {

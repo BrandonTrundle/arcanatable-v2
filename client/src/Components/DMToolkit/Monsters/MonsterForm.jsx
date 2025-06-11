@@ -1,68 +1,82 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import styles from "../../../styles/DMToolkit/MonsterForm.module.css";
+import { AuthContext } from "../../../context/AuthContext";
+import { createClient } from "@supabase/supabase-js";
 
 export default function MonsterForm({
-  onSubmit,
   currentCampaign,
+  onSubmit,
+  onClose,
+  campaignList,
   defaultValues = {},
+  mode = "create",
+  monsterId = null,
 }) {
-  const [formData, setFormData] = useState({
-    title: "",
-    name: "",
-    size: "",
-    type: "",
-    alignment: "",
-    initiative: "",
-    armorClass: "",
-    hitPoints: "",
-    hitDice: "",
-    image: "",
-    description: "",
-    speed: {
-      walk: "",
-      fly: "",
-      swim: "",
-      climb: "",
-      burrow: "",
-    },
-    abilityScores: {
-      str: "",
-      dex: "",
-      con: "",
-      int: "",
-      wis: "",
-      cha: "",
-    },
-    savingThrows: {
-      CON: "",
-    },
-    skills: {
-      Stealth: "",
-    },
-    senses: {
-      darkvision: "",
-      blindsight: "",
-      tremorsense: "",
-      truesight: "",
-      passivePerception: "",
-    },
-    languages: "",
-    challengeRating: "",
-    proficiencyBonus: "",
-    damageVulnerabilities: [],
-    damageResistances: [],
-    damageImmunities: [],
-    conditionImmunities: [],
-    traits: [],
-    actions: [],
-    reactions: [],
-    legendaryResistances: [],
-    legendaryActions: [],
-    lairActions: [],
-    regionalEffects: [],
-    extraSections: [],
-    campaigns: [currentCampaign],
-    ...defaultValues,
+  const [imageFile, setImageFile] = useState(null);
+  const [previewUrl, setPreviewUrl] = useState(null);
+  const { user } = useContext(AuthContext);
+  const supabase = createClient(
+    import.meta.env.VITE_SUPABASE_URL,
+    import.meta.env.VITE_SUPABASE_ANON_KEY
+  );
+  const [formData, setFormData] = useState(() => {
+    const hasDefaultCampaigns =
+      defaultValues.campaigns && defaultValues.campaigns.length > 0;
+
+    return {
+      title: "",
+      name: "",
+      size: "",
+      type: "",
+      alignment: "",
+      initiative: "",
+      armorClass: "",
+      hitPoints: "",
+      hitDice: "",
+      image: "",
+      description: "",
+      speed: {
+        walk: "",
+        fly: "",
+        swim: "",
+        climb: "",
+        burrow: "",
+      },
+      abilityScores: {
+        str: "",
+        dex: "",
+        con: "",
+        int: "",
+        wis: "",
+        cha: "",
+      },
+      savingThrows: defaultValues.savingThrows || [],
+      skills: defaultValues.skills || [],
+      senses: {
+        darkvision: "",
+        blindsight: "",
+        tremorsense: "",
+        truesight: "",
+        passivePerception: "",
+      },
+      languages: "",
+      challengeRating: "",
+      proficiencyBonus: "",
+      damageVulnerabilities: [],
+      damageResistances: [],
+      damageImmunities: [],
+      conditionImmunities: [],
+      traits: [],
+      actions: [],
+      reactions: [],
+      legendaryResistances: [],
+      legendaryActions: [],
+      lairActions: [],
+      regionalEffects: [],
+      extraSections: [],
+      campaigns: hasDefaultCampaigns ? defaultValues.campaigns : [],
+      ...defaultValues,
+    };
   });
 
   const handleChange = (e) => {
@@ -75,6 +89,13 @@ export default function MonsterForm({
         updated[keys[0]] = { ...updated[keys[0]], [keys[1]]: value };
       return updated;
     });
+  };
+
+  const handleCampaignChange = (e) => {
+    const selected = Array.from(e.target.selectedOptions).map(
+      (opt) => opt.value
+    );
+    setFormData((prev) => ({ ...prev, campaigns: selected }));
   };
 
   const handleListChange = (key, index, field, value) => {
@@ -93,9 +114,63 @@ export default function MonsterForm({
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    onSubmit(formData, currentCampaign);
+    console.log("🚩 In handleSubmit - formData:", formData);
+
+    if (!formData.name.trim() || !formData.hitPoints.trim()) {
+      alert("Please enter a Name and Hit Points before submitting.");
+      return;
+    }
+
+    // Ensure campaigns are handled
+    if ((formData.campaigns || []).includes("none")) {
+      formData.campaigns = [];
+    }
+
+    // Use FormData to send data + image
+    const payload = new FormData();
+    payload.append("data", JSON.stringify({ content: { ...formData } }));
+    if (imageFile) {
+      payload.append("image", imageFile);
+    }
+
+    const endpoint =
+      mode === "edit"
+        ? `${import.meta.env.VITE_API_BASE_URL}/api/monsters/${monsterId}`
+        : `${import.meta.env.VITE_API_BASE_URL}/api/monsters`;
+
+    const method = mode === "edit" ? "PUT" : "POST";
+
+    try {
+      const res = await fetch(endpoint, {
+        method,
+        headers: {
+          Authorization: `Bearer ${user.token}`,
+        },
+        body: payload,
+      });
+
+      if (!res.ok) {
+        const errMsg = await res.text();
+        console.error("❌ Backend responded with error:", errMsg);
+        alert("Failed to save monster.");
+        return;
+      }
+
+      const savedMonster = await res.json();
+
+      if (mode === "edit") {
+        onSubmit(savedMonster);
+      } else {
+        // ✅ Trigger a full refresh via parent
+        onSubmit(); // tell parent something was created
+        onClose(); // close the form
+      }
+    } catch (error) {
+      console.error("❌ Error during monster save:", error);
+      alert("An unexpected error occurred.");
+    }
   };
 
   return (
@@ -138,11 +213,31 @@ export default function MonsterForm({
       />
       <h3 className="entryname">Image</h3>
       <input
-        name="image"
-        placeholder="Image URL"
-        onChange={handleChange}
-        value={formData.image}
+        type="file"
+        accept="image/*"
+        onChange={(e) => {
+          const file = e.target.files[0];
+          setImageFile(file); // Store for upload on submit
+
+          if (file) {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+              setPreviewUrl(reader.result); // local preview
+            };
+            reader.readAsDataURL(file);
+          } else {
+            setPreviewUrl(null);
+          }
+        }}
       />
+
+      {previewUrl && (
+        <img
+          src={previewUrl}
+          alt="Preview"
+          style={{ maxWidth: "150px", marginTop: "10px" }}
+        />
+      )}
       <h3 className="entryname">Description</h3>
       <textarea
         name="description"
@@ -203,22 +298,94 @@ export default function MonsterForm({
       ))}
 
       <h2>Saving Throws</h2>
-      <h3 className="entryname">CON</h3>
-      <input
-        name="savingThrows.CON"
-        placeholder="CON"
-        onChange={handleChange}
-        value={formData.savingThrows.CON}
-      />
+      {formData.savingThrows.map((entry, index) => (
+        <div key={index}>
+          <input
+            placeholder="Stat (e.g., DEX)"
+            value={entry.stat}
+            onChange={(e) => {
+              const updated = [...formData.savingThrows];
+              updated[index].stat = e.target.value.toUpperCase();
+              setFormData({ ...formData, savingThrows: updated });
+            }}
+          />
+          <input
+            placeholder="Value (e.g., +4)"
+            value={entry.value}
+            onChange={(e) => {
+              const updated = [...formData.savingThrows];
+              updated[index].value = e.target.value;
+              setFormData({ ...formData, savingThrows: updated });
+            }}
+          />
+          <button
+            type="button"
+            onClick={() => {
+              const updated = [...formData.savingThrows];
+              updated.splice(index, 1);
+              setFormData({ ...formData, savingThrows: updated });
+            }}
+          >
+            Remove
+          </button>
+        </div>
+      ))}
+      <button
+        type="button"
+        onClick={() =>
+          setFormData({
+            ...formData,
+            savingThrows: [...formData.savingThrows, { stat: "", value: "" }],
+          })
+        }
+      >
+        + Add Saving Throw
+      </button>
 
       <h2>Skills</h2>
-      <h3 className="entryname">Stealth</h3>
-      <input
-        name="skills.Stealth"
-        placeholder="Stealth"
-        onChange={handleChange}
-        value={formData.skills.Stealth}
-      />
+      {formData.skills.map((entry, index) => (
+        <div key={index}>
+          <input
+            placeholder="Skill (e.g., Perception)"
+            value={entry.skill}
+            onChange={(e) => {
+              const updated = [...formData.skills];
+              updated[index].skill = e.target.value;
+              setFormData({ ...formData, skills: updated });
+            }}
+          />
+          <input
+            placeholder="Value (e.g., +3)"
+            value={entry.value}
+            onChange={(e) => {
+              const updated = [...formData.skills];
+              updated[index].value = e.target.value;
+              setFormData({ ...formData, skills: updated });
+            }}
+          />
+          <button
+            type="button"
+            onClick={() => {
+              const updated = [...formData.skills];
+              updated.splice(index, 1);
+              setFormData({ ...formData, skills: updated });
+            }}
+          >
+            Remove
+          </button>
+        </div>
+      ))}
+      <button
+        type="button"
+        onClick={() =>
+          setFormData({
+            ...formData,
+            skills: [...formData.skills, { skill: "", value: "" }],
+          })
+        }
+      >
+        + Add Skill
+      </button>
 
       <h2>Senses & Challenge Rating</h2>
       {[
@@ -289,14 +456,29 @@ export default function MonsterForm({
               />
             </div>
           ))}
+          <h2>Assign to Campaign</h2>
+
           <button type="button" onClick={() => addListItem(section)}>
             + Add {section.slice(0, -1)}
           </button>
         </div>
       ))}
+      <select
+        multiple
+        value={formData.campaigns}
+        onChange={handleCampaignChange}
+        className={styles.select}
+      >
+        <option value="">None</option>
+        {campaignList?.map?.((campaign) => (
+          <option key={campaign._id} value={campaign._id}>
+            {campaign.name}
+          </option>
+        ))}
+      </select>
 
-      <button type="submit" className={styles.submitBtn}>
-        Create Monster
+      <button type="submit">
+        {mode === "edit" ? "Update Monster" : "Create Monster"}
       </button>
     </form>
   );

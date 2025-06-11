@@ -27,14 +27,17 @@ const UserOnboarding = () => {
     }
 
     try {
-      const res = await fetch("http://localhost:4000/api/users/onboarding", {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ ...formData, onboarded: true }),
-      });
+      const res = await fetch(
+        `${import.meta.env.VITE_API_BASE_URL}/api/users/onboarding`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ ...formData, onboarded: true }),
+        }
+      );
 
       if (!res.ok) {
         const data = await res.json();

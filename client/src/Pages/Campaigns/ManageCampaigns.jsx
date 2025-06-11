@@ -45,11 +45,14 @@ const ManageCampaigns = () => {
   useEffect(() => {
     const fetchDMCampaigns = async () => {
       try {
-        const res = await fetch("http://localhost:4000/api/campaigns/dm", {
-          headers: {
-            Authorization: `Bearer ${user.token}`,
-          },
-        });
+        const res = await fetch(
+          `${import.meta.env.VITE_API_BASE_URL}/api/campaigns/dm`,
+          {
+            headers: {
+              Authorization: `Bearer ${user.token}`,
+            },
+          }
+        );
 
         const data = await res.json();
         setCampaigns(data.campaigns);
@@ -115,7 +118,7 @@ const ManageCampaigns = () => {
       };
 
       const res = await fetch(
-        `http://localhost:4000/api/campaigns/${formData._id}`,
+        `${import.meta.env.VITE_API_BASE_URL}/api/campaigns/${formData._id}`,
         {
           method: "PATCH",
           headers: {

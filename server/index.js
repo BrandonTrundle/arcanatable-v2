@@ -1,7 +1,7 @@
 const express = require("express");
 const cors = require("cors");
 require("dotenv").config();
-const connectDB = require("./utils/connectDB"); // ✅ Add this line
+const connectDB = require("./utils/connectDB");
 
 const app = express();
 const PORT = process.env.PORT || 4000;
@@ -10,6 +10,7 @@ const PORT = process.env.PORT || 4000;
 const authRoutes = require("./routes/authRoutes");
 const userRoutes = require("./routes/userRoutes");
 const campaignRoutes = require("./routes/campaignRoutes");
+const monsterRoutes = require("./routes/monsterRoutes");
 
 //Connect to MongoDB
 connectDB();
@@ -20,6 +21,7 @@ app.use(express.json());
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/campaigns", campaignRoutes);
+app.use("/api/monsters", monsterRoutes);
 
 app.get("/", (req, res) => {
   res.send("ArcanaTable API is running.");

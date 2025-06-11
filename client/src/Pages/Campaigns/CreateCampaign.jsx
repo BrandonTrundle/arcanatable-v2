@@ -71,7 +71,7 @@ const CreateCampaign = () => {
         formData.append("image", imageFile);
 
         const uploadRes = await fetch(
-          "http://localhost:4000/api/campaigns/upload",
+          `${import.meta.env.VITE_API_BASE_URL}/api/campaigns/upload`,
           {
             method: "POST",
             headers: {
@@ -91,14 +91,17 @@ const CreateCampaign = () => {
       }
 
       // Proceed with campaign creation
-      const response = await fetch("http://localhost:4000/api/campaigns", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${user.token}`,
-        },
-        body: JSON.stringify({ ...form, imageUrl }),
-      });
+      const response = await fetch(
+        `${import.meta.env.VITE_API_BASE_URL}/api/campaigns`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${user.token}`,
+          },
+          body: JSON.stringify({ ...form, imageUrl }),
+        }
+      );
 
       const text = await response.text();
       let data;

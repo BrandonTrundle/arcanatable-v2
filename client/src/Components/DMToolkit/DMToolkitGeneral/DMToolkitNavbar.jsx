@@ -18,7 +18,11 @@ const SECTIONS = [
   "CheatSheet",
 ];
 
-export default function DMToolkitNavbar({ currentCampaign, onCampaignChange }) {
+export default function DMToolkitNavbar({
+  currentCampaign,
+  onCampaignChange,
+  campaignList = [],
+}) {
   const navigate = useNavigate();
 
   return (
@@ -32,9 +36,10 @@ export default function DMToolkitNavbar({ currentCampaign, onCampaignChange }) {
             value={currentCampaign}
             onChange={(e) => onCampaignChange(e.target.value)}
           >
-            {["Stormreach", "Elderglen", "Voidborn Saga"].map((campaign) => (
-              <option key={campaign} value={campaign}>
-                {campaign}
+            <option value="none">None</option>
+            {campaignList.map((campaign) => (
+              <option key={campaign._id} value={campaign._id}>
+                {campaign.name}
               </option>
             ))}
           </select>
