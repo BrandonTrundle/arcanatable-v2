@@ -2,7 +2,6 @@ import React, { useState, useEffect, useContext } from "react";
 import { useOutletContext } from "react-router-dom";
 import { AuthContext } from "../../../context/AuthContext";
 import styles from "../../../styles/DMToolkit/Monsters.module.css";
-import monsterTemplate from "../../../Mock/Monster.json";
 import MonsterForm from "../../../Components/DMToolkit/Monsters/MonsterForm";
 import MonsterCard from "../../../Components/DMToolkit/Monsters/MonsterCard";
 import MonsterDetail from "../../../Components/DMToolkit/Monsters/MonsterDetail";
@@ -16,62 +15,6 @@ export default function Monsters() {
   const [selectedMonster, setSelectedMonster] = useState(null);
   const { user } = useContext(AuthContext);
   const [editingMonster, setEditingMonster] = useState(null);
-  const dummyCampaigns = [
-    { _id: "68349aed1bdc5fec32846c73", name: "Darkness" },
-    { _id: "6830f434e70e351c09d65d68", name: "Light" },
-    { _id: "6830f4abc123456789abcd01", name: "Otherworld" },
-  ];
-
-  const handleMonsterSubmit = async (formData) => {
-    const campaignParam =
-      currentCampaign && currentCampaign !== "none"
-        ? `?campaignId=${currentCampaign}`
-        : "?unassigned=true";
-
-    // Clean up campaign IDs
-    const cleanedCampaigns = (formData.campaigns || []).filter(
-      (id) => typeof id === "string" && id.trim() !== ""
-    );
-    const cleanedFormData = {
-      ...formData,
-      campaigns: cleanedCampaigns.length > 0 ? cleanedCampaigns : [],
-    };
-
-    try {
-      console.log("🔍 Creating Monster");
-      console.log("Token used:", user?.token);
-      console.log("Cleaned Payload:", cleanedFormData);
-
-      // Construct FormData with data field
-      const payload = new FormData();
-      payload.append("data", JSON.stringify({ content: cleanedFormData }));
-
-      const res = await fetch(
-        `${import.meta.env.VITE_API_BASE_URL}/api/monsters${campaignParam}`,
-        {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${user.token}`,
-            // NOTE: Don't manually set Content-Type when using FormData
-          },
-          body: payload,
-        }
-      );
-
-      const newMonster = await res.json();
-      console.log("✅ Parsed monster from server:", newMonster);
-
-      if (!res.ok) {
-        console.error("Failed to create monster. Response:", newMonster);
-        throw new Error("Failed to create monster");
-      }
-
-      setMonsters((prev) => [...prev, newMonster]);
-      setShowForm(false);
-    } catch (err) {
-      console.error("❌ Error creating monster:", err);
-    }
-  };
 
   const handleMonsterUpdate = async (updatedMonster) => {
     setMonsters((prev) =>
@@ -202,6 +145,8 @@ export default function Monsters() {
             setShowForm(false);
             setEditingMonster(null);
           }}
+          mode={editingMonster ? "edit" : "create"}
+          monsterId={editingMonster?._id}
           defaultValues={editingMonster?.content}
         />
       )}

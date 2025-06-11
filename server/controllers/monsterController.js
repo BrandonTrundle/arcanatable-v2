@@ -156,6 +156,28 @@ exports.updateMonster = [
         : [];
 
       if (req.file) {
+        // 🗑️ Delete previous image if it exists
+        const existingMonster = await Monster.findById(id);
+        const oldImageUrl = existingMonster?.content?.image;
+        const publicPrefix = `${process.env.SUPABASE_URL}/storage/v1/object/public/monster-images/`;
+
+        if (oldImageUrl && oldImageUrl.startsWith(publicPrefix)) {
+          const oldFileName = oldImageUrl.slice(publicPrefix.length);
+          const { error: deleteError } = await supabase.storage
+            .from("monster-images")
+            .remove([oldFileName]);
+
+          if (deleteError) {
+            console.warn(
+              "⚠️ Failed to delete previous image:",
+              deleteError.message
+            );
+          } else {
+            console.log("🗑️ Previous image deleted:", oldFileName);
+          }
+        }
+
+        // 📥 Upload new image
         const ext = path.extname(req.file.originalname);
         const fileName = `monster_${userId}_${uuidv4()}${ext}`;
         const fileBuffer = fs.readFileSync(req.file.path);
