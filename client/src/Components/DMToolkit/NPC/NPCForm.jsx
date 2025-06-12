@@ -55,12 +55,14 @@ export default function NPCForm({
     senses: {
       passivePerception: "",
     },
-    campaigns: currentCampaign === "none" ? [] : [currentCampaign],
-    ...defaultValues,
+    campaigns:
+      defaultValues.campaigns ??
+      (currentCampaign === "none" ? [] : [currentCampaign]),
   });
   const { user } = useContext(AuthContext);
   const [availableCampaigns, setAvailableCampaigns] = useState([]);
 
+  //Load Campaigns
   useEffect(() => {
     const loadCampaigns = async () => {
       const token = localStorage.getItem("token");
@@ -108,37 +110,20 @@ export default function NPCForm({
     }));
   };
 
-  const handleSubmit = async (e) => {
+  useEffect(() => {
+    if (defaultValues && Object.keys(defaultValues).length > 0) {
+      console.log("📤 Applying defaultValues into formData:", defaultValues);
+      setFormData((prev) => ({
+        ...prev,
+        ...defaultValues,
+      }));
+    }
+  }, [defaultValues]);
+
+  const handleSubmit = (e) => {
     e.preventDefault();
-
-    const payload = new FormData();
-    payload.append("content", JSON.stringify(formData));
-    if (formData.image instanceof File) {
-      payload.append("image", formData.image);
-    }
-
-    try {
-      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/npcs`, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${user.token}`,
-        },
-        body: payload,
-      });
-
-      if (!res.ok) {
-        const error = await res.text();
-        console.error("❌ Backend error:", error);
-        alert("Failed to create NPC.");
-        return;
-      }
-
-      const savedNPC = await res.json();
-      onSubmit(savedNPC);
-    } catch (err) {
-      console.error("❌ Exception:", err);
-      alert("Unexpected error.");
-    }
+    console.log("🧪 Submitted campaigns:", formData.campaigns);
+    onSubmit(formData, currentCampaign);
   };
 
   return (
@@ -484,7 +469,9 @@ export default function NPCForm({
       </select>
 
       <button type="submit" className={styles.submitBtn}>
-        Create NPC
+        {defaultValues && Object.keys(defaultValues).length > 0
+          ? "Update NPC"
+          : "Create NPC"}
       </button>
     </form>
   );

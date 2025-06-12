@@ -4,16 +4,23 @@ import styles from "../../../styles/DMToolkit/NPCs.module.css";
 import NPCForm from "../../../Components/DMToolkit/NPC/NPCForm";
 import NPCCard from "../../../Components/DMToolkit/NPC/NPCCard";
 import NPCDetail from "../../../Components/DMToolkit/NPC/NPCDetail";
+import { fetchCampaigns } from "../../../hooks/dmtoolkit/fetchCampaigns";
+import { AuthContext } from "../../../context/AuthContext";
+import { useContext } from "react";
 
 export default function NPCs() {
   const { currentCampaign } = useOutletContext();
+  const { user } = useContext(AuthContext);
   const [showForm, setShowForm] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedNPC, setSelectedNPC] = useState(null);
   const [npcList, setNpcList] = useState([]);
   const [editingNPC, setEditingNPC] = useState(null);
+  const [campaignList, setCampaignList] = useState([]);
 
-  const handleNPCSubmit = async (formData, campaign) => {
+  // Submit NPC data to database
+  const handleNPCSubmit = async (formData) => {
+    console.log("🔁 Received campaigns from form:", formData.campaigns);
     const token = localStorage.getItem("token");
     const reshapeToArray = (obj) =>
       Object.entries(obj || {}).map(([name, value]) => ({ name, value }));
@@ -25,11 +32,17 @@ export default function NPCs() {
         payload.append("image", formData.image);
       }
 
+      // Log the campaignList currently loaded in state
+      console.log("📋 Available campaignList:", campaignList);
+
+      const cleanedCampaigns = formData.campaigns || [];
+      console.log("✅ Cleaned campaigns to send:", cleanedCampaigns);
+
       const contentToSend = {
         ...formData,
         savingThrows: reshapeToArray(formData.savingThrows),
         skills: reshapeToArray(formData.skills),
-        campaigns: campaign !== "none" ? [campaign] : [],
+        campaigns: cleanedCampaigns.length ? cleanedCampaigns : [],
       };
 
       payload.append("content", JSON.stringify(contentToSend));
@@ -51,6 +64,7 @@ export default function NPCs() {
       if (!res.ok) throw new Error("Failed to save NPC");
 
       const newNPC = await res.json();
+      console.log("📦 Saved NPC campaigns from server:", newNPC.campaigns);
 
       if (editingNPC) {
         setNpcList((prev) =>
@@ -63,10 +77,41 @@ export default function NPCs() {
       setEditingNPC(null);
       setShowForm(false);
     } catch (err) {
-      console.error("Error saving NPC:", err);
+      console.error("❌ Error saving NPC:", err);
     }
   };
 
+  //fetch campaigns
+  useEffect(() => {
+    const loadCampaigns = async () => {
+      try {
+        const campaigns = await fetchCampaigns(user);
+        setCampaignList(campaigns);
+      } catch (err) {
+        console.error("Could not load campaigns", err);
+      }
+    };
+
+    loadCampaigns();
+  }, [user]);
+
+  //load campaigns
+  useEffect(() => {
+    const loadCampaigns = async () => {
+      try {
+        const campaigns = await fetchCampaigns(user);
+        setCampaignList(campaigns);
+      } catch (err) {
+        console.error("Failed to load campaigns:", err);
+      }
+    };
+
+    if (user?.token) {
+      loadCampaigns();
+    }
+  }, [user]);
+
+  // fetch NPCs
   useEffect(() => {
     const fetchNPCs = async () => {
       try {
@@ -87,7 +132,20 @@ export default function NPCs() {
         );
 
         const data = await res.json();
-        setNpcList(data);
+        console.log("🧠 NPCs fetched for campaign", currentCampaign, data);
+
+        // Manual client-side filtering fallback
+        const filtered =
+          currentCampaign && currentCampaign !== "none"
+            ? data.filter(
+                (npc) =>
+                  (npc.campaigns || []).includes(currentCampaign) ||
+                  (npc.content?.campaigns || []).includes(currentCampaign)
+              )
+            : data;
+
+        console.log("🧪 Filtered NPCs:", filtered);
+        setNpcList(filtered);
       } catch (err) {
         console.error("Failed to fetch NPCs:", err);
       }
@@ -95,6 +153,28 @@ export default function NPCs() {
 
     fetchNPCs();
   }, [currentCampaign]);
+
+  // Log just before rendering
+  if (editingNPC) {
+    console.log("📥 Editing NPC passed to form:", editingNPC);
+    console.log("📦 Form defaultValues (raw):", editingNPC?.content);
+    console.log("🎯 Normalized defaultValues:", {
+      ...editingNPC?.content,
+      campaigns: editingNPC?.campaigns || [],
+      savingThrows: Object.fromEntries(
+        (editingNPC.content?.savingThrows || []).map((pair) => [
+          pair.name,
+          pair.value,
+        ])
+      ),
+      skills: Object.fromEntries(
+        (editingNPC.content?.skills || []).map((pair) => [
+          pair.name,
+          pair.value,
+        ])
+      ),
+    });
+  }
 
   return (
     <div className={styles.npcs}>
@@ -120,15 +200,34 @@ export default function NPCs() {
         <NPCForm
           currentCampaign={currentCampaign}
           onSubmit={handleNPCSubmit}
-          defaultValues={editingNPC?.content || {}}
+          defaultValues={
+            editingNPC
+              ? {
+                  ...editingNPC?.content,
+                  campaigns: editingNPC?.campaigns || [],
+                  savingThrows: Object.fromEntries(
+                    (editingNPC.content?.savingThrows || []).map((pair) => [
+                      pair.name,
+                      pair.value,
+                    ])
+                  ),
+                  skills: Object.fromEntries(
+                    (editingNPC.content?.skills || []).map((pair) => [
+                      pair.name,
+                      pair.value,
+                    ])
+                  ),
+                }
+              : undefined
+          }
         />
       )}
       <div className={styles.cardGrid}>
         {npcList
-          .filter(
-            (npc) =>
-              npc?.content?.name &&
-              npc.content.name.toLowerCase().includes(searchTerm.toLowerCase())
+          .filter((npc) =>
+            (npc?.content?.name ?? "")
+              .toLowerCase()
+              .includes(searchTerm.toLowerCase())
           )
           .map((npc) => (
             <NPCCard

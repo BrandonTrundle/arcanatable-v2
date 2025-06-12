@@ -5,6 +5,12 @@ const supabase = require("../utils/supabase");
 const mongoose = require("mongoose");
 const { Types } = mongoose;
 
+const NPC = require("../models/NPC");
+const Monster = require("../models/Monster");
+// const Item = require("../models/Item");     // Placeholder
+// const Lore = require("../models/Lore");     // Placeholder
+// const Note = require("../models/Note");     // Placeholder
+
 const createCampaign = async (req, res) => {
   const { name, gameSystem, description, imageUrl, rules } = req.body;
   const userId = req.user.id;
@@ -120,17 +126,11 @@ const deleteCampaign = async (req, res) => {
     if (!campaign)
       return res.status(404).json({ message: "Campaign not found" });
 
-    // Delete Supabase image if it exists
+    // 🧼 Clean up Supabase image
     if (campaign.imageUrl) {
-      console.log(
-        "Attempting to delete image from Supabase:",
-        campaign.imageUrl
-      );
-
       const imagePath = new URL(campaign.imageUrl).pathname.split(
         "/campaign-images/"
       )[1];
-      console.log("Resolved image path:", imagePath);
 
       if (imagePath) {
         const { data, error } = await supabase.storage
@@ -141,30 +141,43 @@ const deleteCampaign = async (req, res) => {
           console.error("❌ Supabase image deletion error:", error.message);
         } else {
           console.log("✅ Supabase image deleted:", data);
-
-          // Optional: Verify the image is gone
-          const checkUrl = async (url) => {
-            try {
-              const res = await fetch(url);
-              console.log(
-                `Fetch after deletion returned status: ${res.status}`
-              );
-            } catch (err) {
-              console.error(
-                "Error trying to fetch image URL after deletion:",
-                err
-              );
-            }
-          };
-
-          await checkUrl(campaign.imageUrl);
         }
       } else {
         console.warn("Could not resolve Supabase image path from URL");
       }
     }
 
-    // Finally, delete the campaign record
+    // 🧍 Remove campaign ID from NPCs
+    await NPC.updateMany(
+      { "content.campaigns": id },
+      { $pull: { "content.campaigns": id } }
+    );
+
+    // 🐉 Remove campaign ID from Monsters
+    await Monster.updateMany(
+      { "content.campaigns": id },
+      { $pull: { "content.campaigns": id } }
+    );
+
+    // 🪓 Items (placeholder)
+    // await Item.updateMany(
+    //   { "content.campaigns": id },
+    //   { $pull: { "content.campaigns": id } }
+    // );
+
+    // 🧠 Lore entries (placeholder)
+    // await Lore.updateMany(
+    //   { "content.campaigns": id },
+    //   { $pull: { "content.campaigns": id } }
+    // );
+
+    // 🧭 Notes, Journal entries, etc. (placeholder)
+    // await Note.updateMany(
+    //   { "content.campaigns": id },
+    //   { $pull: { "content.campaigns": id } }
+    // );
+
+    // 📦 Finally, delete the campaign itself
     await campaign.deleteOne();
 
     res.status(200).json({ message: "Campaign deleted successfully" });

@@ -83,11 +83,22 @@ exports.createNPC = [
   },
 ];
 
-// ✏️ UPDATE NPC
 exports.updateNPC = async (req, res) => {
   try {
     const { id } = req.params;
-    const { content } = req.body;
+
+    // 🔍 Add debugging
+    console.log("🧾 Raw req.body.content:", req.body.content);
+
+    let parsed;
+    try {
+      parsed = JSON.parse(req.body.content);
+    } catch (parseError) {
+      console.error("❌ JSON parse failed:", parseError);
+      return res.status(400).json({ error: "Invalid JSON content." });
+    }
+
+    const content = parsed; // ✅ FIXED: parsed is the content
     const file = req.file;
 
     let imageUrl = content.image || "";
@@ -101,9 +112,11 @@ exports.updateNPC = async (req, res) => {
         });
 
       if (error) throw error;
+
       const { publicURL } = supabase.storage
         .from("npc-images")
         .getPublicUrl(data.path);
+
       imageUrl = publicURL;
     }
 
@@ -116,8 +129,10 @@ exports.updateNPC = async (req, res) => {
       { new: true }
     );
 
+    console.log("✅ Updated NPC:", updated);
     res.json(updated);
   } catch (err) {
+    console.error("🔥 Failed to update NPC:", err);
     res.status(500).json({ error: "Failed to update NPC." });
   }
 };
