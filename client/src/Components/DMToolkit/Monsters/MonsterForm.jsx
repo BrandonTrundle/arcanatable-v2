@@ -111,7 +111,7 @@ export default function MonsterForm({
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("🚩 In handleSubmit - formData:", formData);
+    //  console.log("🚩 In handleSubmit - formData:", formData);
 
     if (!formData.name.trim() || !formData.hitPoints.trim()) {
       alert("Please enter a Name and Hit Points before submitting.");

@@ -20,7 +20,7 @@ export default function NPCs() {
 
   // Submit NPC data to database
   const handleNPCSubmit = async (formData) => {
-    console.log("🔁 Received campaigns from form:", formData.campaigns);
+    //   console.log("🔁 Received campaigns from form:", formData.campaigns);
     const token = localStorage.getItem("token");
     const reshapeToArray = (obj) =>
       Object.entries(obj || {}).map(([name, value]) => ({ name, value }));
@@ -33,10 +33,10 @@ export default function NPCs() {
       }
 
       // Log the campaignList currently loaded in state
-      console.log("📋 Available campaignList:", campaignList);
+      //     console.log("📋 Available campaignList:", campaignList);
 
       const cleanedCampaigns = formData.campaigns || [];
-      console.log("✅ Cleaned campaigns to send:", cleanedCampaigns);
+      //     console.log("✅ Cleaned campaigns to send:", cleanedCampaigns);
 
       const contentToSend = {
         ...formData,
@@ -64,7 +64,7 @@ export default function NPCs() {
       if (!res.ok) throw new Error("Failed to save NPC");
 
       const newNPC = await res.json();
-      console.log("📦 Saved NPC campaigns from server:", newNPC.campaigns);
+      //    console.log("📦 Saved NPC campaigns from server:", newNPC.campaigns);
 
       if (editingNPC) {
         setNpcList((prev) =>
@@ -161,7 +161,7 @@ export default function NPCs() {
         );
 
         const data = await res.json();
-        console.log("🧠 NPCs fetched for campaign", currentCampaign, data);
+        //      console.log("🧠 NPCs fetched for campaign", currentCampaign, data);
 
         // Manual client-side filtering fallback
         const filtered =
@@ -182,28 +182,6 @@ export default function NPCs() {
 
     fetchNPCs();
   }, [currentCampaign]);
-
-  // Log just before rendering
-  if (editingNPC) {
-    console.log("📥 Editing NPC passed to form:", editingNPC);
-    console.log("📦 Form defaultValues (raw):", editingNPC?.content);
-    console.log("🎯 Normalized defaultValues:", {
-      ...editingNPC?.content,
-      campaigns: editingNPC?.campaigns || [],
-      savingThrows: Object.fromEntries(
-        (editingNPC.content?.savingThrows || []).map((pair) => [
-          pair.name,
-          pair.value,
-        ])
-      ),
-      skills: Object.fromEntries(
-        (editingNPC.content?.skills || []).map((pair) => [
-          pair.name,
-          pair.value,
-        ])
-      ),
-    });
-  }
 
   return (
     <div className={styles.npcs}>

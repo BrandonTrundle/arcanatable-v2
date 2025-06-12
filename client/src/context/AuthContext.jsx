@@ -27,7 +27,7 @@ export const AuthProvider = ({ children }) => {
     const fullUser = { ...userData, token };
     localStorage.setItem("token", token);
     localStorage.setItem("user", JSON.stringify(fullUser)); // ✅ Save full user
-    console.log("Logged in user:", fullUser);
+    //   console.log("Logged in user:", fullUser);
     setUser(fullUser);
   };
 

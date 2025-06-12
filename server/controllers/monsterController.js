@@ -173,7 +173,7 @@ exports.updateMonster = [
               deleteError.message
             );
           } else {
-            console.log("🗑️ Previous image deleted:", oldFileName);
+            //       console.log("🗑️ Previous image deleted:", oldFileName);
           }
         }
 

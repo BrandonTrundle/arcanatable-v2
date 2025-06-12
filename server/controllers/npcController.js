@@ -64,16 +64,16 @@ exports.createNPC = [
 
         content.image = `${process.env.SUPABASE_URL}/storage/v1/object/public/npc-images/${fileName}`;
       }
-      console.log("Parsed NPC content:", JSON.stringify(content, null, 2));
+      //    console.log("Parsed NPC content:", JSON.stringify(content, null, 2));
       const npc = new NPC({
         userId, // ✅ attach userId
         content,
         campaigns: content.campaigns || [],
       });
-      console.log(
-        "Schema says content is:",
-        NPC.schema.path("content").instance
-      );
+      //     console.log(
+      //      "Schema says content is:",
+      //      NPC.schema.path("content").instance
+      //     );
       await npc.save();
       res.status(201).json(npc);
     } catch (err) {
@@ -88,7 +88,7 @@ exports.updateNPC = async (req, res) => {
     const { id } = req.params;
 
     // 🔍 Add debugging
-    console.log("🧾 Raw req.body.content:", req.body.content);
+    //   console.log("🧾 Raw req.body.content:", req.body.content);
 
     let parsed;
     try {
@@ -129,7 +129,7 @@ exports.updateNPC = async (req, res) => {
       { new: true }
     );
 
-    console.log("✅ Updated NPC:", updated);
+    //   console.log("✅ Updated NPC:", updated);
     res.json(updated);
   } catch (err) {
     console.error("🔥 Failed to update NPC:", err);

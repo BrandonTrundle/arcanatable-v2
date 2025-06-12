@@ -31,7 +31,7 @@ const CampaignDashboard = () => {
 
         const data = await res.json();
         setCampaigns(data.campaigns);
-        console.log("Fetched campaigns:", data.campaigns);
+        //      console.log("Fetched campaigns:", data.campaigns);
       } catch (err) {
         console.error("Failed to load campaigns:", err);
       }

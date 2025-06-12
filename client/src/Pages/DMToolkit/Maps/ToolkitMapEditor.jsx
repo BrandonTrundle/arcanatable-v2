@@ -184,7 +184,7 @@ export default function ToolkitMapEditor() {
           }}
           onSelectNote={(note) => {
             if (note.cell) {
-              //S       console.log("🟥 Selected note from list:", note);
+              //       console.log("🟥 Selected note from list:", note);
               setSelectedNoteCell(note.cell);
             }
           }}

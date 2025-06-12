@@ -116,7 +116,7 @@ const CreateCampaign = () => {
         throw new Error(data.message || "Failed to create campaign");
       }
 
-      console.log("Campaign created:", data.campaign);
+      //     console.log("Campaign created:", data.campaign);
       navigate("/campaign-dashboard");
     } catch (err) {
       console.error("Error creating campaign:", err);

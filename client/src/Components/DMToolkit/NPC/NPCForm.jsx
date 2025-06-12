@@ -112,7 +112,7 @@ export default function NPCForm({
 
   useEffect(() => {
     if (defaultValues && Object.keys(defaultValues).length > 0) {
-      console.log("📤 Applying defaultValues into formData:", defaultValues);
+      //     console.log("📤 Applying defaultValues into formData:", defaultValues);
       setFormData((prev) => ({
         ...prev,
         ...defaultValues,

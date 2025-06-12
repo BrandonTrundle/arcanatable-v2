@@ -140,7 +140,7 @@ const deleteCampaign = async (req, res) => {
         if (error) {
           console.error("❌ Supabase image deletion error:", error.message);
         } else {
-          console.log("✅ Supabase image deleted:", data);
+          //        console.log("✅ Supabase image deleted:", data);
         }
       } else {
         console.warn("Could not resolve Supabase image path from URL");
@@ -246,8 +246,8 @@ const getDMCampaigns = async (req, res) => {
 };
 
 const updateCampaign = async (req, res) => {
-  console.log("PATCH /campaigns/:id");
-  console.log("Incoming body:", JSON.stringify(req.body, null, 2));
+  // console.log("PATCH /campaigns/:id");
+  //  console.log("Incoming body:", JSON.stringify(req.body, null, 2));
   try {
     const campaignId = req.params.id;
     const userId = req.user.id;

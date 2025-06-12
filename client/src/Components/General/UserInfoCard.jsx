@@ -16,7 +16,7 @@ const UserInfoCard = () => {
 
   const handleFileChange = async (event) => {
     const file = event.target.files[0];
-    console.log("File selected:", file);
+    //   console.log("File selected:", file);
 
     if (!file || !user?.id) {
       console.warn("No file selected or user ID missing.");
@@ -26,8 +26,8 @@ const UserInfoCard = () => {
     const formData = new FormData();
     formData.append("avatar", file);
 
-    console.log("Uploading avatar for user ID:", user.id);
-    console.log("File being sent:", file.name, file.type, file.size);
+    //   console.log("Uploading avatar for user ID:", user.id);
+    //   console.log("File being sent:", file.name, file.type, file.size);
 
     try {
       const response = await fetch(
@@ -42,26 +42,26 @@ const UserInfoCard = () => {
       );
 
       const result = await response.json();
-      console.log("Upload response:", result);
+      //    console.log("Upload response:", result);
 
       if (!response.ok) {
         console.error("Upload failed response:", result);
         throw new Error(result.message || "Upload failed");
       }
 
-      console.log("Setting avatar URL to:", result.avatarUrl);
+      //    console.log("Setting avatar URL to:", result.avatarUrl);
       setAvatarUrl(`${result.avatarUrl}?t=${Date.now()}`);
       updateUser({ avatar: result.avatarUrl });
       const updatedUser = { ...user, avatar: result.avatarUrl };
       localStorage.setItem("user", JSON.stringify(updatedUser));
 
-      console.log("Avatar updated successfully:", result.avatarUrl);
+      //     console.log("Avatar updated successfully:", result.avatarUrl);
     } catch (err) {
       console.error("Failed to upload avatar:", err);
       alert("Avatar upload failed");
     } finally {
       event.target.value = "";
-      console.log("File input reset.");
+      //      console.log("File input reset.");
     }
   };
 
