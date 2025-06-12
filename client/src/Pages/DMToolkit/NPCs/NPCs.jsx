@@ -173,7 +173,7 @@ export default function NPCs() {
               )
             : data;
 
-        console.log("🧪 Filtered NPCs:", filtered);
+        //   console.log("🧪 Filtered NPCs:", filtered);
         setNpcList(filtered);
       } catch (err) {
         console.error("Failed to fetch NPCs:", err);
