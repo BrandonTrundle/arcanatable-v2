@@ -1,7 +1,12 @@
 import React from "react";
 import styles from "../../../styles/DMToolkit/MapAssetCard.module.css";
 
-export default function MapAssetCard({ asset, onClick, readonly = false }) {
+export default function MapAssetCard({
+  asset,
+  onClick,
+  onDelete,
+  readonly = false,
+}) {
   return (
     <div className={styles.card} onClick={onClick}>
       <img src={asset.image} alt={asset.name} className={styles.image} />
@@ -14,8 +19,12 @@ export default function MapAssetCard({ asset, onClick, readonly = false }) {
       </p>
       {!readonly && (
         <div className={styles.cardbuttons}>
-          <button className="btn-primary">Edit</button>
-          <button className="btn-danger">Delete</button>
+          <button className="btn-primary" onClick={onClick}>
+            View
+          </button>
+          <button className="btn-danger" onClick={onDelete}>
+            Delete
+          </button>
         </div>
       )}
     </div>
