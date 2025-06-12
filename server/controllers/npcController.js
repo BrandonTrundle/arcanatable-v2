@@ -137,17 +137,40 @@ exports.updateNPC = async (req, res) => {
   }
 };
 
-// ❌ DELETE NPC
+// DELETE NPC
 exports.deleteNPC = async (req, res) => {
   try {
     const { id } = req.params;
     const npc = await NPC.findById(id);
     if (!npc) return res.status(404).json({ error: "NPC not found" });
 
-    // Optionally delete the Supabase image if you want to manage cleanup
+    // 🔍 Get image URL from content
+    const imageUrl = npc.content?.image;
+
+    if (imageUrl) {
+      const baseUrl = `${process.env.SUPABASE_URL}/storage/v1/object/public/npc-images/`;
+      const fileName = imageUrl.startsWith(baseUrl)
+        ? imageUrl.slice(baseUrl.length)
+        : null;
+
+      if (fileName) {
+        const { error: deleteError } = await supabase.storage
+          .from("npc-images")
+          .remove([fileName]);
+
+        if (deleteError) {
+          console.warn(
+            "⚠️ Failed to delete image from Supabase:",
+            deleteError.message
+          );
+        }
+      }
+    }
+
     await NPC.findByIdAndDelete(id);
-    res.json({ message: "NPC deleted" });
+    res.json({ message: "NPC and image deleted" });
   } catch (err) {
+    console.error("❌ Error deleting NPC:", err.message);
     res.status(500).json({ error: "Failed to delete NPC." });
   }
 };

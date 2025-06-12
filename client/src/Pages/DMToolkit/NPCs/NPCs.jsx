@@ -81,6 +81,35 @@ export default function NPCs() {
     }
   };
 
+  // Delete an NPC
+  const handleDeleteNPC = async (id) => {
+    const confirmed = window.confirm(
+      "Are you sure you want to delete this NPC?"
+    );
+    if (!confirmed) return;
+
+    try {
+      const token = localStorage.getItem("token");
+
+      const res = await fetch(
+        `${import.meta.env.VITE_API_BASE_URL}/api/npcs/${id}`,
+        {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (!res.ok) throw new Error("Failed to delete NPC");
+
+      setNpcList((prev) => prev.filter((npc) => npc._id !== id));
+    } catch (err) {
+      console.error("❌ Failed to delete NPC:", err);
+      alert("Could not delete the NPC.");
+    }
+  };
+
   //fetch campaigns
   useEffect(() => {
     const loadCampaigns = async () => {
@@ -238,9 +267,7 @@ export default function NPCs() {
                 setEditingNPC(npc);
                 setShowForm(true);
               }}
-              onDelete={(id) => {
-                // implement delete logic later
-              }}
+              onDelete={handleDeleteNPC}
             />
           ))}
       </div>
