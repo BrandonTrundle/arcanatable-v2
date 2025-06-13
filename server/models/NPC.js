@@ -125,6 +125,10 @@ const npcSchema = new mongoose.Schema({
     required: true,
   },
   campaigns: [{ type: mongoose.Schema.Types.ObjectId, ref: "Campaign" }],
+  toolkitType: {
+    type: String,
+    default: "NPC", // optional default
+  },
 });
 
 const modelName = "NPC";

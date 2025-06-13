@@ -12,7 +12,8 @@ const userRoutes = require("./routes/userRoutes");
 const campaignRoutes = require("./routes/campaignRoutes");
 const monsterRoutes = require("./routes/monsterRoutes");
 const npcRoutes = require("./routes/npcRoutes");
-const mapAssetsRoutes = require("./routes/mapAssets");
+const mapAssetsRoutes = require("./routes/mapAssetRoutes");
+const tokenRoutes = require("./routes/tokenRoutes");
 
 //Connect to MongoDB
 connectDB();
@@ -26,6 +27,7 @@ app.use("/api/campaigns", campaignRoutes);
 app.use("/api/monsters", monsterRoutes);
 app.use("/api/npcs", npcRoutes);
 app.use("/api/mapassets", mapAssetsRoutes);
+app.use("/api/tokens", tokenRoutes);
 
 app.get("/", (req, res) => {
   res.send("ArcanaTable API is running.");

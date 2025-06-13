@@ -69,6 +69,7 @@ exports.createNPC = [
         userId, // ✅ attach userId
         content,
         campaigns: content.campaigns || [],
+        toolkitType: "NPC",
       });
       //     console.log(
       //      "Schema says content is:",
@@ -125,6 +126,7 @@ exports.updateNPC = async (req, res) => {
       {
         content: { ...content, image: imageUrl },
         campaigns: content.campaigns || [],
+        toolkitType: "NPC",
       },
       { new: true }
     );

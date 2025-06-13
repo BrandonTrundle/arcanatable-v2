@@ -5,7 +5,7 @@ export default function TokenCard({ token, onClick }) {
   return (
     <div className={styles.card} onClick={onClick}>
       <img src={token.image} alt={token.name} className={styles.image} />
-      <h3 className={styles.name}>{token.displayName}</h3>
+      <h3 className={styles.name}>{token.name}</h3>
       <p className={styles.info}>
         <strong>Size:</strong> {token.size.width} × {token.size.height}
       </p>

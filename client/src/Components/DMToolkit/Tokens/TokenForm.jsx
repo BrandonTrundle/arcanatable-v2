@@ -1,18 +1,23 @@
 import React, { useState } from "react";
 import styles from "../../../styles/DMToolkit/TokenForm.module.css";
 
-export default function TokenForm({ defaultValues = {}, onSubmit }) {
+export default function TokenForm({
+  defaultValues = {},
+  onSubmit,
+  campaignList = [],
+  currentCampaign = "none",
+}) {
   const [formData, setFormData] = useState({
     name: "",
-    displayName: "",
     image: "",
-    hp: 10,
     maxHp: 10,
     initiative: 0,
     size: { width: 1, height: 1 },
-    isVisible: true,
     rotation: 0,
     notes: "",
+    campaignId:
+      defaultValues.campaignId ??
+      (currentCampaign === "none" ? "" : currentCampaign),
     ...defaultValues,
   });
 
@@ -49,32 +54,38 @@ export default function TokenForm({ defaultValues = {}, onSubmit }) {
         name="name"
         value={formData.name}
         onChange={handleChange}
-        placeholder="Internal name"
+        placeholder="Name"
       />
 
-      <label>Display Name</label>
+      <label>Image URL or Upload</label>
       <input
-        name="displayName"
-        value={formData.displayName}
-        onChange={handleChange}
-        placeholder="Visible name"
+        type="file"
+        accept="image/*"
+        onChange={(e) => {
+          const file = e.target.files[0];
+          if (file) {
+            setFormData((prev) => ({
+              ...prev,
+              image: file, // store the File object directly
+            }));
+          }
+        }}
       />
 
-      <label>Image URL</label>
-      <input
-        name="image"
-        value={formData.image}
-        onChange={handleChange}
-        placeholder="/images/token.png"
-      />
-
-      <label>HP</label>
-      <input
-        type="number"
-        name="hp"
-        value={formData.hp}
-        onChange={handleChange}
-      />
+      {formData.image && (
+        <div style={{ marginTop: "1rem" }}>
+          <p>Image Preview:</p>
+          <img
+            src={
+              formData.image instanceof File
+                ? URL.createObjectURL(formData.image)
+                : formData.image
+            }
+            alt="Token Preview"
+            style={{ maxWidth: "200px", borderRadius: "8px" }}
+          />
+        </div>
+      )}
 
       <label>Max HP</label>
       <input
@@ -108,26 +119,24 @@ export default function TokenForm({ defaultValues = {}, onSubmit }) {
         onChange={handleChange}
       />
 
-      <label>Rotation (deg)</label>
-      <input
-        type="number"
-        name="rotation"
-        value={formData.rotation}
-        onChange={handleChange}
-      />
-
-      <label>
-        <input
-          type="checkbox"
-          name="isVisible"
-          checked={formData.isVisible}
-          onChange={handleChange}
-        />
-        Token is visible to players
-      </label>
-
       <label>Notes</label>
       <textarea name="notes" value={formData.notes} onChange={handleChange} />
+
+      <label>Assign to Campaign</label>
+      <select
+        name="campaignId"
+        value={formData.campaignId}
+        onChange={(e) =>
+          setFormData((prev) => ({ ...prev, campaignId: e.target.value }))
+        }
+      >
+        <option value="">None</option>
+        {campaignList.map((campaign) => (
+          <option key={campaign._id} value={campaign._id}>
+            {campaign.name}
+          </option>
+        ))}
+      </select>
 
       <button type="submit" className={styles.submitBtn}>
         Save Token
