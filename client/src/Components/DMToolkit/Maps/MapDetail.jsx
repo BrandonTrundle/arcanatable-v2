@@ -33,9 +33,16 @@ export default function MapDetail({ map, onClose }) {
           </p>
         </div>
 
-        {map.notes && (
+        {Array.isArray(map.notes) && map.notes.length > 0 && (
           <div className={styles.notes}>
-            <strong>Notes:</strong> <p>{map.notes}</p>
+            <strong>Notes:</strong>
+            <ul>
+              {map.notes.map((note) => (
+                <li key={note.id}>
+                  <strong>{note.name}:</strong> {note.body}
+                </li>
+              ))}
+            </ul>
           </div>
         )}
       </div>
