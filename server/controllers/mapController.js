@@ -184,6 +184,20 @@ exports.updateMap = async (req, res) => {
     const { id } = req.params;
     const updatedData = req.body;
 
+    // 🔧 Normalize token hp data
+    if (updatedData.layers) {
+      for (const layerKey of Object.keys(updatedData.layers)) {
+        const layer = updatedData.layers[layerKey];
+        if (Array.isArray(layer.tokens)) {
+          layer.tokens = layer.tokens.map((token) => ({
+            ...token,
+            hp: token.hp?.current ?? token.hp,
+            maxHp: token.hp?.max ?? token.maxHp,
+          }));
+        }
+      }
+    }
+
     const updatedMap = await Map.findByIdAndUpdate(
       id,
       {

@@ -7,7 +7,10 @@ export function createTokenOnDrop({
   const gridX = Math.floor(pointer.x / gridSize);
   const gridY = Math.floor(pointer.y / gridSize);
 
-  return {
+  const max = baseToken.hp?.max ?? baseToken.maxHp ?? 10;
+  const current = baseToken.hp?.current ?? max;
+
+  const newToken = {
     id: `token-${Date.now()}`,
     entityId: baseToken.id,
     entityType: baseToken.entityType || "Token",
@@ -17,15 +20,21 @@ export function createTokenOnDrop({
     position: { x: gridX, y: gridY },
     size: baseToken.size || { width: 1, height: 1 },
     rotation: 0,
-    hp: baseToken.hitPoints ?? 0,
-    maxHp: baseToken.hitPoints ?? 0,
-    initiative: 0,
-    statusConditions: [],
-    effects: [],
-    ownerIds: [],
+    hp: {
+      current,
+      max,
+    },
+    initiative: baseToken.initiative || 0,
+    statusConditions: baseToken.statusConditions || [],
+    effects: baseToken.effects || [],
+    ownerIds: baseToken.ownerIds || [],
     isVisible: activeLayer === "player",
     activeToken: false,
-    lightEmit: null,
-    notes: "",
+    lightEmit: baseToken.lightEmit || null,
+    notes: baseToken.notes || "",
   };
+
+  console.log("✅ Created new token:", newToken);
+
+  return newToken;
 }

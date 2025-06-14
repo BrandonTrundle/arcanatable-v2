@@ -8,6 +8,7 @@ export default function MapAssetSprite({
   isSelected,
   onSelect,
   onMove,
+  opacity = 1,
 }) {
   const image = useMemo(() => getCachedImage(asset.image), [asset.image]);
   const groupRef = useRef();
@@ -40,6 +41,7 @@ export default function MapAssetSprite({
         width={width}
         height={height}
         rotation={asset.rotation || 0}
+        opacity={opacity}
       />
       {isSelected && (
         <Rect

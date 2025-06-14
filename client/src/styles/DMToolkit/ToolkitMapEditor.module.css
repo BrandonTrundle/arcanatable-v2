@@ -38,3 +38,10 @@
   height: auto;
   border: 2px solid #555;
 }
+
+.panelWrapper {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  z-index: 10;
+}

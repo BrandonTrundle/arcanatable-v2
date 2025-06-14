@@ -23,6 +23,7 @@ export default function MapCanvas({
   setActiveNoteCell,
   activeNoteCell,
   selectedNoteCell,
+  onSelectToken,
 }) {
   const isFirefox =
     typeof navigator !== "undefined" && /firefox/i.test(navigator.userAgent);
@@ -231,11 +232,40 @@ export default function MapCanvas({
           />
 
           <MapTokenLayer
-            map={map}
+            map={{
+              ...map,
+              layers: Object.fromEntries(
+                Object.entries(map.layers || {}).map(
+                  ([layerKey, layerData]) => [
+                    layerKey,
+                    {
+                      ...layerData,
+                      tokens: (layerData.tokens || []).map((t) => ({
+                        ...t,
+                        _layer: layerKey,
+                      })),
+                    },
+                  ]
+                )
+              ),
+            }}
             gridSize={map.gridSize}
             activeLayer={activeLayer}
             selectedTokenId={selectedTokenId}
-            onSelectToken={setSelectedTokenId}
+            onSelectToken={(id) => {
+              setSelectedTokenId(id);
+              if (onSelectToken) {
+                const token = Object.entries(map.layers || {})
+                  .flatMap(([layerKey, layer]) =>
+                    (layer.tokens || []).map((t) => ({
+                      ...t,
+                      _layer: layerKey,
+                    }))
+                  )
+                  .find((t) => t.id === id);
+                onSelectToken(token || null);
+              }
+            }}
             onTokenMove={handleTokenMove}
           />
         </Layer>

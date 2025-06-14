@@ -19,8 +19,8 @@ export default function MapTokenLayer({
             token={token}
             gridSize={gridSize}
             isSelected={token.id === selectedTokenId}
-            onSelect={layerKey === activeLayer ? onSelectToken : () => {}}
-            onTokenMove={layerKey === activeLayer ? onTokenMove : () => {}}
+            onSelect={onSelectToken}
+            onTokenMove={onTokenMove}
             immediatePositionOverride={
               token.id === selectedTokenId ? token.position : null
             }

@@ -1,0 +1,68 @@
+.panel {
+  background-color: var(--color-surface);
+  padding: 1rem;
+  border-radius: 1rem;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+  width: 19rem;
+  color: var(--color-light);
+  font-family: var(--font-main);
+  position: absolute;
+  z-index: 9999;
+  border: 1px solid var(--color-light);
+  cursor: move;
+}
+
+.tokenName {
+  font-size: 1.25rem;
+  font-weight: bold;
+  margin-bottom: 1rem;
+  color: var(--color-primary);
+  font-family: var(--font-accent);
+}
+
+.toggleButton {
+  background: none;
+  border: none;
+  color: var(--color-light);
+  font-size: 1rem;
+  cursor: pointer;
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  z-index: 10000;
+}
+
+.collapsed {
+  display: none;
+}
+
+.hpControl {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 1rem 0;
+}
+
+.hpLabel {
+  font-size: 1rem;
+  color: var(--color-light);
+}
+
+.hpInput {
+  width: 4rem;
+  padding: 0.25rem;
+  background-color: var(--color-background);
+  border: 1px solid var(--color-muted);
+  color: var(--color-light);
+  border-radius: 0.25rem;
+  text-align: right;
+}
+
+.sectionTitle {
+  font-size: 0.875rem;
+  color: var(--color-muted);
+  margin-top: 1rem;
+  margin-bottom: 0.25rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}

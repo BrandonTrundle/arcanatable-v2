@@ -10,20 +10,21 @@ export default function MapAssetLayer({
   onSelectAsset,
   onMoveAsset,
 }) {
-  const assets = map.layers?.[activeLayer]?.assets || [];
-
   return (
     <Group>
-      {assets.map((asset) => (
-        <MapAssetSprite
-          key={asset.id}
-          asset={asset}
-          gridSize={gridSize}
-          isSelected={asset.id === selectedAssetId}
-          onSelect={onSelectAsset}
-          onMove={onMoveAsset}
-        />
-      ))}
+      {Object.entries(map.layers || {}).flatMap(([layerKey, layerData]) =>
+        (layerData.assets || []).map((asset) => (
+          <MapAssetSprite
+            key={asset.id}
+            asset={asset}
+            gridSize={gridSize}
+            isSelected={asset.id === selectedAssetId}
+            onSelect={onSelectAsset}
+            onMove={onMoveAsset}
+            opacity={layerKey === "dm" ? 0.5 : 1}
+          />
+        ))
+      )}
     </Group>
   );
 }

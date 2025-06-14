@@ -12,35 +12,38 @@ import NotesPanel from "../../../Components/DMToolkit/Maps/Panels/NotesPanel";
 import AssetPanel from "../../../Components/DMToolkit/Maps/Panels/AssetPanel";
 import fetchTokens from "../../../hooks/dmtoolkit/fetchTokens";
 import { useOutletContext } from "react-router-dom";
+import TokenControlPanel from "../../../Components/DMToolkit/Maps/Panels/TokenControlPanel";
 
 export default function ToolkitMapEditor() {
   const { state } = useLocation();
   const { currentCampaign } = useOutletContext();
   const map = state?.map;
-  const [activeNoteCell, setActiveNoteCell] = useState(null);
-  const [selectedNoteCell, setSelectedNoteCell] = useState(null);
-  const [showAssetPanel, setShowAssetPanel] = useState(false);
-  const [draggingAsset, setDraggingAsset] = useState(null);
-  const {
-    tokens: availableTokens,
-    loading,
-    error,
-  } = fetchTokens(currentCampaign);
 
   const [mapData, setMapData] = useState(() => ({
     ...map,
     fogOfWar: map.fogOfWar || { revealedCells: [] },
   }));
 
+  const [activeNoteCell, setActiveNoteCell] = useState(null);
+  const [selectedNoteCell, setSelectedNoteCell] = useState(null);
+  const [showAssetPanel, setShowAssetPanel] = useState(false);
+  const [selectedToken, setSelectedToken] = useState(null);
+  const [draggingAsset, setDraggingAsset] = useState(null);
   const [gridVisible, setGridVisible] = useState(true);
   const [showSizePanel, setShowSizePanel] = useState(false);
   const [showTokenPanel, setShowTokenPanel] = useState(false);
-  const [draggingToken, setDraggingToken] = useState(null); // token object
+  const [draggingToken, setDraggingToken] = useState(null);
   const draggingPositionRef = useRef({ x: 0, y: 0 });
-  const [, forceUpdate] = useState(0); // dummy state to force render
-  const [activeLayer, setActiveLayer] = useState("player"); // "player" | "dm" | "hidden"
+  const [, forceUpdate] = useState(0);
+  const [activeLayer, setActiveLayer] = useState("player");
   const [fogVisible, setFogVisible] = useState(true);
   const [toolMode, setToolMode] = useState("select");
+
+  const {
+    tokens: availableTokens,
+    loading,
+    error,
+  } = fetchTokens(currentCampaign);
 
   useEffect(() => {
     if (toolMode !== "notes") setSelectedNoteCell(null);
@@ -49,6 +52,13 @@ export default function ToolkitMapEditor() {
   useEffect(() => {
     console.log("Available tokens:", availableTokens);
   }, [availableTokens]);
+
+  useEffect(() => {
+    const allTokens = Object.values(mapData.layers || {}).flatMap(
+      (layer) => layer.tokens || []
+    );
+    console.log("🧩 All tokens on map:", allTokens);
+  }, [mapData]);
 
   const handleSizeUpdate = (newSize) => {
     setMapData((prev) => ({
@@ -115,6 +125,83 @@ export default function ToolkitMapEditor() {
       setDraggingAsset(null);
     }
   };
+
+  const handleUpdateToken = (updatedToken) => {
+    const sourceLayer = updatedToken._layer;
+    const targetLayer = updatedToken._targetLayer || sourceLayer;
+
+    setMapData((prevMap) => {
+      const prevTokens = prevMap.layers?.[sourceLayer]?.tokens || [];
+
+      if (updatedToken._delete) {
+        return {
+          ...prevMap,
+          layers: {
+            ...prevMap.layers,
+            [sourceLayer]: {
+              ...prevMap.layers[sourceLayer],
+              tokens: prevTokens.filter((t) => t.id !== updatedToken.id),
+            },
+          },
+        };
+      }
+
+      if (updatedToken._moveToLayer && targetLayer !== sourceLayer) {
+        const movedToken = { ...updatedToken, _layer: targetLayer };
+        delete movedToken._moveToLayer;
+        delete movedToken._targetLayer;
+
+        // ⬇️ Clear selected token after moving it
+        setSelectedToken(null);
+
+        return {
+          ...prevMap,
+          layers: {
+            ...prevMap.layers,
+            [sourceLayer]: {
+              ...prevMap.layers[sourceLayer],
+              tokens: prevMap.layers[sourceLayer].tokens.filter(
+                (t) => t.id !== movedToken.id
+              ),
+            },
+            [targetLayer]: {
+              ...prevMap.layers[targetLayer],
+              tokens: [
+                ...(prevMap.layers[targetLayer]?.tokens || []),
+                movedToken,
+              ],
+            },
+          },
+        };
+      }
+
+      const updatedTokens = prevTokens.map((t) =>
+        t.id === updatedToken.id ? updatedToken : t
+      );
+
+      return {
+        ...prevMap,
+        layers: {
+          ...prevMap.layers,
+          [sourceLayer]: {
+            ...prevMap.layers[sourceLayer],
+            tokens: updatedTokens,
+          },
+        },
+      };
+    });
+  };
+
+  useEffect(() => {
+    const allIds = Object.values(mapData.layers || {})
+      .flatMap((layer) => layer.tokens || [])
+      .map((t) => t.id);
+
+    const duplicates = allIds.filter((id, i, arr) => arr.indexOf(id) !== i);
+    if (duplicates.length > 0) {
+      console.warn("🚨 Duplicate token IDs detected:", duplicates);
+    }
+  }, [mapData]);
 
   const handleSaveMap = async () => {
     try {
@@ -202,6 +289,7 @@ export default function ToolkitMapEditor() {
           onEndDrag={() => setDraggingToken(null)}
         />
       )}
+
       {showAssetPanel && (
         <AssetPanel
           onClose={() => setShowAssetPanel(false)}
@@ -221,13 +309,11 @@ export default function ToolkitMapEditor() {
           activeNoteCell={activeNoteCell}
           onClose={() => setToolMode("select")}
           onUpdateNotes={(updatedNotes) => {
-            //      console.log("📋 Notes updated in editor:", updatedNotes);
             setMapData((prev) => ({ ...prev, notes: updatedNotes }));
             setActiveNoteCell(null);
           }}
           onSelectNote={(note) => {
             if (note.cell) {
-              //       console.log("🟥 Selected note from list:", note);
               setSelectedNoteCell(note.cell);
             }
           }}
@@ -236,27 +322,33 @@ export default function ToolkitMapEditor() {
 
       <div className={styles.canvasArea}>
         {mapData ? (
-          <>
-            <div className={styles.mapContainer}>
-              <MapCanvas
-                map={mapData}
-                notes={mapData.notes}
-                gridVisible={gridVisible}
-                onCanvasDrop={handleCanvasDrop}
-                setMapData={setMapData}
-                activeLayer={activeLayer}
-                fogVisible={fogVisible}
-                toolMode={toolMode}
-                setActiveNoteCell={setActiveNoteCell}
-                activeNoteCell={activeNoteCell}
-                selectedNoteCell={selectedNoteCell}
+          <div className={styles.mapContainer}>
+            <MapCanvas
+              map={mapData}
+              notes={mapData.notes}
+              gridVisible={gridVisible}
+              onCanvasDrop={handleCanvasDrop}
+              setMapData={setMapData}
+              activeLayer={activeLayer}
+              fogVisible={fogVisible}
+              toolMode={toolMode}
+              setActiveNoteCell={setActiveNoteCell}
+              activeNoteCell={activeNoteCell}
+              selectedNoteCell={selectedNoteCell}
+              onSelectToken={setSelectedToken}
+            />
+            {selectedToken && (
+              <TokenControlPanel
+                token={selectedToken}
+                onUpdateToken={handleUpdateToken}
               />
-            </div>
-          </>
+            )}
+          </div>
         ) : (
           <p>No map loaded.</p>
         )}
       </div>
+
       {draggingToken && (
         <MapTokenDragGhost
           token={draggingToken}
