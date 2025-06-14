@@ -5,6 +5,7 @@ import MapAssetForm from "../../../Components/DMToolkit/MapAssets/MapAssetForm";
 import MapAssetCard from "../../../Components/DMToolkit/MapAssets/MapAssetCard";
 import MapAssetDetail from "../../../Components/DMToolkit/MapAssets/MapAssetDetail";
 import { AuthContext } from "../../../context/AuthContext";
+import fetchMapAssets from "../../../hooks/dmtoolkit/fetchMapAssets";
 
 export default function MapAssets() {
   const { currentCampaign } = useOutletContext();
@@ -13,7 +14,7 @@ export default function MapAssets() {
   const [showForm, setShowForm] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedAsset, setSelectedAsset] = useState(null);
-  const [mapAssets, setMapAssets] = useState([]);
+  const { mapAssets, setMapAssets, loading, error } = fetchMapAssets(user);
 
   //Submit Assets
   const handleAssetSubmit = async (formData) => {
@@ -53,31 +54,6 @@ export default function MapAssets() {
       alert("Failed to save map asset.");
     }
   };
-
-  // fetchAssets
-  useEffect(() => {
-    const fetchAssets = async () => {
-      try {
-        const res = await fetch(
-          `${import.meta.env.VITE_API_BASE_URL}/api/mapassets`,
-          {
-            headers: {
-              Authorization: `Bearer ${user.token}`,
-            },
-          }
-        );
-
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.message || "Failed to fetch assets");
-
-        setMapAssets(data.mapAssets || []);
-      } catch (err) {
-        console.error("Failed to load map assets:", err);
-      }
-    };
-
-    fetchAssets();
-  }, [user]);
 
   const handleDelete = async (assetId) => {
     if (!confirm("Are you sure you want to delete this map asset?")) return;

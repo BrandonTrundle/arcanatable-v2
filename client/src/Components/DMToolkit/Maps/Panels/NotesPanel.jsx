@@ -1,24 +1,93 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import styles from "../../../../styles/DMToolkit/NotesPanel.module.css";
+import { AuthContext } from "../../../../context/AuthContext";
 
 export default function NotesPanel({
-  notes = [],
+  mapId,
   activeNoteCell,
   onClose,
-  onUpdateNotes,
   onSelectNote,
+  onUpdateNotes,
 }) {
+  const { user } = useContext(AuthContext);
+  const [notes, setNotes] = useState([]);
   const [newNote, setNewNote] = useState({ name: "", body: "" });
   const [mode, setMode] = useState("list");
-  //  console.log("NotesPanel received notes:", notes);
 
-  const handleSave = () => {
+  // fetch notes
+  const fetchNotes = async () => {
+    try {
+      const res = await fetch(
+        `${import.meta.env.VITE_API_BASE_URL}/api/maps/${mapId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${user.token}`,
+          },
+        }
+      );
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || "Failed to fetch notes");
+
+      setNotes(data.notes || []);
+    } catch (err) {
+      console.error("Failed to load notes:", err);
+    }
+  };
+
+  // fetch notes on entry
+  useEffect(() => {
+    if (user?.token && mapId) {
+      fetchNotes();
+    }
+  }, [user, mapId]);
+
+  const handleSave = async () => {
     if (!newNote.name.trim() || !activeNoteCell) return;
 
-    const id = Date.now().toString();
-    onUpdateNotes([...notes, { ...newNote, id, cell: activeNoteCell }]);
-    setNewNote({ name: "", body: "" });
-    setMode("list");
+    try {
+      const res = await fetch(
+        `${import.meta.env.VITE_API_BASE_URL}/api/maps/${mapId}/notes`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${user.token}`,
+          },
+          body: JSON.stringify({
+            name: newNote.name,
+            body: newNote.body,
+            cell: activeNoteCell,
+          }),
+        }
+      );
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || "Failed to save note");
+
+      // Refetch full map data to get latest notes
+      const fetchRes = await fetch(
+        `${import.meta.env.VITE_API_BASE_URL}/api/maps/${mapId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${user.token}`,
+          },
+        }
+      );
+
+      const updatedMap = await fetchRes.json();
+      if (!fetchRes.ok)
+        throw new Error(updatedMap.message || "Failed to reload notes");
+
+      if (onUpdateNotes) {
+        onUpdateNotes(updatedMap.notes || []);
+      }
+
+      setNewNote({ name: "", body: "" });
+      setMode("list");
+    } catch (err) {
+      console.error("Error saving note:", err);
+    }
   };
 
   return (

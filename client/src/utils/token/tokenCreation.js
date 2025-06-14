@@ -8,19 +8,24 @@ export function createTokenOnDrop({
   const gridY = Math.floor(pointer.y / gridSize);
 
   return {
-    ...baseToken,
     id: `token-${Date.now()}`,
+    entityId: baseToken.id,
+    entityType: baseToken.entityType || "Token",
+    name: baseToken.name,
+    displayName: baseToken.displayName || baseToken.name,
+    image: baseToken.image,
     position: { x: gridX, y: gridY },
-    hp: baseToken.hp,
-    maxHp: baseToken.maxHp,
+    size: baseToken.size || { width: 1, height: 1 },
+    rotation: 0,
+    hp: baseToken.hitPoints ?? 0,
+    maxHp: baseToken.hitPoints ?? 0,
+    initiative: 0,
     statusConditions: [],
     effects: [],
-    initiative: 0,
-    notes: "",
-    activeToken: false,
-    rotation: 0,
+    ownerIds: [],
     isVisible: activeLayer === "player",
-    viewableDistance: 6, // default vision range in grid cells
-    type: "player", // or "npc" or "creature" etc.
+    activeToken: false,
+    lightEmit: null,
+    notes: "",
   };
 }

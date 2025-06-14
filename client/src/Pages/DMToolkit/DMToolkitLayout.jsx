@@ -1,13 +1,15 @@
 import React, { useState, useEffect } from "react";
-import { Outlet } from "react-router-dom";
+import { Outlet, useLocation } from "react-router-dom"; // 👈 added useLocation
 import DMToolkitNavbar from "../../Components/DMToolkit/DMToolkitGeneral/DMToolkitNavbar";
 import styles from "../../styles/DMToolkit/DMToolkitLayout.module.css";
 
 export default function DMToolkitLayout() {
+  const location = useLocation(); // 👈 get current path
+  const hideNavbar = location.pathname.startsWith("/dmtoolkit/maps/editor"); // 👈 condition
+
   const [campaigns, setCampaigns] = useState([]);
   const [currentCampaign, setCurrentCampaign] = useState("none");
 
-  // Simulate campaign loading (replace with API later)
   useEffect(() => {
     const fetchCampaigns = async () => {
       try {
@@ -40,12 +42,19 @@ export default function DMToolkitLayout() {
 
   return (
     <div className={styles.container}>
-      <DMToolkitNavbar
-        currentCampaign={currentCampaign}
-        onCampaignChange={handleCampaignChange}
-        campaignList={campaigns}
-      />
-      <main className={styles.content}>
+      {/* 👇 conditionally render navbar */}
+      {!hideNavbar && (
+        <DMToolkitNavbar
+          currentCampaign={currentCampaign}
+          onCampaignChange={handleCampaignChange}
+          campaignList={campaigns}
+        />
+      )}
+
+      <main
+        className={styles.content}
+        style={hideNavbar ? { marginLeft: 0, padding: 0 } : {}}
+      >
         <Outlet context={{ currentCampaign }} />
       </main>
     </div>

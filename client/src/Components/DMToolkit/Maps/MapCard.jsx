@@ -2,7 +2,7 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 import styles from "../../../styles/DMToolkit/MapCard.module.css";
 
-export default function MapCard({ map, onClick }) {
+export default function MapCard({ map, onClick, onDelete }) {
   const navigate = useNavigate();
 
   const handleEdit = () => {
@@ -25,7 +25,15 @@ export default function MapCard({ map, onClick }) {
         <button onClick={handleEdit} className="btn-primary">
           Edit
         </button>
-        <button className="btn-danger">Delete</button>
+        <button
+          className="btn-danger"
+          onClick={(e) => {
+            e.stopPropagation(); // prevent opening the detail view
+            onDelete(map._id);
+          }}
+        >
+          Delete
+        </button>
       </div>
     </div>
   );

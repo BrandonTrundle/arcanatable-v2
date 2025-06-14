@@ -9,6 +9,7 @@ import MapTokenLayer from "../Maps/Layers/MapTokenLayer";
 import StaticMapLayer from "./Layers/StaticMapLayer";
 import FogAndBlockerLayer from "./Layers/FogAndBlockerLayer";
 import MapAssetLayer from "./Layers/MapAssetLayer";
+import styles from "../../../styles/DMToolkit/ToolkitMapEditor.module.css";
 
 export default function MapCanvas({
   map,
@@ -171,74 +172,76 @@ export default function MapCanvas({
   };
 
   return (
-    <Stage
-      width={stageWidth}
-      height={stageHeight}
-      scaleX={1 / scaleFactor}
-      scaleY={1 / scaleFactor}
-      ref={stageRef}
-      style={{ border: "2px solid #444" }}
-      onMouseUp={handleCanvasMouseUp}
-    >
-      <StaticMapLayer
-        mapImage={mapImage}
-        imageReady={imageReady}
-        gridVisible={gridVisible}
-        map={map}
-        notes={notes}
-        activeNoteCell={toolMode === "notes" ? activeNoteCell : null}
-        selectedNoteCell={toolMode === "notes" ? selectedNoteCell : null}
-      />
-
-      <FogAndBlockerLayer
-        width={map.width}
-        height={map.height}
-        gridSize={map.gridSize}
-        revealedCells={map.fogOfWar?.revealedCells || []}
-        blockingCells={map.fogOfWar?.blockingCells || []}
-        showFog={fogVisible}
-        showBlockers={toolMode === "paint-blockers"}
-      />
-
-      <Layer>
-        <MapAssetLayer
+    <div className={styles.scrollWrapper}>
+      <Stage
+        width={stageWidth}
+        height={stageHeight}
+        scaleX={1 / scaleFactor}
+        scaleY={1 / scaleFactor}
+        ref={stageRef}
+        style={{ border: "2px solid #444" }}
+        onMouseUp={handleCanvasMouseUp}
+      >
+        <StaticMapLayer
+          mapImage={mapImage}
+          imageReady={imageReady}
+          gridVisible={gridVisible}
           map={map}
-          gridSize={map.gridSize}
-          activeLayer={activeLayer}
-          selectedAssetId={selectedAssetId}
-          onSelectAsset={setSelectedAssetId}
-          onMoveAsset={(id, newPos) => {
-            setMapData((prev) => {
-              const assets = prev.layers[activeLayer]?.assets || [];
-              const updatedAssets = assets.map((a) =>
-                a.id === id ? { ...a, position: newPos } : a
-              );
+          notes={notes}
+          activeNoteCell={toolMode === "notes" ? activeNoteCell : null}
+          selectedNoteCell={toolMode === "notes" ? selectedNoteCell : null}
+        />
 
-              return {
-                ...prev,
-                layers: {
-                  ...prev.layers,
-                  [activeLayer]: {
-                    ...prev.layers[activeLayer],
-                    assets: updatedAssets,
+        <FogAndBlockerLayer
+          width={map.width}
+          height={map.height}
+          gridSize={map.gridSize}
+          revealedCells={map.fogOfWar?.revealedCells || []}
+          blockingCells={map.fogOfWar?.blockingCells || []}
+          showFog={fogVisible}
+          showBlockers={toolMode === "paint-blockers"}
+        />
+
+        <Layer>
+          <MapAssetLayer
+            map={map}
+            gridSize={map.gridSize}
+            activeLayer={activeLayer}
+            selectedAssetId={selectedAssetId}
+            onSelectAsset={setSelectedAssetId}
+            onMoveAsset={(id, newPos) => {
+              setMapData((prev) => {
+                const assets = prev.layers[activeLayer]?.assets || [];
+                const updatedAssets = assets.map((a) =>
+                  a.id === id ? { ...a, position: newPos } : a
+                );
+
+                return {
+                  ...prev,
+                  layers: {
+                    ...prev.layers,
+                    [activeLayer]: {
+                      ...prev.layers[activeLayer],
+                      assets: updatedAssets,
+                    },
                   },
-                },
-              };
-            });
-          }}
-        />
+                };
+              });
+            }}
+          />
 
-        <MapTokenLayer
-          map={map}
-          gridSize={map.gridSize}
-          activeLayer={activeLayer}
-          selectedTokenId={selectedTokenId}
-          onSelectToken={setSelectedTokenId}
-          onTokenMove={handleTokenMove}
-        />
-      </Layer>
+          <MapTokenLayer
+            map={map}
+            gridSize={map.gridSize}
+            activeLayer={activeLayer}
+            selectedTokenId={selectedTokenId}
+            onSelectToken={setSelectedTokenId}
+            onTokenMove={handleTokenMove}
+          />
+        </Layer>
 
-      <Layer>{/* TODO: drawing tools */}</Layer>
-    </Stage>
+        <Layer>{/* TODO: drawing tools */}</Layer>
+      </Stage>
+    </div>
   );
 }

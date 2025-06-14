@@ -14,6 +14,7 @@ export default function ToolkitMapEditorToolbar({
   toolMode,
   setToolMode,
   onAssetClick,
+  onSave,
 }) {
   const navigate = useNavigate();
   const [showGridMenu, setShowGridMenu] = useState(false);
@@ -146,7 +147,9 @@ export default function ToolkitMapEditorToolbar({
         {toolMode === "notes" ? "✓ " : ""}Notes
       </button>
 
-      <button className={styles.toolButton}>Save</button>
+      <button className={styles.toolButton} onClick={onSave}>
+        Save
+      </button>
     </div>
   );
 }

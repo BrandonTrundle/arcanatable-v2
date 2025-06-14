@@ -1,7 +1,9 @@
 import React, { useState } from "react";
 import styles from "../../../../styles/DMToolkit/TokenPanel.module.css"; // reuse styles
 import MapAssetCard from "../../MapAssets/MapAssetCard";
-import assetList from "../../../../Mock/MapAsset.json"; // update as needed
+import { useContext } from "react";
+import fetchMapAssets from "../../../../hooks/dmtoolkit/fetchMapAssets";
+import { AuthContext } from "../../../../context/AuthContext";
 
 export default function AssetPanel({
   onClose,
@@ -34,9 +36,15 @@ export default function AssetPanel({
     window.addEventListener("mouseup", onMouseUp);
   };
 
-  const filteredAssets = [assetList.content].filter((asset) =>
+  const { user } = useContext(AuthContext);
+  const { mapAssets, loading, error } = fetchMapAssets(user);
+
+  const filteredAssets = mapAssets.filter((asset) =>
     asset.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  if (loading) return <div className={styles.panel}>Loading assets...</div>;
+  if (error) return <div className={styles.panel}>Failed to load assets.</div>;
 
   return (
     <div

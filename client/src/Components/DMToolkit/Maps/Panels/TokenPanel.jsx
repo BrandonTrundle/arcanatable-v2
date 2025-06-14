@@ -1,15 +1,18 @@
 import React, { useState } from "react";
 import styles from "../../../../styles/DMToolkit/TokenPanel.module.css";
 import TokenCard from "../../Tokens/TokenCard";
-import mockTokens from "../../../../Mock/mockTokens.json"; // You'll need to create this file for test data
 
 export default function TokenPanel({
+  availableTokens = [],
   onClose,
   onStartDrag,
   onDragMove,
   onEndDrag,
 }) {
   const [searchTerm, setSearchTerm] = useState("");
+  const filteredTokens = availableTokens.filter((token) =>
+    token.name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
   const [dragOffset, setDragOffset] = useState({ x: 100, y: 100 });
 
   const handleDragStart = (e) => {
@@ -33,10 +36,6 @@ export default function TokenPanel({
     window.addEventListener("mousemove", onMouseMove);
     window.addEventListener("mouseup", onMouseUp);
   };
-
-  const filteredTokens = mockTokens.filter((token) =>
-    token.name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
 
   return (
     <div

@@ -160,20 +160,12 @@ function TrackedApp() {
           <Route path="potions" element={<Potions />} />
           <Route path="items" element={<Items />} />
           <Route path="maps" element={<Maps />} />
+          <Route path="maps/editor" element={<ToolkitMapEditor />} />{" "}
           <Route path="tokens" element={<Tokens />} />
           <Route path="assets" element={<MapAssets />} />
           <Route path="rules" element={<Rules />} />
           <Route path="cheatsheet" element={<CheatSheet />} />
         </Route>
-
-        <Route
-          path="/dmtoolkit/maps/editor"
-          element={
-            <PrivateRoute>
-              <ToolkitMapEditor />
-            </PrivateRoute>
-          }
-        />
       </Routes>
     </Router>
   );

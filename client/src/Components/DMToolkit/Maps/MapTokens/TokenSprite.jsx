@@ -17,12 +17,16 @@ function TokenSpriteComponent({
   const image = useMemo(() => getCachedImage(token.image), [token.image]);
 
   const groupRef = useRef();
-  const width = token.size.width * gridSize;
-  const height = token.size.height * gridSize;
+  const width = (token.size?.width || 1) * gridSize;
+  const height = (token.size?.height || 1) * gridSize;
+
+  const safeHp = typeof token.hp === "number" ? token.hp : 1;
+  const safeMaxHp = token.maxHp > 0 ? token.maxHp : 1;
+  const hpRatio = Math.max(0, Math.min(1, safeHp / safeMaxHp));
 
   const [visualPos, setVisualPos] = useState({
-    x: token.position.x * gridSize,
-    y: token.position.y * gridSize,
+    x: (token.position?.x ?? 0) * gridSize,
+    y: (token.position?.y ?? 0) * gridSize,
   });
 
   const {
@@ -175,10 +179,10 @@ function TokenSpriteComponent({
           />
           <Rect
             x={0}
-            y={(1 - token.hp / token.maxHp) * height}
+            y={(1 - hpRatio) * height}
             width={6}
-            height={(token.hp / token.maxHp) * height}
-            fill={getHpColor(token.hp, token.maxHp)}
+            height={hpRatio * height}
+            fill={getHpColor(safeHp, safeMaxHp)}
             opacity={0.75}
           />
           <Rect
@@ -196,8 +200,8 @@ function TokenSpriteComponent({
 
       {!isDragging && (
         <Rect
-          x={token.position.x * gridSize}
-          y={token.position.y * gridSize}
+          x={(token.position?.x ?? 0) * gridSize}
+          y={(token.position?.y ?? 0) * gridSize}
           width={width}
           height={height}
           opacity={0.01}
