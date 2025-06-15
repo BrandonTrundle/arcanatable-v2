@@ -1,17 +1,29 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import styles from "../../../styles/Characters/AlliesOrganizationsBlock.module.css";
-import defaultSymbol from "../../../assets/defaultav.png"; // You can replace with a better placeholder if desired
+import defaultSymbol from "../../../assets/defaultav.png";
 
 const AlliesOrganizationsBlock = ({
   value = "",
   onChange,
-  image = null,
+  image = null, // File or string
   onImageChange,
 }) => {
+  const [previewUrl, setPreviewUrl] = useState(null);
+
+  useEffect(() => {
+    if (image instanceof File) {
+      const url = URL.createObjectURL(image);
+      setPreviewUrl(url);
+      return () => URL.revokeObjectURL(url); // cleanup
+    } else {
+      setPreviewUrl(image);
+    }
+  }, [image]);
+
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
     if (file) {
-      onImageChange(URL.createObjectURL(file));
+      onImageChange(file); // forward File to parent
     }
   };
 
@@ -21,7 +33,7 @@ const AlliesOrganizationsBlock = ({
       <div className={styles.row}>
         <div className={styles.symbolSection}>
           <img
-            src={image || defaultSymbol}
+            src={previewUrl || defaultSymbol}
             alt="Organization Symbol"
             className={styles.symbol}
           />

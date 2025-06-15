@@ -26,7 +26,10 @@ export async function fetchCampaigns(user) {
     }
 
     const data = await response.json();
-    return Array.isArray(data.campaigns) ? data.campaigns : [];
+    const allCampaigns = Array.isArray(data.campaigns) ? data.campaigns : [];
+
+    // Only return campaigns created by the current user
+    return allCampaigns.filter((campaign) => campaign.creatorId === user.id);
   } catch (error) {
     console.error("Error in fetchCampaigns:", error);
     throw error;

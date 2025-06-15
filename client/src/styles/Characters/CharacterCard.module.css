@@ -13,12 +13,11 @@
 }
 
 .portrait {
-  width: 100%;
-  max-width: 200px;
-  height: auto;
-  border-radius: 8px;
+  width: 200px;
+  height: 200px;
   object-fit: cover;
-  margin-bottom: 1rem;
+  border-radius: 8px;
+  max-width: 100%;
 }
 
 .info {

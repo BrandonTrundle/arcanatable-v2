@@ -7,9 +7,6 @@ import CampaignSelectorBlock from "../../Components/Character/CharacterSheetPage
 import styles from "../../styles/Characters/CharacterSheet.module.css";
 import { useNavigate } from "react-router-dom";
 
-import mockCharacter from "../../mock/Character.json";
-import mockCampaigns from "../../mock/Campaigns.json";
-
 const EditCharacter = () => {
   const { id } = useParams();
   const [activeTab, setActiveTab] = useState(1);
@@ -38,10 +35,82 @@ const EditCharacter = () => {
   });
 
   useEffect(() => {
-    const normalized = normalizeCharacter(mockCharacter);
-    setCharacterData(normalized);
-    setAvailableCampaigns(mockCampaigns);
+    const fetchCharacterAndCampaigns = async () => {
+      try {
+        const token = localStorage.getItem("token");
+
+        const charRes = await fetch(
+          `${import.meta.env.VITE_API_BASE_URL}/api/characters/${id}`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
+
+        if (!charRes.ok) {
+          throw new Error("Failed to fetch character");
+        }
+
+        const character = await charRes.json();
+        setCharacterData(character);
+
+        const campRes = await fetch(
+          `${import.meta.env.VITE_API_BASE_URL}/api/campaigns`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
+
+        if (!campRes.ok) {
+          throw new Error("Failed to fetch campaigns");
+        }
+
+        const { campaigns } = await campRes.json();
+        setAvailableCampaigns(Array.isArray(campaigns) ? campaigns : []);
+      } catch (err) {
+        console.error("Error loading data:", err);
+      }
+    };
+
+    fetchCharacterAndCampaigns();
   }, [id]);
+
+  const handleUpdate = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      const formData = new FormData();
+      formData.append("characterData", JSON.stringify(characterData));
+
+      if (characterData.portraitImage instanceof File) {
+        formData.append("portraitImage", characterData.portraitImage);
+      }
+
+      if (
+        characterData.organization?.symbolImage &&
+        characterData.organization.symbolImage instanceof File
+      ) {
+        formData.append("symbolImage", characterData.organization.symbolImage);
+      }
+
+      const response = await fetch(
+        `${import.meta.env.VITE_API_BASE_URL}/api/characters/${id}`,
+        {
+          method: "PUT",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          body: formData,
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`Failed to update character: ${response.status}`);
+      }
+
+      navigate("/characters");
+    } catch (error) {
+      console.error("Error updating character:", error);
+    }
+  };
 
   const renderTab = () => {
     switch (activeTab) {
@@ -108,11 +177,8 @@ const EditCharacter = () => {
             Dashboard
           </button>
           <div className={styles.saveContainer}>
-            <button
-              className={styles.saveButton}
-              onClick={() => console.log("Character to save:", characterData)}
-            >
-              Save Character
+            <button className={styles.saveButton} onClick={handleUpdate}>
+              Update Character
             </button>
           </div>
         </div>

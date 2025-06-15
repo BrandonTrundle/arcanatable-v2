@@ -1,40 +1,35 @@
-import React, { useState, useEffect } from "react";
-import { Outlet, useLocation } from "react-router-dom"; // 👈 added useLocation
+import React, { useState, useEffect, useContext } from "react";
+import { Outlet, useLocation } from "react-router-dom";
 import DMToolkitNavbar from "../../Components/DMToolkit/DMToolkitGeneral/DMToolkitNavbar";
 import styles from "../../styles/DMToolkit/DMToolkitLayout.module.css";
+import { AuthContext } from "../../context/AuthContext";
+import { fetchCampaigns } from "../../hooks/dmtoolkit/fetchCampaigns";
 
 export default function DMToolkitLayout() {
-  const location = useLocation(); // 👈 get current path
-  const hideNavbar = location.pathname.startsWith("/dmtoolkit/maps/editor"); // 👈 condition
-
+  const location = useLocation();
+  const hideNavbar = location.pathname.startsWith("/dmtoolkit/maps/editor");
+  const { user } = useContext(AuthContext);
   const [campaigns, setCampaigns] = useState([]);
   const [currentCampaign, setCurrentCampaign] = useState("none");
 
   useEffect(() => {
-    const fetchCampaigns = async () => {
+    const loadCampaigns = async () => {
       try {
-        const token = localStorage.getItem("token");
-        const res = await fetch(
-          `${import.meta.env.VITE_API_BASE_URL}/api/campaigns`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-
-        const data = await res.json();
-        setCampaigns(Array.isArray(data.campaigns) ? data.campaigns : []);
+        const userCampaigns = await fetchCampaigns(user);
+        setCampaigns(userCampaigns);
       } catch (err) {
         console.error("Failed to fetch campaigns:", err);
       }
     };
 
-    fetchCampaigns();
+    if (user?.token) {
+      loadCampaigns();
+    }
+
     if (!currentCampaign || currentCampaign === "none") {
       setCurrentCampaign("none");
     }
-  }, []);
+  }, [user]);
 
   const handleCampaignChange = (newCampaignId) => {
     setCurrentCampaign(newCampaignId);

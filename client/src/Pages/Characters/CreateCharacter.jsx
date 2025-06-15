@@ -1,14 +1,18 @@
-import React, { useState } from "react";
+import React, { useState, useContext, useEffect } from "react";
 import PageOne from "../../Components/Character/CharacterSheetPages/PageOne";
 import PageTwo from "../../Components/Character/CharacterSheetPages/PageTwo";
 import PageThree from "../../Components/Character/CharacterSheetPages/PageThree";
 import CampaignSelectorBlock from "../../Components/Character/CharacterSheetPages/CampaignSelectorBlock";
 import styles from "../../styles/Characters/CharacterSheet.module.css";
 import { useNavigate } from "react-router-dom";
+import { AuthContext } from "../../context/AuthContext";
+import { fetchAllCampaigns } from "../../hooks/characters/fetchAllCampaigns";
 
 const CharacterSheet = ({ mode }) => {
   const [activeTab, setActiveTab] = useState(1);
   const navigate = useNavigate();
+  const { user } = useContext(AuthContext);
+  const [availableCampaigns, setAvailableCampaigns] = useState([]);
 
   const [characterData, setCharacterData] = useState({
     campaignIds: [],
@@ -138,15 +142,60 @@ const CharacterSheet = ({ mode }) => {
     }
   };
 
-  // Mock data for now
-  const availableCampaigns = [
-    { _id: "camp1", name: "Dark of the Moon" },
-    { _id: "camp2", name: "The Broken Crown" },
-    { _id: "camp2", name: "The Broken Crown" },
-    { _id: "camp2", name: "The Broken Crown" },
-    { _id: "camp2", name: "The Broken Crown" },
-    { _id: "camp2", name: "The Broken Crown" },
-  ];
+  useEffect(() => {
+    const loadCampaigns = async () => {
+      try {
+        const realCampaigns = await fetchAllCampaigns(user);
+        setAvailableCampaigns(realCampaigns);
+      } catch (err) {
+        console.error("Failed to load campaigns", err);
+      }
+    };
+
+    if (user?.token) {
+      loadCampaigns();
+    }
+  }, [user]);
+
+  const handleSave = async () => {
+    try {
+      const formData = new FormData();
+      formData.append("characterData", JSON.stringify(characterData));
+
+      if (characterData.portraitImage instanceof File) {
+        formData.append("portraitImage", characterData.portraitImage);
+      }
+
+      if (
+        characterData.organization?.symbolImage &&
+        characterData.organization.symbolImage instanceof File
+      ) {
+        formData.append("symbolImage", characterData.organization.symbolImage);
+      }
+
+      const response = await fetch(
+        `${import.meta.env.VITE_API_BASE_URL}/api/characters`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${user.token}`,
+          },
+          body: formData,
+        }
+      );
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(
+          `Failed to save character: ${response.status} ${errorText}`
+        );
+      }
+
+      navigate("/characters");
+    } catch (error) {
+      console.error("Error saving character:", error);
+    }
+  };
 
   return (
     <div className={styles.sheetContainer}>
@@ -183,10 +232,7 @@ const CharacterSheet = ({ mode }) => {
             Dashboard
           </button>
           <div className={styles.saveContainer}>
-            <button
-              className={styles.saveButton}
-              onClick={() => console.log("Character to save:", characterData)}
-            >
+            <button className={styles.saveButton} onClick={handleSave}>
               Save Character
             </button>
           </div>
