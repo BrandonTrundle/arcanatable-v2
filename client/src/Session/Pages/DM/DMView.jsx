@@ -12,6 +12,12 @@ export default function DMView({ sessionCode }) {
   const [selectedMapId, setSelectedMapId] = useState(null);
   const [activeMap, setActiveMap] = useState(null);
   const [showMapsPanel, setShowMapsPanel] = useState(false);
+  const [gridVisible, setGridVisible] = useState(true);
+  const [fogVisible, setFogVisible] = useState(false);
+  const [toolMode, setToolMode] = useState(null);
+  const [activeLayer, setActiveLayer] = useState("dm");
+  const [activeNoteCell, setActiveNoteCell] = useState(null);
+  const [selectedNoteCell, setSelectedNoteCell] = useState(null);
 
   useEffect(() => {
     const fetchSessionAndData = async () => {
@@ -78,10 +84,23 @@ export default function DMView({ sessionCode }) {
           maps={maps}
           selectedMapId={selectedMapId}
           setSelectedMapId={setSelectedMapId}
-          onLoadMap={handleLoadMap}
+          onLoadMap={(map) => setActiveMap(map)}
         />
       )}
-      <DMMapCanvas map={activeMap} />
+      <DMMapCanvas
+        map={activeMap}
+        notes={activeMap?.notes || []}
+        gridVisible={gridVisible}
+        onCanvasDrop={() => {}}
+        setMapData={setActiveMap}
+        activeLayer={activeLayer}
+        fogVisible={fogVisible}
+        toolMode={toolMode}
+        setActiveNoteCell={setActiveNoteCell}
+        activeNoteCell={activeNoteCell}
+        selectedNoteCell={selectedNoteCell}
+        onSelectToken={() => {}}
+      />
     </div>
   );
 }
