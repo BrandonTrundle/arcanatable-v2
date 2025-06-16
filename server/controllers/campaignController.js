@@ -297,6 +297,33 @@ const updateCampaign = async (req, res) => {
   }
 };
 
+const getCampaignById = async (req, res) => {
+  try {
+    const campaign = await Campaign.findById(req.params.id).populate(
+      "players",
+      "username avatar"
+    );
+
+    if (!campaign) {
+      return res.status(404).json({ message: "Campaign not found" });
+    }
+
+    const formatted = {
+      ...campaign.toObject(),
+      players: campaign.players.map((p) => ({
+        _id: p._id,
+        username: p.username,
+        avatarUrl: p.avatar,
+      })),
+    };
+
+    res.json({ campaign: formatted });
+  } catch (err) {
+    console.error("Error fetching campaign by ID:", err);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
 module.exports = {
   createCampaign,
   uploadCampaignImage,
@@ -305,4 +332,5 @@ module.exports = {
   joinCampaignByCode,
   getDMCampaigns,
   updateCampaign,
+  getCampaignById,
 };

@@ -10,6 +10,7 @@ const {
   joinCampaignByCode,
   getDMCampaigns,
   updateCampaign,
+  getCampaignById,
 } = require("../controllers/campaignController");
 const verifyToken = require("../middleware/authMiddleware");
 
@@ -32,6 +33,7 @@ router.get("/", verifyToken, getUserCampaigns);
 router.delete("/:id", verifyToken, deleteCampaign);
 router.get("/dm", verifyToken, getDMCampaigns);
 router.patch("/:id", verifyToken, updateCampaign);
+router.get("/:id", verifyToken, getCampaignById);
 
 // 🖼 Campaign image upload
 router.post(

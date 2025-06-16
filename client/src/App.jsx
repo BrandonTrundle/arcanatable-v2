@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useContext } from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { AuthProvider, AuthContext } from "./context/AuthContext";
 import PrivateRoute from "./Components/General/PrivateRoute";
+import SessionRoom from "./Session/Pages/SessionRoom";
 
 // Pages
 import HomePage from "./Pages/HomePage";
@@ -141,6 +142,15 @@ function TrackedApp() {
           element={
             <PrivateRoute>
               <EditCharacter />
+            </PrivateRoute>
+          }
+        />
+
+        <Route
+          path="/session/:code/:role"
+          element={
+            <PrivateRoute>
+              <SessionRoom />
             </PrivateRoute>
           }
         />

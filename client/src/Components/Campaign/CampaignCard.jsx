@@ -3,10 +3,12 @@ import { AuthContext } from "../../context/AuthContext";
 import styles from "../../styles/Campaign/CampaignDashboard.module.css";
 import defaultAvatar from "../../assets/defaultav.png";
 import placeholderImg from "../../assets/FantasyMapBackground.png";
+import { useNavigate } from "react-router-dom";
 
 export default function CampaignCard({ campaign, onInfoClick, onDelete }) {
   const { user } = useContext(AuthContext);
   const isCreator = campaign.creatorId === user?.id;
+  const navigate = useNavigate();
 
   const handleDelete = async () => {
     if (!window.confirm("Are you sure you want to delete this campaign?"))
@@ -31,6 +33,32 @@ export default function CampaignCard({ campaign, onInfoClick, onDelete }) {
     } catch (err) {
       console.error("Delete failed:", err);
       alert("Failed to delete campaign.");
+    }
+  };
+
+  const handleLaunch = async () => {
+    try {
+      const res = await fetch(
+        `${import.meta.env.VITE_API_BASE_URL}/api/sessions`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${user.token}`,
+          },
+          body: JSON.stringify({ campaignId: campaign._id }),
+        }
+      );
+
+      const data = await res.json();
+
+      if (!res.ok) throw new Error(data.message || "Failed to create session");
+
+      const sessionCode = data.session.sessionCode;
+      navigate(`/session/${sessionCode}/dm`); // ← Redirect to session room
+    } catch (err) {
+      console.error("Launch failed:", err);
+      alert("Failed to launch session.");
     }
   };
 
@@ -60,7 +88,19 @@ export default function CampaignCard({ campaign, onInfoClick, onDelete }) {
       </div>
 
       <div className={styles.cardActions}>
-        <button className={styles.launchBtn}>Launch</button>
+        {isCreator ? (
+          <button className={styles.launchBtn} onClick={handleLaunch}>
+            Launch
+          </button>
+        ) : (
+          <button
+            className={styles.launchBtn}
+            onClick={() => navigate(`/session/${campaign.inviteCode}/player`)}
+          >
+            Join
+          </button>
+        )}
+
         {isCreator ? (
           <button className={styles.deleteBtn} onClick={handleDelete}>
             Delete
