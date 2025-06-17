@@ -44,7 +44,12 @@ const DMToolbar = ({ onToggleMaps, isMapsPanelOpen }) => {
           }`}
           onClick={icon.onClick}
         >
-          <img src={icon.src} alt={icon.alt} className={styles.icon} />
+          <img
+            src={icon.src}
+            alt={icon.alt}
+            title={icon.alt}
+            className={styles.icon}
+          />
         </div>
       ))}
     </div>

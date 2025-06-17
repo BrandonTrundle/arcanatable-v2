@@ -34,3 +34,8 @@
   transform: scale(1.1);
   filter: brightness(1.1);
 }
+
+.iconWrapper.active {
+  background-color: var(--color-highlight);
+  border-radius: 0.5rem;
+}

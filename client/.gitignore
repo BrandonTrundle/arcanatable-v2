@@ -26,4 +26,5 @@ dist-ssr
 # Environment variables (frontend)
 .env
 .env.*.local
+eslint.config.js
 

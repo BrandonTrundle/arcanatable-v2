@@ -1,15 +1,19 @@
-import { useRef, useEffect } from "react";
+import { useState, useRef } from "react";
 import styles from "../../../styles/MapsPanel.module.css";
 import mapIcon from "../../../../assets/icons/mapIcon.png";
+import socket from "../../../../socket";
 
 export default function MapsPanel({
   maps,
   selectedMapId,
   setSelectedMapId,
   onLoadMap,
+  onClosePanel,
+  sessionCode,
 }) {
   const panelRef = useRef(null);
   const pos = useRef({ x: 0, y: 0 });
+  const [isCollapsed, setIsCollapsed] = useState(false);
 
   const startDrag = (e) => {
     const panel = panelRef.current;
@@ -34,36 +38,78 @@ export default function MapsPanel({
 
   return (
     <div className={styles.panel} ref={panelRef} style={{ top: 80, left: 80 }}>
-      <div className={styles.header} onMouseDown={startDrag}>
-        <img src={mapIcon} alt="Maps" className={styles.icon} />
+      <div
+        className={styles.header}
+        onMouseDown={startDrag}
+        onDoubleClick={() => setIsCollapsed((prev) => !prev)}
+      >
+        <img
+          src={mapIcon}
+          alt="Maps"
+          className={styles.icon}
+          onMouseDown={(e) => e.stopPropagation()}
+        />
         <span>Maps</span>
-        <button onClick={() => setSelectedMapId("")}>×</button>
+        <button onClick={onClosePanel}>×</button>
       </div>
-      <div className={styles.content}>
-        <select
-          value={selectedMapId}
-          onChange={(e) => setSelectedMapId(e.target.value)}
-        >
-          <option value="">Select a map</option>
-          {maps.map((map) => (
-            <option key={map._id} value={map._id}>
-              {map.name}
-            </option>
-          ))}
-        </select>
-        <button
-          onClick={() => {
-            const selectedMap = maps.find((m) => m._id === selectedMapId);
-            if (selectedMap) {
-              console.log("MAPS PANEL: CLICKED LOAD:", selectedMap);
-              onLoadMap(selectedMap);
-            }
-          }}
-        >
-          Load Map
-        </button>
-        <button className={styles.createButton}>Create New Map</button>
-      </div>
+
+      {!isCollapsed && (
+        <div className={styles.content}>
+          <select
+            value={selectedMapId}
+            onChange={(e) => setSelectedMapId(e.target.value)}
+          >
+            <option value="">Select a map</option>
+            {maps.map((map) => (
+              <option key={map._id} value={map._id}>
+                {map.name}
+              </option>
+            ))}
+          </select>
+
+          <button
+            onClick={() => {
+              const selectedMap = maps.find((m) => m._id === selectedMapId);
+              if (selectedMap) {
+                console.log("MAPS PANEL: CLICKED LOAD:", selectedMap);
+                onLoadMap(selectedMap); // Call prop correctly
+
+                // Emit map to players
+                socket.emit("dmLoadMap", {
+                  sessionCode,
+                  map: selectedMap,
+                });
+
+                // NEW: Update session's current map in backend
+                fetch(
+                  `${
+                    import.meta.env.VITE_API_BASE_URL
+                  }/api/sessions/${sessionCode}/set-active-map`,
+                  {
+                    method: "POST",
+                    headers: {
+                      "Content-Type": "application/json",
+                      Authorization: `Bearer ${localStorage.getItem("token")}`,
+                    },
+                    body: JSON.stringify({ mapId: selectedMap._id }),
+                  }
+                )
+                  .then((res) => res.json())
+                  .then((data) => {
+                    console.log("Session updated with new map:", data);
+                  })
+                  .catch((err) => {
+                    console.error("Failed to update session's map:", err);
+                  });
+              }
+            }}
+          >
+            Load Map
+          </button>
+
+          <button className={styles.createButton}>Create New Map</button>
+        </div>
+      )}
     </div>
   );
 }

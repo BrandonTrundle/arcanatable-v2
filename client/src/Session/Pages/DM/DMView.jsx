@@ -4,6 +4,7 @@ import styles from "../../styles/DMView.module.css";
 import MapsPanel from "../../Components/DM/Panel/MapsPanel";
 import DMMapCanvas from "./DMMapCanvas";
 import DMToolbar from "../../Components/DM/DMToolbar";
+import socket from "../../../socket";
 
 export default function DMView({ sessionCode }) {
   const { user } = useContext(AuthContext);
@@ -25,7 +26,9 @@ export default function DMView({ sessionCode }) {
         const token = user.token;
 
         const sessionRes = await fetch(
-          `${import.meta.env.VITE_API_BASE_URL}/api/sessions/${sessionCode}`,
+          `${
+            import.meta.env.VITE_API_BASE_URL
+          }/api/sessions/by-code/${sessionCode}`,
           {
             headers: { Authorization: `Bearer ${token}` },
           }
@@ -54,6 +57,13 @@ export default function DMView({ sessionCode }) {
         const mapData = await mapsRes.json();
         setMaps(mapData || []);
         console.log(mapData);
+
+        if (sessionData.session.currentMapId) {
+          const active = mapData.find(
+            (m) => m._id === sessionData.session.currentMapId
+          );
+          if (active) setActiveMap(active);
+        }
       } catch (err) {
         console.error("Error loading session data:", err);
       }
@@ -64,9 +74,39 @@ export default function DMView({ sessionCode }) {
     }
   }, [sessionCode, user]);
 
-  const handleLoadMap = () => {
+  useEffect(() => {
+    if (sessionCode) {
+      socket.emit("joinSession", { sessionCode });
+    }
+  }, [sessionCode]);
+
+  const handleLoadMap = async () => {
     const map = maps.find((m) => m._id === selectedMapId);
+    if (!map) return;
+
     setActiveMap(map);
+
+    // Emit the map to players
+    socket.emit("dmLoadMap", { sessionCode, map });
+
+    // Persist the map as the current map for the session
+    try {
+      await fetch(
+        `${
+          import.meta.env.VITE_API_BASE_URL
+        }/api/sessions/${sessionCode}/set-active-map`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${user.token}`,
+          },
+          body: JSON.stringify({ mapId: selectedMapId }),
+        }
+      );
+    } catch (error) {
+      console.error("Failed to set current map:", error);
+    }
   };
 
   const toggleMapsPanel = () => {
@@ -85,6 +125,8 @@ export default function DMView({ sessionCode }) {
           selectedMapId={selectedMapId}
           setSelectedMapId={setSelectedMapId}
           onLoadMap={(map) => setActiveMap(map)}
+          onClosePanel={() => setShowMapsPanel(false)}
+          sessionCode={sessionCode}
         />
       )}
       <DMMapCanvas

@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { AuthProvider, AuthContext } from "./context/AuthContext";
 import PrivateRoute from "./Components/General/PrivateRoute";
 import SessionRoom from "./Session/Pages/SessionRoom";
+import socket from "./socket";
 
 // Pages
 import HomePage from "./Pages/HomePage";
@@ -40,6 +41,14 @@ import ToolkitMapEditor from "./Pages/DMToolkit/Maps/ToolkitMapEditor";
 function TrackedApp() {
   const { user } = useContext(AuthContext);
   const startTimeRef = useRef(null);
+
+  useEffect(() => {
+    socket.connect();
+
+    return () => {
+      socket.disconnect();
+    };
+  }, []);
 
   useEffect(() => {
     startTimeRef.current = Date.now();

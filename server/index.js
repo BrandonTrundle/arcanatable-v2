@@ -1,44 +1,49 @@
 const express = require("express");
 const cors = require("cors");
+const http = require("http");
+const { Server } = require("socket.io");
 require("dotenv").config();
 const connectDB = require("./utils/connectDB");
 
 const app = express();
 const PORT = process.env.PORT || 4000;
 
-// App Routes
-const authRoutes = require("./routes/authRoutes");
-const userRoutes = require("./routes/userRoutes");
-const campaignRoutes = require("./routes/campaignRoutes");
-const monsterRoutes = require("./routes/monsterRoutes");
-const npcRoutes = require("./routes/npcRoutes");
-const mapAssetsRoutes = require("./routes/mapAssetRoutes");
-const tokenRoutes = require("./routes/tokenRoutes");
-const mapRoutes = require("./routes/mapRoutes");
-const characterRoutes = require("./routes/characterRoutes");
-const sessionRoutes = require("./routes/sessionRoutes");
+// HTTP server for Socket.IO
+const server = http.createServer(app);
+const io = new Server(server, {
+  cors: {
+    origin: "*", // Adjust for security in production
+    methods: ["GET", "POST"],
+  },
+});
 
-//Connect to MongoDB
+// Modular Socket.IO setup
+const registerSessionSockets = require("./sockets/sessionSockets");
+registerSessionSockets(io);
+
+// Connect to MongoDB
 connectDB();
 
-//app.use
+// Middleware & Routes
 app.use(cors());
 app.use(express.json());
-app.use("/api/auth", authRoutes);
-app.use("/api/users", userRoutes);
-app.use("/api/campaigns", campaignRoutes);
-app.use("/api/monsters", monsterRoutes);
-app.use("/api/npcs", npcRoutes);
-app.use("/api/mapassets", mapAssetsRoutes);
-app.use("/api/tokens", tokenRoutes);
-app.use("/api/maps", mapRoutes);
-app.use("/api/characters", characterRoutes);
-app.use("/api/sessions", sessionRoutes);
+
+app.use("/api/auth", require("./routes/authRoutes"));
+app.use("/api/users", require("./routes/userRoutes"));
+app.use("/api/campaigns", require("./routes/campaignRoutes"));
+app.use("/api/monsters", require("./routes/monsterRoutes"));
+app.use("/api/npcs", require("./routes/npcRoutes"));
+app.use("/api/mapassets", require("./routes/mapAssetRoutes"));
+app.use("/api/tokens", require("./routes/tokenRoutes"));
+app.use("/api/maps", require("./routes/mapRoutes"));
+app.use("/api/characters", require("./routes/characterRoutes"));
+app.use("/api/sessions", require("./routes/sessionRoutes"));
 
 app.get("/", (req, res) => {
   res.send("ArcanaTable API is running.");
 });
 
-app.listen(PORT, () => {
-  console.log(`Server listening on port ${PORT}`);
+// Start the combined HTTP/Socket.IO server
+server.listen(PORT, () => {
+  console.log(`Server running on http://localhost:${PORT}`);
 });

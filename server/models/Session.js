@@ -10,6 +10,11 @@ const SessionSchema = new mongoose.Schema({
   hostId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
   createdAt: { type: Date, default: Date.now },
   isActive: { type: Boolean, default: true },
+  currentMapId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Map",
+    default: null,
+  },
 });
 
 module.exports = mongoose.model("Session", SessionSchema);
