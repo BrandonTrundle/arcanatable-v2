@@ -13,6 +13,7 @@ function SessionTokenSprite({
   onSelect = () => {},
   immediatePositionOverride = null,
   opacity = 1,
+  disableInteraction = false,
 }) {
   const image = useMemo(() => getCachedImage(token.image), [token.image]);
 
@@ -88,10 +89,19 @@ function SessionTokenSprite({
     if (!isSelected && isDragging && !hasMoved) {
       setIsDragging(false);
     }
+    console.log("Token", token.id, "isSelected?", isSelected);
   }, [isSelected, isDragging, hasMoved, token.id]);
 
+  console.log("Render check", {
+    tokenId: token.id,
+    isDragging,
+    disableInteraction,
+  });
+
   const ghostToken = useMemo(() => {
-    if (!isDragging || !image) return null;
+    if (!isDragging || !image || disableInteraction) return null;
+
+    console.log("Rendering ghostToken", { ghostPos, hasMoved });
 
     return (
       <KonvaImage
@@ -134,6 +144,7 @@ function SessionTokenSprite({
           opacity={opacity}
           onClick={(e) => {
             e.cancelBubble = true;
+            console.log("Group clicked - selecting token:", token.id);
             onSelect(token.id);
           }}
         >
@@ -188,8 +199,10 @@ function SessionTokenSprite({
           />
         </Group>
       )}
+
       {ghostToken}
-      {!isDragging && (
+
+      {!isDragging && !disableInteraction && (
         <Rect
           x={(token.position?.x ?? 0) * gridSize}
           y={(token.position?.y ?? 0) * gridSize}
@@ -198,13 +211,21 @@ function SessionTokenSprite({
           opacity={0.01}
           listening={true}
           onMouseDown={(e) => {
+            console.log("Token mousedown triggered", {
+              tokenId: token.id,
+              isSelected,
+              disableInteraction,
+            });
             e.cancelBubble = true;
             if (!isSelected) {
               onSelect(token.id);
+              console.log("Token selected, starting drag on timeout");
               setTimeout(() => {
+                console.log("Drag started (newly selected)");
                 startDrag();
               }, 0);
             } else {
+              console.log("Token already selected, drag starting immediately");
               startDrag();
             }
           }}
@@ -219,5 +240,6 @@ export default React.memo(
   (prev, next) =>
     prev.token === next.token &&
     prev.gridSize === next.gridSize &&
-    prev.isSelected === next.isSelected
+    prev.isSelected === next.isSelected &&
+    prev.disableInteraction === next.disableInteraction
 );

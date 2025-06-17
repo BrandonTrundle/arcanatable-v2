@@ -14,9 +14,22 @@ import pcIcon from "../../../assets/icons/pcIcon.png";
 import settingsIcon from "../../../assets/icons/settingsIcon.png";
 import tokenIcon from "../../../assets/icons/tokenIcon.png";
 
-const DMToolbar = ({ onToggleMaps, isMapsPanelOpen }) => {
+const DMToolbar = ({
+  onToggleMaps,
+  isMapsPanelOpen,
+  onSelectTool,
+  currentTool,
+}) => {
   const icons = [
-    { src: selectorIcon, alt: "Selector", onClick: null },
+    {
+      src: selectorIcon,
+      alt: "Selector",
+      onClick: () => {
+        console.log("Selector clicked");
+        onSelectTool(currentTool === "select" ? null : "select");
+      },
+      key: "select",
+    },
     { src: combatIcon, alt: "Combat", onClick: null },
     { src: d20Icon, alt: "Dice", onClick: null },
     { src: dmIcon, alt: "DM Tools", onClick: null },
@@ -40,7 +53,7 @@ const DMToolbar = ({ onToggleMaps, isMapsPanelOpen }) => {
         <div
           key={idx}
           className={`${styles.iconWrapper} ${
-            icon.active ? styles.active : ""
+            icon.key === currentTool ? styles.active : ""
           }`}
           onClick={icon.onClick}
         >

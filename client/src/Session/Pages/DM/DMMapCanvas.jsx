@@ -34,9 +34,9 @@ export default function DMMapCanvas({
   const stageRef = useRef();
   const [selectedTokenId, setSelectedTokenId] = useState(null);
   const [selectedAssetId, setSelectedAssetId] = useState(null);
+  console.log("DMMapCanvas toolMode:", toolMode);
 
   useEscapeDeselect(() => setSelectedTokenId(null));
-  useEscapeDeselect(() => setSelectedAssetId(null));
 
   const stageWidth = map?.width * map?.gridSize || 0;
   const stageHeight = map?.height * map?.gridSize || 0;
@@ -136,9 +136,11 @@ export default function DMMapCanvas({
             gridSize={map.gridSize}
             activeLayer={activeLayer}
             selectedTokenId={selectedTokenId}
+            disableInteraction={toolMode !== "select"}
             onSelectToken={(id) => {
+              if (toolMode !== "select") return;
               setSelectedTokenId(id);
-              if (onSelectToken) {
+              if (typeof onSelectToken === "function") {
                 const token = Object.entries(map.layers || {})
                   .flatMap(([layerKey, layer]) =>
                     (layer.tokens || []).map((t) => ({
@@ -150,7 +152,10 @@ export default function DMMapCanvas({
                 onSelectToken(token || null);
               }
             }}
-            onTokenMove={handleTokenMove}
+            onTokenMove={(id, newPos) => {
+              if (toolMode !== "select") return; // Prevent movement if not in select mode
+              handleTokenMove(id, newPos);
+            }}
           />
         </Layer>
 

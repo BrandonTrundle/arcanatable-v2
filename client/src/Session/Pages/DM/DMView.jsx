@@ -113,11 +113,18 @@ export default function DMView({ sessionCode }) {
     setShowMapsPanel((prev) => !prev);
   };
 
+  const handleToolSelect = (tool) => {
+    console.log("Tool selected:", tool);
+    setToolMode(tool);
+  };
+
   return (
     <div className={styles.dmView}>
       <DMToolbar
         onToggleMaps={toggleMapsPanel}
         isMapsPanelOpen={showMapsPanel}
+        onSelectTool={handleToolSelect}
+        currentTool={toolMode}
       />
       {showMapsPanel && (
         <MapsPanel
@@ -141,7 +148,9 @@ export default function DMView({ sessionCode }) {
         setActiveNoteCell={setActiveNoteCell}
         activeNoteCell={activeNoteCell}
         selectedNoteCell={selectedNoteCell}
-        onSelectToken={() => {}}
+        onSelectToken={(token) =>
+          console.log("Token selected in DMView:", token)
+        }
       />
     </div>
   );

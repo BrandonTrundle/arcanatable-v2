@@ -8,7 +8,9 @@ export default function SessionMapTokenLayer({
   selectedTokenId,
   onSelectToken,
   onTokenMove,
+  disableInteraction = false,
 }) {
+  console.log("SessionMapTokenLayer disableInteraction:", disableInteraction);
   return (
     <>
       {Object.entries(map.layers || {}).flatMap(([layerKey, layerData]) =>
@@ -24,6 +26,7 @@ export default function SessionMapTokenLayer({
               token.id === selectedTokenId ? token.position : null
             }
             opacity={layerKey === "dm" ? 0.5 : 1}
+            disableInteraction={disableInteraction}
           />
         ))
       )}
