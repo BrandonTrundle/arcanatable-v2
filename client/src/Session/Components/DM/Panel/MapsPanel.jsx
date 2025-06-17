@@ -71,7 +71,7 @@ export default function MapsPanel({
             onClick={() => {
               const selectedMap = maps.find((m) => m._id === selectedMapId);
               if (selectedMap) {
-                console.log("MAPS PANEL: CLICKED LOAD:", selectedMap);
+                //        console.log("MAPS PANEL: CLICKED LOAD:", selectedMap);
                 onLoadMap(selectedMap); // Call prop correctly
 
                 // Emit map to players
@@ -96,7 +96,7 @@ export default function MapsPanel({
                 )
                   .then((res) => res.json())
                   .then((data) => {
-                    console.log("Session updated with new map:", data);
+                    //              console.log("Session updated with new map:", data);
                   })
                   .catch((err) => {
                     console.error("Failed to update session's map:", err);

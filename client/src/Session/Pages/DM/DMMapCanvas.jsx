@@ -11,10 +11,12 @@ import SessionStaticMapLayer from "../../MapLayers/SessionStaticMapLayer";
 import SessionFogAndBlockerLayer from "../../MapLayers/SessionFogAndBlockerLayer";
 import SessionMapAssetLayer from "../../MapLayers/SessionMapAssetLayer";
 import SessionMapTokenLayer from "../../MapLayers/SessionMapTokenLayer";
+import socket from "../../../socket";
 
 import styles from "../../styles/MapCanvas.module.css";
 
 export default function DMMapCanvas({
+  sessionCode,
   map,
   notes,
   gridVisible,
@@ -34,7 +36,7 @@ export default function DMMapCanvas({
   const stageRef = useRef();
   const [selectedTokenId, setSelectedTokenId] = useState(null);
   const [selectedAssetId, setSelectedAssetId] = useState(null);
-  console.log("DMMapCanvas toolMode:", toolMode);
+  //console.log("DMMapCanvas toolMode:", toolMode);
 
   useEscapeDeselect(() => setSelectedTokenId(null));
 
@@ -42,14 +44,26 @@ export default function DMMapCanvas({
   const stageHeight = map?.height * map?.gridSize || 0;
 
   const handleTokenMove = (id, newPos) => {
+    const tokenLayer = Object.entries(map.layers || {}).find(
+      ([layerName, layerData]) =>
+        (layerData.tokens || []).some((t) => t.id === id)
+    )?.[0];
+
+    const tokenData = { id, newPos, layer: tokenLayer };
+
     setMapData((prevMap) =>
       handleTokenMoveWithFog({
         map: prevMap,
         id,
         newPos,
-        activeLayer,
+        activeLayer: tokenLayer, // important!
       })
     );
+
+    socket.emit("dmTokenMove", {
+      sessionCode,
+      tokenData,
+    });
   };
 
   const handleCanvasMouseUp = (e) => {

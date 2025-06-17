@@ -45,7 +45,7 @@ export default function DMView({ sessionCode }) {
         const campaignData = await campaignRes.json();
         setCampaign(campaignData.campaign);
 
-        console.log("Fetching maps for campaign:", campaignId);
+        //  console.log("Fetching maps for campaign:", campaignId);
         const mapsRes = await fetch(
           `${
             import.meta.env.VITE_API_BASE_URL
@@ -114,7 +114,7 @@ export default function DMView({ sessionCode }) {
   };
 
   const handleToolSelect = (tool) => {
-    console.log("Tool selected:", tool);
+    //    console.log("Tool selected:", tool);
     setToolMode(tool);
   };
 
@@ -137,6 +137,7 @@ export default function DMView({ sessionCode }) {
         />
       )}
       <DMMapCanvas
+        sessionCode={sessionCode}
         map={activeMap}
         notes={activeMap?.notes || []}
         gridVisible={gridVisible}

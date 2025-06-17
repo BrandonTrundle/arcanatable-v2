@@ -136,7 +136,7 @@ export default function Tokens() {
             : npcs;
 
         const normalizedTokens = [...npcTokens, ...monsters].map((item) => {
-          console.log("NPC item:", item);
+          //  console.log("NPC item:", item);
           const content = item.content || {};
           const isNPC = item.toolkitType?.toLowerCase() === "npc";
           const isMonster = item.toolkitType === "Monster";
@@ -221,7 +221,7 @@ export default function Tokens() {
               key={token.id}
               token={token}
               onClick={() => {
-                console.log("Selected token:", token);
+                //       console.log("Selected token:", token);
                 setSelectedToken(token);
               }}
             />

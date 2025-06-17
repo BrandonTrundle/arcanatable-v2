@@ -25,7 +25,7 @@ const DMToolbar = ({
       src: selectorIcon,
       alt: "Selector",
       onClick: () => {
-        console.log("Selector clicked");
+        //       console.log("Selector clicked");
         onSelectTool(currentTool === "select" ? null : "select");
       },
       key: "select",

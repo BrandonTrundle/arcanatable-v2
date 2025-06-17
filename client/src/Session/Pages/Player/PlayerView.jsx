@@ -79,10 +79,34 @@ export default function PlayerView({ inviteCode }) {
       setActiveMap(map);
     };
 
+    const handleTokenMove = ({ id, newPos, layer }) => {
+      console.log("Received token move:", id, newPos, layer);
+      setActiveMap((prev) => {
+        if (!prev?.layers?.[layer]) return prev;
+
+        const updatedTokens = prev.layers[layer].tokens.map((token) =>
+          token.id === id ? { ...token, position: newPos } : token
+        );
+
+        return {
+          ...prev,
+          layers: {
+            ...prev.layers,
+            [layer]: {
+              ...prev.layers[layer],
+              tokens: updatedTokens,
+            },
+          },
+        };
+      });
+    };
+
     socket.on("playerReceiveMap", handleReceiveMap);
+    socket.on("playerReceiveTokenMove", handleTokenMove);
 
     return () => {
       socket.off("playerReceiveMap", handleReceiveMap);
+      socket.off("playerReceiveTokenMove", handleTokenMove);
     };
   }, []);
 

@@ -10,7 +10,7 @@ export default function SessionMapTokenLayer({
   onTokenMove,
   disableInteraction = false,
 }) {
-  console.log("SessionMapTokenLayer disableInteraction:", disableInteraction);
+  // console.log("SessionMapTokenLayer disableInteraction:", disableInteraction);
   return (
     <>
       {Object.entries(map.layers || {}).flatMap(([layerKey, layerData]) =>

@@ -17,5 +17,14 @@ module.exports = function registerSessionSockets(io) {
     socket.on("disconnect", () => {
       console.log("User disconnected:", socket.id);
     });
+
+    // DM moves a token and broadcasts it
+    socket.on("dmTokenMove", ({ sessionCode, tokenData }) => {
+      console.log(
+        `Broadcasting token move in session ${sessionCode}`,
+        tokenData
+      );
+      io.to(sessionCode).emit("playerReceiveTokenMove", tokenData);
+    });
   });
 };
