@@ -113,6 +113,33 @@ export default function DMView({ sessionCode }) {
     setShowMapsPanel((prev) => !prev);
   };
 
+  useEffect(() => {
+    function handlePlayerDropToken({ mapId, token }) {
+      setActiveMap((prev) => {
+        if (!prev || prev._id !== mapId) return prev;
+
+        const playerLayer = prev.layers.player || { tokens: [], assets: [] };
+        const updatedTokens = [...(playerLayer.tokens || []), token];
+
+        return {
+          ...prev,
+          layers: {
+            ...prev.layers,
+            player: {
+              ...playerLayer,
+              tokens: updatedTokens,
+            },
+          },
+        };
+      });
+    }
+
+    socket.on("playerDropToken", handlePlayerDropToken);
+    return () => {
+      socket.off("playerDropToken", handlePlayerDropToken);
+    };
+  }, []);
+
   const handleToolSelect = (tool) => {
     //    console.log("Tool selected:", tool);
     setToolMode(tool);

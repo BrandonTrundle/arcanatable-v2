@@ -10,23 +10,18 @@ import styles from "../../styles/CharacterPanel.module.css";
 import characterIcon from "../../../assets/icons/pcIcon.png";
 import socket from "../../../socket";
 
-export default function CharacterPanel({
-  onClose,
-  campaign,
-  user,
-  onOpenCharacter,
-}) {
-  const panelRef = useRef(null);
-  const pos = useRef({ x: 0, y: 0 });
-  const [isCollapsed, setIsCollapsed] = useState(false);
-  const [characters, setCharacters] = useState([]);
+const CharacterPanel = forwardRef(
+  ({ onClose, campaign, user, onOpenCharacter }, ref) => {
+    const panelRef = useRef(null);
+    const pos = useRef({ x: 0, y: 0 });
+    const [isCollapsed, setIsCollapsed] = useState(false);
+    const [characters, setCharacters] = useState([]);
 
-  const isDM = campaign?.creatorId === user._id;
-
-  useEffect(() => {
-    if (!campaign || !user) return;
+    const isDM = campaign?.creatorId === user._id;
 
     const fetchCharacters = async () => {
+      if (!campaign || !user) return;
+
       try {
         const token = user.token;
         const query =
@@ -49,76 +44,95 @@ export default function CharacterPanel({
       }
     };
 
-    fetchCharacters();
-  }, [campaign, user]);
+    useImperativeHandle(ref, () => ({
+      refreshCharacters: fetchCharacters,
+    }));
 
-  const startDrag = (e) => {
-    const panel = panelRef.current;
-    pos.current = {
-      x: e.clientX - panel.offsetLeft,
-      y: e.clientY - panel.offsetTop,
+    useEffect(() => {
+      fetchCharacters();
+    }, [campaign, user]);
+
+    const startDrag = (e) => {
+      const panel = panelRef.current;
+      pos.current = {
+        x: e.clientX - panel.offsetLeft,
+        y: e.clientY - panel.offsetTop,
+      };
+      document.addEventListener("mousemove", drag);
+      document.addEventListener("mouseup", stopDrag);
     };
-    document.addEventListener("mousemove", drag);
-    document.addEventListener("mouseup", stopDrag);
-  };
 
-  const drag = (e) => {
-    const panel = panelRef.current;
-    panel.style.left = `${e.clientX - pos.current.x}px`;
-    panel.style.top = `${e.clientY - pos.current.y}px`;
-  };
+    const drag = (e) => {
+      const panel = panelRef.current;
+      panel.style.left = `${e.clientX - pos.current.x}px`;
+      panel.style.top = `${e.clientY - pos.current.y}px`;
+    };
 
-  const stopDrag = () => {
-    document.removeEventListener("mousemove", drag);
-    document.removeEventListener("mouseup", stopDrag);
-  };
+    const stopDrag = () => {
+      document.removeEventListener("mousemove", drag);
+      document.removeEventListener("mouseup", stopDrag);
+    };
 
-  return (
-    <div
-      className={styles.panel}
-      ref={panelRef}
-      style={{ top: 100, left: 100 }}
-    >
+    return (
       <div
-        className={styles.header}
-        onMouseDown={startDrag}
-        onDoubleClick={() => setIsCollapsed((prev) => !prev)}
+        className={styles.panel}
+        ref={panelRef}
+        style={{ top: 100, left: 100 }}
       >
-        <img
-          src={characterIcon}
-          alt="Characters"
-          className={styles.icon}
-          onMouseDown={(e) => e.stopPropagation()}
-        />
-        <span>Characters</span>
-        <button onClick={onClose}>×</button>
-      </div>
-
-      {!isCollapsed && (
-        <div className={styles.content}>
-          {characters.map((char) => (
-            <div key={char._id} className={styles.characterCard}>
-              <img
-                src={char.portraitImage}
-                alt={char.name}
-                className={styles.portrait}
-              />
-              <div className={styles.details}>
-                <div className={styles.name}>{char.name}</div>
-                <div className={styles.meta}>
-                  {char.class} - Level {char.level}
-                </div>
-                <button
-                  className={styles.openButton}
-                  onClick={() => onOpenCharacter(char)}
-                >
-                  Open Character Sheet
-                </button>
-              </div>
-            </div>
-          ))}
+        <div
+          className={styles.header}
+          onMouseDown={startDrag}
+          onDoubleClick={() => setIsCollapsed((prev) => !prev)}
+        >
+          <img
+            src={characterIcon}
+            alt="Characters"
+            className={styles.icon}
+            onMouseDown={(e) => e.stopPropagation()}
+          />
+          <span>Characters</span>
+          <button onClick={onClose}>×</button>
         </div>
-      )}
-    </div>
-  );
-}
+
+        {!isCollapsed && (
+          <div className={styles.content}>
+            {characters.map((char) => (
+              <div
+                key={char._id}
+                className={styles.characterCard}
+                draggable
+                onDragStart={(e) => {
+                  e.dataTransfer.setData(
+                    "application/json",
+                    JSON.stringify(char)
+                  );
+                  e.dataTransfer.effectAllowed = "copy";
+                }}
+              >
+                <img
+                  src={char.portraitImage}
+                  alt={char.name}
+                  className={styles.portrait}
+                />
+                <div className={styles.details}>
+                  <div className={styles.name}>{char.name}</div>
+                  <div className={styles.meta}>
+                    {char.class} - Level {char.level}
+                  </div>
+                  <button
+                    className={styles.openButton}
+                    onClick={() => onOpenCharacter(char)}
+                  >
+                    Open Character Sheet
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  }
+);
+
+export default CharacterPanel;

@@ -18,6 +18,11 @@ module.exports = function registerSessionSockets(io) {
       console.log("User disconnected:", socket.id);
     });
 
+    socket.on("playerDropToken", ({ sessionCode, mapId, token }) => {
+      console.log(`Player dropped token in session ${sessionCode}`);
+      socket.to(sessionCode).emit("playerDropToken", { mapId, token });
+    });
+
     // DM moves a token and broadcasts it
     socket.on("dmTokenMove", ({ sessionCode, tokenData }) => {
       console.log(

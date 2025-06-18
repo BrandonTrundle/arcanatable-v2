@@ -1,4 +1,4 @@
-import { useEffect, useState, useContext } from "react";
+import { useEffect, useState, useContext, useRef } from "react";
 import { AuthContext } from "../../../context/AuthContext";
 import PlayerToolbar from "../../Components/Player/PlayerToolbar";
 import PlayerMapCanvas from "./PlayerMapCanvas";
@@ -15,6 +15,7 @@ export default function PlayerView({ inviteCode }) {
   const [fogVisible, setFogVisible] = useState(false);
   const [showCharacterPanel, setShowCharacterPanel] = useState(false);
   const [activeCharacter, setActiveCharacter] = useState(null);
+  const characterPanelRef = useRef();
 
   useEffect(() => {
     const fetchSessionData = async () => {
@@ -120,6 +121,7 @@ export default function PlayerView({ inviteCode }) {
 
       {showCharacterPanel && (
         <CharacterPanel
+          ref={characterPanelRef}
           onClose={() => setShowCharacterPanel(false)}
           campaign={campaign}
           user={user}
@@ -128,7 +130,12 @@ export default function PlayerView({ inviteCode }) {
       )}
 
       {activeMap ? (
-        <PlayerMapCanvas map={activeMap} fogVisible={fogVisible} />
+        <PlayerMapCanvas
+          sessionCode={inviteCode}
+          map={activeMap}
+          fogVisible={fogVisible}
+          setActiveMap={setActiveMap}
+        />
       ) : (
         <div className={styles.info}>
           <h2>Welcome to the game!</h2>
@@ -145,10 +152,8 @@ export default function PlayerView({ inviteCode }) {
           character={activeCharacter}
           onClose={(saved) => {
             setActiveCharacter(null);
-            if (saved) {
-              // Force re-fetch of characters by toggling panel
-              setShowCharacterPanel(false);
-              setTimeout(() => setShowCharacterPanel(true), 0);
+            if (saved && characterPanelRef.current?.refreshCharacters) {
+              characterPanelRef.current.refreshCharacters();
             }
           }}
         />
