@@ -145,6 +145,36 @@ export default function DMView({ sessionCode }) {
     setToolMode(tool);
   };
 
+  useEffect(() => {
+    const handlePlayerTokenMove = ({ id, newPos, layer }) => {
+      console.log(
+        "[DM] Received player token move:",
+        id,
+        newPos,
+        "on layer",
+        layer
+      );
+      setActiveMap((prevMap) => {
+        const updatedTokens = prevMap.layers[layer].tokens.map((token) =>
+          token.id === id ? { ...token, position: newPos } : token
+        );
+        return {
+          ...prevMap,
+          layers: {
+            ...prevMap.layers,
+            [layer]: {
+              ...prevMap.layers[layer],
+              tokens: updatedTokens,
+            },
+          },
+        };
+      });
+    };
+
+    socket.on("playerReceiveTokenMove", handlePlayerTokenMove);
+    return () => socket.off("playerReceiveTokenMove", handlePlayerTokenMove);
+  }, []);
+
   return (
     <div className={styles.dmView}>
       <DMToolbar

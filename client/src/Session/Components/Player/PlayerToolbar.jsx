@@ -7,9 +7,14 @@ import pcIcon from "../../../assets/icons/pcIcon.png";
 import settingsIcon from "../../../assets/icons/settingsIcon.png";
 import selectorIcon from "../../../assets/icons/selectorIcon.png";
 
-const PlayerToolbar = ({ onSelectCharacters }) => {
+const PlayerToolbar = ({ onSelectCharacters, onSelectTool, currentTool }) => {
   const icons = [
-    { src: selectorIcon, alt: "Selector", onClick: null },
+    {
+      src: selectorIcon,
+      alt: "Selector",
+      key: "select",
+      onClick: () => onSelectTool(currentTool === "select" ? null : "select"),
+    },
     { src: d20Icon, alt: "Roll Dice", onClick: null },
     { src: pcIcon, alt: "Characters", onClick: onSelectCharacters },
     { src: settingsIcon, alt: "Settings", onClick: null },
@@ -18,7 +23,13 @@ const PlayerToolbar = ({ onSelectCharacters }) => {
   return (
     <div className={styles.toolbar}>
       {icons.map((icon, idx) => (
-        <div key={idx} className={styles.iconWrapper} onClick={icon.onClick}>
+        <div
+          key={idx}
+          className={`${styles.iconWrapper} ${
+            icon.key === currentTool ? styles.active : ""
+          }`}
+          onClick={icon.onClick}
+        >
           <img src={icon.src} alt={icon.alt} className={styles.icon} />
         </div>
       ))}

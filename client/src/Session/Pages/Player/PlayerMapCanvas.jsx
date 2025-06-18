@@ -1,5 +1,5 @@
-// client/src/Session/Pages/Player/PlayerMapCanvas.jsx
-import React, { useRef } from "react";
+import React, { useRef, useContext, useState, useEffect } from "react";
+import { AuthContext } from "../../../context/AuthContext";
 import { Stage, Layer } from "react-konva";
 import useImage from "use-image";
 import socket from "../../../socket";
@@ -17,11 +17,41 @@ export default function PlayerMapCanvas({
   map,
   fogVisible,
   setActiveMap,
+  toolMode,
 }) {
+  const { user } = useContext(AuthContext);
+  const [selectedTokenId, setSelectedTokenId] = useState(null);
   const [mapImage] = useImage(map?.image, "anonymous");
   const imageReady = !!mapImage;
 
   const stageRef = useRef();
+
+  const handleSelectToken = (id) => {
+    setSelectedTokenId(id);
+    const allTokens = Object.values(map.layers || {}).flatMap(
+      (l) => l.tokens || []
+    );
+    const token = allTokens.find((t) => t.id === id);
+    if (token) {
+      console.log(`[Player ${user?.id}] selected token:`, token);
+    } else {
+      console.log(
+        `[Player ${user?.id}] selected token ID: ${id}, but token not found`
+      );
+    }
+  };
+
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape") {
+        setSelectedTokenId(null);
+        console.log("[Player] Deselected token via Escape key");
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
 
   if (!map) {
     return (
@@ -83,7 +113,7 @@ export default function PlayerMapCanvas({
         <SessionStaticMapLayer
           mapImage={mapImage}
           imageReady={imageReady}
-          gridVisible={true} // Always visible for players?
+          gridVisible={true}
           map={map}
           notes={map.notes || []}
         />
@@ -95,7 +125,7 @@ export default function PlayerMapCanvas({
           revealedCells={map.fogOfWar?.revealedCells || []}
           blockingCells={map.fogOfWar?.blockingCells || []}
           showFog={fogVisible}
-          showBlockers={false} // Maybe only DM sees blockers?
+          showBlockers={false}
         />
 
         <Layer>
@@ -124,9 +154,49 @@ export default function PlayerMapCanvas({
             }}
             gridSize={map.gridSize}
             activeLayer="player"
-            selectedTokenId={null}
-            onSelectToken={() => {}}
-            onTokenMove={() => {}}
+            selectedTokenId={selectedTokenId}
+            onSelectToken={handleSelectToken}
+            onTokenMove={(id, newPos) => {
+              console.log(
+                "[Player] Attempting to move token:",
+                id,
+                "to",
+                newPos
+              );
+
+              const layer = "player";
+              const allTokens = Object.values(map.layers || {}).flatMap(
+                (l) => l.tokens || []
+              );
+              const token = allTokens.find((t) => t.id === id);
+              const ownerId = token?.ownerId;
+              const ownerIds = token?.ownerIds;
+
+              setActiveMap((prev) => {
+                console.log("[Player] Updating map state for token:", id);
+                const updatedTokens = prev.layers[layer].tokens.map((token) =>
+                  token.id === id ? { ...token, position: newPos } : token
+                );
+                return {
+                  ...prev,
+                  layers: {
+                    ...prev.layers,
+                    [layer]: {
+                      ...prev.layers[layer],
+                      tokens: updatedTokens,
+                    },
+                  },
+                };
+              });
+
+              socket.emit("playerMoveToken", {
+                sessionCode,
+                tokenData: { id, newPos, layer, ownerId, ownerIds },
+              });
+              console.log("[Player] Emitted playerMoveToken event for:", id);
+            }}
+            disableInteraction={toolMode !== "select"}
+            currentUserId={user.id}
           />
         </Layer>
 

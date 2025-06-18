@@ -16,6 +16,7 @@ export default function PlayerView({ inviteCode }) {
   const [showCharacterPanel, setShowCharacterPanel] = useState(false);
   const [activeCharacter, setActiveCharacter] = useState(null);
   const characterPanelRef = useRef();
+  const [toolMode, setToolMode] = useState(null);
 
   useEffect(() => {
     const fetchSessionData = async () => {
@@ -117,7 +118,11 @@ export default function PlayerView({ inviteCode }) {
 
   return (
     <div className={styles.playerView}>
-      <PlayerToolbar onSelectCharacters={() => setShowCharacterPanel(true)} />
+      <PlayerToolbar
+        onSelectCharacters={() => setShowCharacterPanel(true)}
+        onSelectTool={setToolMode}
+        currentTool={toolMode}
+      />
 
       {showCharacterPanel && (
         <CharacterPanel
@@ -135,6 +140,7 @@ export default function PlayerView({ inviteCode }) {
           map={activeMap}
           fogVisible={fogVisible}
           setActiveMap={setActiveMap}
+          toolMode={toolMode}
         />
       ) : (
         <div className={styles.info}>

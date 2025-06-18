@@ -1,11 +1,16 @@
+const socketToUser = new Map();
+
 module.exports = function registerSessionSockets(io) {
   io.on("connection", (socket) => {
     console.log("User connected:", socket.id);
 
     // Join a session room
-    socket.on("joinSession", ({ sessionCode }) => {
+    socket.on("joinSession", ({ sessionCode, userId }) => {
       socket.join(sessionCode);
-      console.log(`Socket ${socket.id} joined session ${sessionCode}`);
+      socketToUser.set(socket.id, userId);
+      console.log(
+        `Socket ${socket.id} joined session ${sessionCode} as user ${userId}`
+      );
     });
 
     // DM loads map and broadcasts it
@@ -16,6 +21,7 @@ module.exports = function registerSessionSockets(io) {
 
     socket.on("disconnect", () => {
       console.log("User disconnected:", socket.id);
+      socketToUser.delete(socket.id);
     });
 
     socket.on("playerDropToken", ({ sessionCode, mapId, token }) => {
@@ -30,6 +36,26 @@ module.exports = function registerSessionSockets(io) {
         tokenData
       );
       io.to(sessionCode).emit("playerReceiveTokenMove", tokenData);
+    });
+
+    // Player moves a token and broadcasts it
+    socket.on("playerMoveToken", ({ sessionCode, tokenData }) => {
+      const userId = socketToUser.get(socket.id);
+      const { id, newPos, layer, ownerId, ownerIds } = tokenData;
+
+      const ownsToken =
+        ownerId === userId ||
+        (Array.isArray(ownerIds) && ownerIds.includes(userId));
+
+      if (!ownsToken) {
+        console.warn(`Unauthorized token move by user ${userId}: token ${id}`);
+        return;
+      }
+
+      console.log(
+        `Player ${userId} moved token ${id} in session ${sessionCode}`
+      );
+      io.to(sessionCode).emit("playerReceiveTokenMove", { id, newPos, layer });
     });
   });
 };

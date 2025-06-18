@@ -9,26 +9,37 @@ export default function SessionMapTokenLayer({
   onSelectToken,
   onTokenMove,
   disableInteraction = false,
+  currentUserId = null,
 }) {
-  // console.log("SessionMapTokenLayer disableInteraction:", disableInteraction);
   return (
     <>
       {Object.entries(map.layers || {}).flatMap(([layerKey, layerData]) =>
-        (layerData.tokens || []).map((token) => (
-          <SessionTokenSprite
-            key={token.id}
-            token={token}
-            gridSize={gridSize}
-            isSelected={token.id === selectedTokenId}
-            onSelect={onSelectToken}
-            onTokenMove={onTokenMove}
-            immediatePositionOverride={
-              token.id === selectedTokenId ? token.position : null
-            }
-            opacity={layerKey === "dm" ? 0.5 : 1}
-            disableInteraction={disableInteraction}
-          />
-        ))
+        (layerData.tokens || []).map((token) => {
+          const tokenInteractionDisabled =
+            disableInteraction ||
+            (currentUserId &&
+              !(
+                (Array.isArray(token.ownerIds) &&
+                  token.ownerIds.includes(currentUserId)) ||
+                token.ownerId === currentUserId
+              ));
+
+          return (
+            <SessionTokenSprite
+              key={token.id}
+              token={token}
+              gridSize={gridSize}
+              isSelected={token.id === selectedTokenId}
+              onSelect={onSelectToken}
+              onTokenMove={onTokenMove}
+              immediatePositionOverride={
+                token.id === selectedTokenId ? token.position : null
+              }
+              opacity={layerKey === "dm" ? 0.5 : 1}
+              disableInteraction={tokenInteractionDisabled}
+            />
+          );
+        })
       )}
     </>
   );
