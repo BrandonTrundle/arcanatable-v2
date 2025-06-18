@@ -2,6 +2,8 @@ import { useEffect, useState, useContext } from "react";
 import { AuthContext } from "../../../context/AuthContext";
 import PlayerToolbar from "../../Components/Player/PlayerToolbar";
 import PlayerMapCanvas from "./PlayerMapCanvas";
+import CharacterPanel from "../../Components/Shared/CharacterPanel";
+import CharacterSheetPanel from "../../Components/Shared/CharacterSheetPanel";
 import styles from "../../styles/PlayerView.module.css";
 import socket from "../../../socket";
 
@@ -11,6 +13,8 @@ export default function PlayerView({ inviteCode }) {
   const [maps, setMaps] = useState([]);
   const [activeMap, setActiveMap] = useState(null);
   const [fogVisible, setFogVisible] = useState(false);
+  const [showCharacterPanel, setShowCharacterPanel] = useState(false);
+  const [activeCharacter, setActiveCharacter] = useState(null);
 
   useEffect(() => {
     const fetchSessionData = async () => {
@@ -112,7 +116,17 @@ export default function PlayerView({ inviteCode }) {
 
   return (
     <div className={styles.playerView}>
-      <PlayerToolbar />
+      <PlayerToolbar onSelectCharacters={() => setShowCharacterPanel(true)} />
+
+      {showCharacterPanel && (
+        <CharacterPanel
+          onClose={() => setShowCharacterPanel(false)}
+          campaign={campaign}
+          user={user}
+          onOpenCharacter={(char) => setActiveCharacter(char)}
+        />
+      )}
+
       {activeMap ? (
         <PlayerMapCanvas map={activeMap} fogVisible={fogVisible} />
       ) : (
@@ -124,6 +138,20 @@ export default function PlayerView({ inviteCode }) {
           </p>
           <p>Waiting for the DM to select a map...</p>
         </div>
+      )}
+
+      {activeCharacter && (
+        <CharacterSheetPanel
+          character={activeCharacter}
+          onClose={(saved) => {
+            setActiveCharacter(null);
+            if (saved) {
+              // Force re-fetch of characters by toggling panel
+              setShowCharacterPanel(false);
+              setTimeout(() => setShowCharacterPanel(true), 0);
+            }
+          }}
+        />
       )}
     </div>
   );

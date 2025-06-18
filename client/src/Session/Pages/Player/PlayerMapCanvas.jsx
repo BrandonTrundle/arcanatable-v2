@@ -53,7 +53,13 @@ export default function PlayerMapCanvas({ map, fogVisible }) {
 
         <Layer>
           <SessionMapAssetLayer
-            map={map}
+            map={{
+              ...map,
+              layers: {
+                player: map.layers?.player,
+                hidden: map.layers?.hidden,
+              },
+            }}
             gridSize={map.gridSize}
             activeLayer="player"
             selectedAssetId={null}
@@ -62,7 +68,13 @@ export default function PlayerMapCanvas({ map, fogVisible }) {
           />
 
           <SessionMapTokenLayer
-            map={map}
+            map={{
+              ...map,
+              layers: {
+                player: map.layers?.player,
+                hidden: map.layers?.hidden,
+              },
+            }}
             gridSize={map.gridSize}
             activeLayer="player"
             selectedTokenId={null}

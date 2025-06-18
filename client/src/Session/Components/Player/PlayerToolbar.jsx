@@ -5,11 +5,13 @@ import styles from "../../styles/PlayerToolbar.module.css";
 import d20Icon from "../../../assets/icons/d20Icon.png";
 import pcIcon from "../../../assets/icons/pcIcon.png";
 import settingsIcon from "../../../assets/icons/settingsIcon.png";
+import selectorIcon from "../../../assets/icons/selectorIcon.png";
 
-const PlayerToolbar = () => {
+const PlayerToolbar = ({ onSelectCharacters }) => {
   const icons = [
+    { src: selectorIcon, alt: "Selector", onClick: null },
     { src: d20Icon, alt: "Roll Dice", onClick: null },
-    { src: pcIcon, alt: "Character Sheet", onClick: null },
+    { src: pcIcon, alt: "Characters", onClick: onSelectCharacters },
     { src: settingsIcon, alt: "Settings", onClick: null },
   ];
 
