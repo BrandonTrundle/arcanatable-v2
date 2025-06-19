@@ -159,10 +159,31 @@ export default function PlayerView({ inviteCode }) {
       });
     };
 
+    const handlePlayerDropToken = ({ mapId, token }) => {
+      setActiveMap((prev) => {
+        if (!prev || prev._id !== mapId) return prev;
+
+        const playerLayer = prev.layers.player || { tokens: [], assets: [] };
+        const updatedTokens = [...(playerLayer.tokens || []), token];
+
+        return {
+          ...prev,
+          layers: {
+            ...prev.layers,
+            player: {
+              ...playerLayer,
+              tokens: updatedTokens,
+            },
+          },
+        };
+      });
+    };
+
     socket.on("playerReceiveMap", handleReceiveMap);
     socket.on("playerReceiveTokenOwnershipChange", handleTokenOwnershipChange);
     socket.on("playerReceiveTokenMove", handleTokenMove);
     socket.on("playerReceiveTokenLayerChange", handleTokenLayerChange);
+    socket.on("playerDropToken", handlePlayerDropToken);
 
     return () => {
       socket.off("playerReceiveMap", handleReceiveMap);
@@ -172,6 +193,7 @@ export default function PlayerView({ inviteCode }) {
       );
       socket.off("playerReceiveTokenMove", handleTokenMove);
       socket.off("playerReceiveTokenLayerChange", handleTokenLayerChange);
+      socket.off("playerDropToken", handlePlayerDropToken);
     };
   }, []);
 
@@ -200,6 +222,7 @@ export default function PlayerView({ inviteCode }) {
           fogVisible={fogVisible}
           setActiveMap={setActiveMap}
           toolMode={toolMode}
+          campaign={campaign}
         />
       ) : (
         <div className={styles.info}>

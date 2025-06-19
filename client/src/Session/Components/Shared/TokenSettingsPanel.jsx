@@ -13,6 +13,18 @@ export default function TokenSettingsPanel({
 }) {
   console.log("Token in panel:", token);
   const availableLayers = ["dm", "player", "hidden"];
+  const safeOwnerIds = Array.isArray(token.ownerIds) ? token.ownerIds : [];
+  if (token.ownerId && !safeOwnerIds.includes(token.ownerId)) {
+    safeOwnerIds.push(token.ownerId);
+  }
+
+  console.log("TokenSettingsPanel - token.ownerIds:", token.ownerIds);
+  console.log("TokenSettingsPanel - currentUserId:", currentUserId);
+  console.log("TokenSettingsPanel - isDM:", isDM);
+  console.log(
+    "Show Ownership UI?",
+    isDM || safeOwnerIds.includes(currentUserId)
+  );
 
   return (
     <div className={styles.panel}>
@@ -58,7 +70,8 @@ export default function TokenSettingsPanel({
             />
           </label>
         </div>
-        {(isDM || token.ownerIds?.includes(currentUserId)) && (
+
+        {(isDM || safeOwnerIds.includes(currentUserId)) && (
           <div className={styles.settingGroup}>
             <label className={styles.sectionTitle}>Controlled By:</label>
             <select
@@ -67,7 +80,7 @@ export default function TokenSettingsPanel({
                 const selectedId = e.target.value;
                 if (!selectedId) return;
 
-                const newOwnerIds = token.ownerIds ? [...token.ownerIds] : [];
+                const newOwnerIds = [...safeOwnerIds];
                 if (!newOwnerIds.includes(selectedId)) {
                   newOwnerIds.push(selectedId);
                   onChangeOwner(token, newOwnerIds);
@@ -76,7 +89,7 @@ export default function TokenSettingsPanel({
             >
               <option value="">Add owner...</option>
               {allPlayers
-                .filter((p) => !token.ownerIds?.includes(p._id))
+                .filter((p) => !safeOwnerIds.includes(p._id))
                 .map((player) => (
                   <option key={player._id} value={player._id}>
                     {player.username}
@@ -85,7 +98,7 @@ export default function TokenSettingsPanel({
             </select>
 
             <ul className={styles.ownerList}>
-              {(token.ownerIds || []).map((id) => {
+              {safeOwnerIds.map((id) => {
                 const player = allPlayers.find((p) => p._id === id);
                 if (!player) return null;
                 return (
@@ -93,7 +106,7 @@ export default function TokenSettingsPanel({
                     {player.username}
                     <button
                       onClick={() => {
-                        const updated = token.ownerIds.filter(
+                        const updated = safeOwnerIds.filter(
                           (oid) => oid !== id
                         );
                         onChangeOwner(token, updated);

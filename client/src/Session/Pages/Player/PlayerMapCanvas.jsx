@@ -19,6 +19,7 @@ export default function PlayerMapCanvas({
   fogVisible,
   setActiveMap,
   toolMode,
+  campaign,
 }) {
   const { user } = useContext(AuthContext);
   const [selectedTokenId, setSelectedTokenId] = useState(null);
@@ -209,6 +210,8 @@ export default function PlayerMapCanvas({
       {tokenSettingsTarget && (
         <TokenSettingsPanel
           token={tokenSettingsTarget}
+          currentUserId={user.id}
+          allPlayers={campaign?.players || []}
           onClose={() => setTokenSettingsTarget(null)}
           onChangeShowNameplate={(token, show) => {
             setActiveMap((prev) => {
@@ -240,6 +243,41 @@ export default function PlayerMapCanvas({
             });
 
             // You may also emit a socket event here if desired
+          }}
+          onChangeOwner={(token, newOwnerIds) => {
+            setActiveMap((prev) => {
+              const layer = Object.entries(prev.layers).find(([_, l]) =>
+                (l.tokens || []).some((t) => t.id === token.id)
+              )?.[0];
+
+              if (!layer) return prev;
+
+              const updatedTokens = prev.layers[layer].tokens.map((t) =>
+                t.id === token.id ? { ...t, ownerIds: newOwnerIds } : t
+              );
+
+              const updatedMap = {
+                ...prev,
+                layers: {
+                  ...prev.layers,
+                  [layer]: {
+                    ...prev.layers[layer],
+                    tokens: updatedTokens,
+                  },
+                },
+              };
+
+              const updatedToken = updatedTokens.find((t) => t.id === token.id);
+              setTokenSettingsTarget({ ...updatedToken, _layer: layer });
+
+              return updatedMap;
+            });
+
+            socket.emit("playerTokenOwnershipChange", {
+              sessionCode,
+              tokenId: token.id,
+              newOwnerIds,
+            });
           }}
         />
       )}

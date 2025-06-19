@@ -59,6 +59,22 @@ module.exports = function registerSessionSockets(io) {
       }
     );
 
+    socket.on(
+      "playerTokenOwnershipChange",
+      ({ sessionCode, tokenId, newOwnerIds }) => {
+        const userId = socketToUser.get(socket.id);
+
+        console.log(
+          `Player ${userId} changed ownership of token ${tokenId} in session ${sessionCode}`
+        );
+
+        io.to(sessionCode).emit("playerReceiveTokenOwnershipChange", {
+          tokenId,
+          newOwnerIds,
+        });
+      }
+    );
+
     // Player moves a token and broadcasts it
     socket.on("playerMoveToken", ({ sessionCode, tokenData }) => {
       const userId = socketToUser.get(socket.id);
