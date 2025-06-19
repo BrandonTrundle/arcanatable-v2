@@ -1,18 +1,17 @@
 // client/src/Session/Pages/DM/DMMapCanvas.jsx
-import React, { useRef, useState, useEffect } from "react";
+import React, { useRef } from "react";
 import { Stage, Layer } from "react-konva";
-import useImage from "use-image";
-import { useEscapeDeselect } from "../../../hooks/tokens/useEscapeDeselect";
-import { useKeyboardTokenControl } from "../../../hooks/tokens/useKeyboardTokenControl";
-import { handleTokenMoveWithFog } from "../../../utils/token/tokenMoveWithFog";
-import { getCellFromPointer } from "../../../utils/grid/coordinates";
+import { useDMTokenControl } from "./hooks/useDMTokenControl";
+import { useDMAssetControl } from "./hooks/useDMAssetControl";
+import { useTokenSettings } from "./hooks/useTokenSettings";
+import { useMapDropHandler } from "./hooks/useMapDropHandler";
+import { useMapImage } from "./hooks/useMapImage";
 
 import SessionStaticMapLayer from "../../MapLayers/SessionStaticMapLayer";
 import SessionFogAndBlockerLayer from "../../MapLayers/SessionFogAndBlockerLayer";
 import SessionMapAssetLayer from "../../MapLayers/SessionMapAssetLayer";
 import SessionMapTokenLayer from "../../MapLayers/SessionMapTokenLayer";
 import TokenSettingsPanel from "../../Components/Shared/TokenSettingsPanel";
-import socket from "../../../socket";
 
 import styles from "../../styles/MapCanvas.module.css";
 
@@ -33,67 +32,39 @@ export default function DMMapCanvas({
   onSelectToken,
   user,
 }) {
-  const [mapImage] = useImage(map?.image, "anonymous");
-  const imageReady = !!mapImage;
-  const allPlayers = campaign?.players || [];
-  console.log("All players:", allPlayers);
-
   const stageRef = useRef();
-  const [selectedTokenId, setSelectedTokenId] = useState(null);
-  const [selectedAssetId, setSelectedAssetId] = useState(null);
-  const [tokenSettingsTarget, setTokenSettingsTarget] = useState(null);
+  const allPlayers = campaign?.players || [];
+  const { mapImage, imageReady } = useMapImage(map);
+  const { handleCanvasMouseUp } = useMapDropHandler(map, onCanvasDrop);
 
-  //console.log("DMMapCanvas toolMode:", toolMode);
-
-  useEscapeDeselect(() => setSelectedTokenId(null));
-
-  const stageWidth = map?.width * map?.gridSize || 0;
-  const stageHeight = map?.height * map?.gridSize || 0;
-
-  const handleTokenMove = (id, newPos) => {
-    const tokenLayer = Object.entries(map.layers || {}).find(
-      ([layerName, layerData]) =>
-        (layerData.tokens || []).some((t) => t.id === id)
-    )?.[0];
-
-    const tokenData = { id, newPos, layer: tokenLayer };
-
-    setMapData((prevMap) =>
-      handleTokenMoveWithFog({
-        map: prevMap,
-        id,
-        newPos,
-        activeLayer: tokenLayer, // important!
-      })
-    );
-
-    socket.emit("dmTokenMove", {
-      sessionCode,
-      tokenData,
-    });
-  };
-
-  const handleCanvasMouseUp = (e) => {
-    const stage = e.target.getStage();
-    const pointer = stage?.getPointerPosition();
-
-    if (!pointer) return;
-
-    const cell = getCellFromPointer(pointer, map.gridSize);
-    if (!cell) return;
-    onCanvasDrop(pointer);
-  };
-
-  useKeyboardTokenControl({
+  const {
     selectedTokenId,
+    handleSelectToken,
+    handleTokenMove,
+    tokenSettingsTarget,
+    setTokenSettingsTarget,
+    handleOpenSettings,
+  } = useDMTokenControl({
     map,
-    activeLayer,
-    onMove: handleTokenMove,
+    setMapData,
+    sessionCode,
+    toolMode,
+    onSelectToken,
+    user,
   });
+
+  const { selectedAssetId, setSelectedAssetId, handleMoveAsset } =
+    useDMAssetControl(setMapData, activeLayer);
+
+  const { deleteToken, changeTokenLayer, changeShowNameplate, changeOwner } =
+    useTokenSettings({ map, setMapData, sessionCode });
 
   if (!map) {
     return <div className={styles.mapCanvas}>No map loaded.</div>;
   }
+
+  const stageWidth = map?.width * map?.gridSize || 0;
+  const stageHeight = map?.height * map?.gridSize || 0;
 
   return (
     <div className={styles.mapCanvas}>
@@ -131,25 +102,7 @@ export default function DMMapCanvas({
             activeLayer={activeLayer}
             selectedAssetId={selectedAssetId}
             onSelectAsset={setSelectedAssetId}
-            onMoveAsset={(id, newPos) => {
-              setMapData((prev) => {
-                const assets = prev.layers[activeLayer]?.assets || [];
-                const updatedAssets = assets.map((a) =>
-                  a.id === id ? { ...a, position: newPos } : a
-                );
-
-                return {
-                  ...prev,
-                  layers: {
-                    ...prev.layers,
-                    [activeLayer]: {
-                      ...prev.layers[activeLayer],
-                      assets: updatedAssets,
-                    },
-                  },
-                };
-              });
-            }}
+            onMoveAsset={handleMoveAsset}
           />
 
           <SessionMapTokenLayer
@@ -157,32 +110,11 @@ export default function DMMapCanvas({
             gridSize={map.gridSize}
             activeLayer={activeLayer}
             selectedTokenId={selectedTokenId}
-            onOpenSettings={(token) => {
-              setTokenSettingsTarget({
-                ...token,
-                _layer: Object.entries(map.layers || {}).find(([_, l]) =>
-                  (l.tokens || []).some((t) => t.id === token.id)
-                )?.[0],
-              });
-            }}
+            onOpenSettings={handleOpenSettings}
             disableInteraction={toolMode !== "select"}
-            onSelectToken={(id) => {
-              if (toolMode !== "select") return;
-              setSelectedTokenId(id);
-              if (typeof onSelectToken === "function") {
-                const token = Object.entries(map.layers || {})
-                  .flatMap(([layerKey, layer]) =>
-                    (layer.tokens || []).map((t) => ({
-                      ...t,
-                      _layer: layerKey,
-                    }))
-                  )
-                  .find((t) => t.id === id);
-                onSelectToken(token || null);
-              }
-            }}
+            onSelectToken={handleSelectToken}
             onTokenMove={(id, newPos) => {
-              if (toolMode !== "select") return; // Prevent movement if not in select mode
+              if (toolMode !== "select") return;
               handleTokenMove(id, newPos);
             }}
           />
@@ -197,139 +129,10 @@ export default function DMMapCanvas({
           token={tokenSettingsTarget}
           isDM={true}
           onClose={() => setTokenSettingsTarget(null)}
-          onDeleteToken={(token) => {
-            const layer = token._layer;
-            if (!layer) return;
-
-            setMapData((prev) => {
-              const updatedTokens = prev.layers[layer].tokens.filter(
-                (t) => t.id !== token.id
-              );
-              return {
-                ...prev,
-                layers: {
-                  ...prev.layers,
-                  [layer]: {
-                    ...prev.layers[layer],
-                    tokens: updatedTokens,
-                  },
-                },
-              };
-            });
-
-            socket.emit("dmDeleteToken", {
-              sessionCode,
-              tokenId: token.id,
-              layer,
-            });
-
-            setTokenSettingsTarget(null);
-          }}
-          onChangeLayer={(token, newLayer) => {
-            const oldLayer = token._layer;
-
-            setMapData((prev) => {
-              if (!prev.layers[oldLayer] || !prev.layers[newLayer]) return prev;
-
-              const removed = prev.layers[oldLayer].tokens.filter(
-                (t) => t.id !== token.id
-              );
-              const moved = [
-                ...(prev.layers[newLayer].tokens || []),
-                { ...token, _layer: newLayer },
-              ];
-
-              return {
-                ...prev,
-                layers: {
-                  ...prev.layers,
-                  [oldLayer]: {
-                    ...prev.layers[oldLayer],
-                    tokens: removed,
-                  },
-                  [newLayer]: {
-                    ...prev.layers[newLayer],
-                    tokens: moved,
-                  },
-                },
-              };
-            });
-
-            socket.emit("dmTokenLayerChange", {
-              sessionCode,
-              tokenId: token.id,
-              fromLayer: oldLayer,
-              toLayer: newLayer,
-            });
-
-            setTokenSettingsTarget(null);
-          }}
-          onChangeShowNameplate={(token, show) => {
-            setMapData((prev) => {
-              const layer = Object.entries(prev.layers).find(([_, l]) =>
-                (l.tokens || []).some((t) => t.id === token.id)
-              )?.[0];
-
-              if (!layer) return prev;
-
-              const updatedTokens = prev.layers[layer].tokens.map((t) =>
-                t.id === token.id ? { ...t, showNameplate: show } : t
-              );
-
-              const updatedMap = {
-                ...prev,
-                layers: {
-                  ...prev.layers,
-                  [layer]: {
-                    ...prev.layers[layer],
-                    tokens: updatedTokens,
-                  },
-                },
-              };
-
-              const updatedToken = updatedTokens.find((t) => t.id === token.id);
-              setTokenSettingsTarget({ ...updatedToken, _layer: layer });
-
-              return updatedMap;
-            });
-
-            // Optional: emit showNameplate change via socket
-          }}
-          onChangeOwner={(token, newOwnerIds) => {
-            setMapData((prev) => {
-              const layer = Object.entries(prev.layers).find(([_, l]) =>
-                (l.tokens || []).some((t) => t.id === token.id)
-              )?.[0];
-
-              if (!layer) return prev;
-
-              const updatedTokens = prev.layers[layer].tokens.map((t) =>
-                t.id === token.id ? { ...t, ownerIds: newOwnerIds } : t
-              );
-
-              const updatedMap = {
-                ...prev,
-                layers: {
-                  ...prev.layers,
-                  [layer]: {
-                    ...prev.layers[layer],
-                    tokens: updatedTokens,
-                  },
-                },
-              };
-
-              const updatedToken = updatedTokens.find((t) => t.id === token.id);
-              setTokenSettingsTarget({ ...updatedToken, _layer: layer });
-
-              return updatedMap;
-            });
-
-            socket.emit("dmTokenOwnershipChange", {
-              sessionCode,
-              tokenId: token.id,
-              newOwnerIds, // ✅ already an array
-            });
-          }}
+          onDeleteToken={deleteToken}
+          onChangeLayer={changeTokenLayer}
+          onChangeShowNameplate={changeShowNameplate}
+          onChangeOwner={changeOwner}
         />
       )}
     </div>

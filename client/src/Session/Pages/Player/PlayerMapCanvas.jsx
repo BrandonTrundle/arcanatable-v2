@@ -2,14 +2,17 @@ import React, { useRef, useContext, useState, useEffect } from "react";
 import { AuthContext } from "../../../context/AuthContext";
 import { Stage, Layer } from "react-konva";
 import useImage from "use-image";
-import socket from "../../../socket";
 
 import SessionStaticMapLayer from "../../MapLayers/SessionStaticMapLayer";
 import SessionFogAndBlockerLayer from "../../MapLayers/SessionFogAndBlockerLayer";
 import SessionMapAssetLayer from "../../MapLayers/SessionMapAssetLayer";
 import SessionMapTokenLayer from "../../MapLayers/SessionMapTokenLayer";
-import { characterToToken } from "../../../utils/token/characterToken";
 import TokenSettingsPanel from "../../Components/Shared/TokenSettingsPanel";
+
+import usePlayerTokenDropHandler from "./hooks/usePlayerTokenDropHandler";
+import usePlayerTokenMovement from "./hooks/usePlayerTokenMovement";
+import usePlayerTokenDeletion from "./hooks/usePlayerTokenDeletion";
+import usePlayerTokenSettings from "./hooks/usePlayerTokenSettings";
 
 import styles from "../../styles/MapCanvas.module.css";
 
@@ -25,10 +28,28 @@ export default function PlayerMapCanvas({
   const [selectedTokenId, setSelectedTokenId] = useState(null);
   const [mapImage] = useImage(map?.image, "anonymous");
   const [tokenSettingsTarget, setTokenSettingsTarget] = useState(null);
-
   const imageReady = !!mapImage;
-
   const stageRef = useRef();
+  const handleDrop = usePlayerTokenDropHandler(map, setActiveMap, sessionCode);
+  const handleTokenMove = usePlayerTokenMovement(
+    map,
+    setActiveMap,
+    sessionCode
+  );
+  const handleDeleteToken = usePlayerTokenDeletion(
+    map,
+    setActiveMap,
+    sessionCode,
+    setTokenSettingsTarget
+  );
+
+  const { handleChangeOwner, handleChangeShowNameplate } =
+    usePlayerTokenSettings(
+      map,
+      setActiveMap,
+      sessionCode,
+      setTokenSettingsTarget
+    );
 
   const handleSelectToken = (id) => {
     setSelectedTokenId(id);
@@ -65,48 +86,12 @@ export default function PlayerMapCanvas({
 
   const stageWidth = map.width * map.gridSize;
   const stageHeight = map.height * map.gridSize;
-  console.log("Current user ID (for token interaction):", user.id);
+
   return (
     <div
       className={styles.mapCanvas}
       onDragOver={(e) => e.preventDefault()}
-      onDrop={(e) => {
-        e.preventDefault();
-        const json = e.dataTransfer.getData("application/json");
-        if (!json) return;
-
-        try {
-          const char = JSON.parse(json);
-
-          const stage = stageRef.current.getStage();
-          const boundingRect = stage.container().getBoundingClientRect();
-          const x = e.clientX - boundingRect.left;
-          const y = e.clientY - boundingRect.top;
-
-          const cellX = Math.floor(x / map.gridSize);
-          const cellY = Math.floor(y / map.gridSize);
-
-          const token = characterToToken(char);
-          token.position = { x: cellX, y: cellY };
-
-          const updatedMap = { ...map };
-          const playerLayer = updatedMap.layers.player || {
-            tokens: [],
-            assets: [],
-          };
-          playerLayer.tokens = [...(playerLayer.tokens || []), token];
-          updatedMap.layers.player = playerLayer;
-
-          setActiveMap(updatedMap);
-          socket.emit("playerDropToken", {
-            sessionCode,
-            mapId: map._id,
-            token,
-          });
-        } catch (err) {
-          console.error("Failed to parse character drop:", err);
-        }
-      }}
+      onDrop={handleDrop}
     >
       <Stage
         width={stageWidth}
@@ -161,45 +146,7 @@ export default function PlayerMapCanvas({
             selectedTokenId={selectedTokenId}
             onSelectToken={handleSelectToken}
             onOpenSettings={setTokenSettingsTarget}
-            onTokenMove={(id, newPos) => {
-              console.log(
-                "[Player] Attempting to move token:",
-                id,
-                "to",
-                newPos
-              );
-
-              const layer = "player";
-              const allTokens = Object.values(map.layers || {}).flatMap(
-                (l) => l.tokens || []
-              );
-              const token = allTokens.find((t) => t.id === id);
-              const ownerId = token?.ownerId;
-              const ownerIds = token?.ownerIds;
-
-              setActiveMap((prev) => {
-                console.log("[Player] Updating map state for token:", id);
-                const updatedTokens = prev.layers[layer].tokens.map((token) =>
-                  token.id === id ? { ...token, position: newPos } : token
-                );
-                return {
-                  ...prev,
-                  layers: {
-                    ...prev.layers,
-                    [layer]: {
-                      ...prev.layers[layer],
-                      tokens: updatedTokens,
-                    },
-                  },
-                };
-              });
-
-              socket.emit("playerMoveToken", {
-                sessionCode,
-                tokenData: { id, newPos, layer, ownerId, ownerIds },
-              });
-              console.log("[Player] Emitted playerMoveToken event for:", id);
-            }}
+            onTokenMove={handleTokenMove}
             disableInteraction={toolMode !== "select"}
             currentUserId={user.id}
           />
@@ -213,103 +160,9 @@ export default function PlayerMapCanvas({
           currentUserId={user.id}
           allPlayers={campaign?.players || []}
           onClose={() => setTokenSettingsTarget(null)}
-          onDeleteToken={(token) => {
-            const layer = Object.entries(map.layers).find(([_, l]) =>
-              (l.tokens || []).some((t) => t.id === token.id)
-            )?.[0];
-
-            if (!layer) return;
-
-            setActiveMap((prev) => {
-              const updatedTokens = prev.layers[layer].tokens.filter(
-                (t) => t.id !== token.id
-              );
-              return {
-                ...prev,
-                layers: {
-                  ...prev.layers,
-                  [layer]: {
-                    ...prev.layers[layer],
-                    tokens: updatedTokens,
-                  },
-                },
-              };
-            });
-
-            socket.emit("playerDeleteToken", {
-              sessionCode,
-              tokenId: token.id,
-              layer,
-            });
-
-            setTokenSettingsTarget(null);
-          }}
-          onChangeShowNameplate={(token, show) => {
-            setActiveMap((prev) => {
-              const layer = Object.entries(prev.layers).find(([_, l]) =>
-                (l.tokens || []).some((t) => t.id === token.id)
-              )?.[0];
-
-              if (!layer) return prev;
-
-              const updatedTokens = prev.layers[layer].tokens.map((t) =>
-                t.id === token.id ? { ...t, showNameplate: show } : t
-              );
-
-              const updatedMap = {
-                ...prev,
-                layers: {
-                  ...prev.layers,
-                  [layer]: {
-                    ...prev.layers[layer],
-                    tokens: updatedTokens,
-                  },
-                },
-              };
-
-              const updatedToken = updatedTokens.find((t) => t.id === token.id);
-              setTokenSettingsTarget({ ...updatedToken, _layer: layer });
-
-              return updatedMap;
-            });
-
-            // You may also emit a socket event here if desired
-          }}
-          onChangeOwner={(token, newOwnerIds) => {
-            setActiveMap((prev) => {
-              const layer = Object.entries(prev.layers).find(([_, l]) =>
-                (l.tokens || []).some((t) => t.id === token.id)
-              )?.[0];
-
-              if (!layer) return prev;
-
-              const updatedTokens = prev.layers[layer].tokens.map((t) =>
-                t.id === token.id ? { ...t, ownerIds: newOwnerIds } : t
-              );
-
-              const updatedMap = {
-                ...prev,
-                layers: {
-                  ...prev.layers,
-                  [layer]: {
-                    ...prev.layers[layer],
-                    tokens: updatedTokens,
-                  },
-                },
-              };
-
-              const updatedToken = updatedTokens.find((t) => t.id === token.id);
-              setTokenSettingsTarget({ ...updatedToken, _layer: layer });
-
-              return updatedMap;
-            });
-
-            socket.emit("playerTokenOwnershipChange", {
-              sessionCode,
-              tokenId: token.id,
-              newOwnerIds,
-            });
-          }}
+          onDeleteToken={handleDeleteToken}
+          onChangeShowNameplate={handleChangeShowNameplate}
+          onChangeOwner={handleChangeOwner}
         />
       )}
     </div>
