@@ -192,6 +192,24 @@ function SessionTokenSprite({
             strokeWidth={1}
           />
 
+          {token.showNameplate && (
+            <Text
+              text={token.name || "Unnamed"}
+              x={0}
+              y={height + 4}
+              width={width}
+              align="center"
+              fontStyle="bold"
+              fontSize={14}
+              fill="black"
+              shadowColor="black"
+              shadowBlur={2}
+              shadowOffset={{ x: 0, y: 0 }}
+              shadowOpacity={0.6}
+              listening={false}
+            />
+          )}
+
           {isSelected && (
             <Group>
               <Rect

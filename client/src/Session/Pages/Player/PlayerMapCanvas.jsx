@@ -210,6 +210,37 @@ export default function PlayerMapCanvas({
         <TokenSettingsPanel
           token={tokenSettingsTarget}
           onClose={() => setTokenSettingsTarget(null)}
+          onChangeShowNameplate={(token, show) => {
+            setActiveMap((prev) => {
+              const layer = Object.entries(prev.layers).find(([_, l]) =>
+                (l.tokens || []).some((t) => t.id === token.id)
+              )?.[0];
+
+              if (!layer) return prev;
+
+              const updatedTokens = prev.layers[layer].tokens.map((t) =>
+                t.id === token.id ? { ...t, showNameplate: show } : t
+              );
+
+              const updatedMap = {
+                ...prev,
+                layers: {
+                  ...prev.layers,
+                  [layer]: {
+                    ...prev.layers[layer],
+                    tokens: updatedTokens,
+                  },
+                },
+              };
+
+              const updatedToken = updatedTokens.find((t) => t.id === token.id);
+              setTokenSettingsTarget({ ...updatedToken, _layer: layer });
+
+              return updatedMap;
+            });
+
+            // You may also emit a socket event here if desired
+          }}
         />
       )}
     </div>

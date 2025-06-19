@@ -5,8 +5,11 @@ export default function TokenSettingsPanel({
   token,
   onClose,
   isDM = false,
+  currentUserId,
+  onChangeShowNameplate = () => {},
   onChangeLayer = () => {},
 }) {
+  console.log("Token in panel:", token);
   const availableLayers = ["dm", "player", "hidden"];
 
   return (
@@ -17,14 +20,16 @@ export default function TokenSettingsPanel({
           ×
         </button>
       </div>
+
       <div className={styles.body}>
-        <p>
-          <strong>Name:</strong> {token.name || "Unnamed Token"}
-        </p>
+        <div>
+          <span className={styles.labelInline}>Name:</span>{" "}
+          <span>{token.name || "Unnamed Token"}</span>
+        </div>
 
         {isDM && (
           <div className={styles.settingGroup}>
-            <label>Layer:</label>
+            <label className={styles.sectionTitle}>Layer</label>
             <select
               value={token._layer}
               onChange={(e) => onChangeLayer(token, e.target.value)}
@@ -37,6 +42,20 @@ export default function TokenSettingsPanel({
             </select>
           </div>
         )}
+
+        <div className={styles.settingGroup}>
+          <label className={styles.labelRow}>
+            <span className={styles.labelInline}>Show Nameplate:</span>
+            <input
+              type="checkbox"
+              checked={!!token.showNameplate}
+              onChange={(e) => {
+                e.stopPropagation();
+                onChangeShowNameplate(token, e.target.checked);
+              }}
+            />
+          </label>
+        </div>
       </div>
     </div>
   );
