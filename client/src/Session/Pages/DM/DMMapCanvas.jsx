@@ -197,6 +197,34 @@ export default function DMMapCanvas({
           token={tokenSettingsTarget}
           isDM={true}
           onClose={() => setTokenSettingsTarget(null)}
+          onDeleteToken={(token) => {
+            const layer = token._layer;
+            if (!layer) return;
+
+            setMapData((prev) => {
+              const updatedTokens = prev.layers[layer].tokens.filter(
+                (t) => t.id !== token.id
+              );
+              return {
+                ...prev,
+                layers: {
+                  ...prev.layers,
+                  [layer]: {
+                    ...prev.layers[layer],
+                    tokens: updatedTokens,
+                  },
+                },
+              };
+            });
+
+            socket.emit("dmDeleteToken", {
+              sessionCode,
+              tokenId: token.id,
+              layer,
+            });
+
+            setTokenSettingsTarget(null);
+          }}
           onChangeLayer={(token, newLayer) => {
             const oldLayer = token._layer;
 

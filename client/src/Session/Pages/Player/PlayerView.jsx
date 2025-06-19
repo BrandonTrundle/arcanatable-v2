@@ -179,11 +179,32 @@ export default function PlayerView({ inviteCode }) {
       });
     };
 
+    const handleTokenDelete = ({ tokenId, layer }) => {
+      setActiveMap((prev) => {
+        if (!prev?.layers?.[layer]) return prev;
+        const updatedTokens = prev.layers[layer].tokens.filter(
+          (t) => t.id !== tokenId
+        );
+
+        return {
+          ...prev,
+          layers: {
+            ...prev.layers,
+            [layer]: {
+              ...prev.layers[layer],
+              tokens: updatedTokens,
+            },
+          },
+        };
+      });
+    };
+
     socket.on("playerReceiveMap", handleReceiveMap);
     socket.on("playerReceiveTokenOwnershipChange", handleTokenOwnershipChange);
     socket.on("playerReceiveTokenMove", handleTokenMove);
     socket.on("playerReceiveTokenLayerChange", handleTokenLayerChange);
     socket.on("playerDropToken", handlePlayerDropToken);
+    socket.on("playerReceiveTokenDelete", handleTokenDelete);
 
     return () => {
       socket.off("playerReceiveMap", handleReceiveMap);
@@ -194,6 +215,7 @@ export default function PlayerView({ inviteCode }) {
       socket.off("playerReceiveTokenMove", handleTokenMove);
       socket.off("playerReceiveTokenLayerChange", handleTokenLayerChange);
       socket.off("playerDropToken", handlePlayerDropToken);
+      socket.off("playerReceiveTokenDelete", handleTokenDelete);
     };
   }, []);
 

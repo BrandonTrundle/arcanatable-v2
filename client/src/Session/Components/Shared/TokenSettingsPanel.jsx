@@ -10,10 +10,12 @@ export default function TokenSettingsPanel({
   onChangeShowNameplate = () => {},
   onChangeLayer = () => {},
   onChangeOwner = () => {},
+  onDeleteToken = () => {},
 }) {
   console.log("Token in panel:", token);
   const availableLayers = ["dm", "player", "hidden"];
   const safeOwnerIds = Array.isArray(token.ownerIds) ? token.ownerIds : [];
+
   if (token.ownerId && !safeOwnerIds.includes(token.ownerId)) {
     safeOwnerIds.push(token.ownerId);
   }
@@ -119,6 +121,17 @@ export default function TokenSettingsPanel({
                 );
               })}
             </ul>
+          </div>
+        )}
+
+        {(isDM || safeOwnerIds.includes(currentUserId)) && (
+          <div className={styles.settingGroup}>
+            <button
+              onClick={() => onDeleteToken(token)}
+              className={styles.deleteButton}
+            >
+              Delete Token
+            </button>
           </div>
         )}
       </div>

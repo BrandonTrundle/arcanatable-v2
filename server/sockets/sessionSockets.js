@@ -75,6 +75,18 @@ module.exports = function registerSessionSockets(io) {
       }
     );
 
+    socket.on("playerDeleteToken", ({ sessionCode, tokenId, layer }) => {
+      const userId = socketToUser.get(socket.id);
+      console.log(`Player ${userId} requested deletion of token ${tokenId}`);
+
+      io.to(sessionCode).emit("playerReceiveTokenDelete", { tokenId, layer });
+    });
+
+    socket.on("dmDeleteToken", ({ sessionCode, tokenId, layer }) => {
+      console.log(`DM requested deletion of token ${tokenId}`);
+      io.to(sessionCode).emit("playerReceiveTokenDelete", { tokenId, layer });
+    });
+
     // Player moves a token and broadcasts it
     socket.on("playerMoveToken", ({ sessionCode, tokenData }) => {
       const userId = socketToUser.get(socket.id);

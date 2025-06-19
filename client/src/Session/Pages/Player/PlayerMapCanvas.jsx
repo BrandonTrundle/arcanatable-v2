@@ -213,6 +213,37 @@ export default function PlayerMapCanvas({
           currentUserId={user.id}
           allPlayers={campaign?.players || []}
           onClose={() => setTokenSettingsTarget(null)}
+          onDeleteToken={(token) => {
+            const layer = Object.entries(map.layers).find(([_, l]) =>
+              (l.tokens || []).some((t) => t.id === token.id)
+            )?.[0];
+
+            if (!layer) return;
+
+            setActiveMap((prev) => {
+              const updatedTokens = prev.layers[layer].tokens.filter(
+                (t) => t.id !== token.id
+              );
+              return {
+                ...prev,
+                layers: {
+                  ...prev.layers,
+                  [layer]: {
+                    ...prev.layers[layer],
+                    tokens: updatedTokens,
+                  },
+                },
+              };
+            });
+
+            socket.emit("playerDeleteToken", {
+              sessionCode,
+              tokenId: token.id,
+              layer,
+            });
+
+            setTokenSettingsTarget(null);
+          }}
           onChangeShowNameplate={(token, show) => {
             setActiveMap((prev) => {
               const layer = Object.entries(prev.layers).find(([_, l]) =>

@@ -134,9 +134,32 @@ export default function DMView({ sessionCode }) {
       });
     }
 
+    function handleTokenDelete({ tokenId, layer }) {
+      setActiveMap((prev) => {
+        if (!prev?.layers?.[layer]) return prev;
+        const updatedTokens = prev.layers[layer].tokens.filter(
+          (t) => t.id !== tokenId
+        );
+
+        return {
+          ...prev,
+          layers: {
+            ...prev.layers,
+            [layer]: {
+              ...prev.layers[layer],
+              tokens: updatedTokens,
+            },
+          },
+        };
+      });
+    }
+
     socket.on("playerDropToken", handlePlayerDropToken);
+    socket.on("playerReceiveTokenDelete", handleTokenDelete);
+
     return () => {
       socket.off("playerDropToken", handlePlayerDropToken);
+      socket.off("playerReceiveTokenDelete", handleTokenDelete);
     };
   }, []);
 
