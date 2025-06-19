@@ -11,6 +11,7 @@ import SessionStaticMapLayer from "../../MapLayers/SessionStaticMapLayer";
 import SessionFogAndBlockerLayer from "../../MapLayers/SessionFogAndBlockerLayer";
 import SessionMapAssetLayer from "../../MapLayers/SessionMapAssetLayer";
 import SessionMapTokenLayer from "../../MapLayers/SessionMapTokenLayer";
+import TokenSettingsPanel from "../../Components/Shared/TokenSettingsPanel";
 import socket from "../../../socket";
 
 import styles from "../../styles/MapCanvas.module.css";
@@ -36,6 +37,8 @@ export default function DMMapCanvas({
   const stageRef = useRef();
   const [selectedTokenId, setSelectedTokenId] = useState(null);
   const [selectedAssetId, setSelectedAssetId] = useState(null);
+  const [tokenSettingsTarget, setTokenSettingsTarget] = useState(null);
+
   //console.log("DMMapCanvas toolMode:", toolMode);
 
   useEscapeDeselect(() => setSelectedTokenId(null));
@@ -150,6 +153,14 @@ export default function DMMapCanvas({
             gridSize={map.gridSize}
             activeLayer={activeLayer}
             selectedTokenId={selectedTokenId}
+            onOpenSettings={(token) => {
+              setTokenSettingsTarget({
+                ...token,
+                _layer: Object.entries(map.layers || {}).find(([_, l]) =>
+                  (l.tokens || []).some((t) => t.id === token.id)
+                )?.[0],
+              });
+            }}
             disableInteraction={toolMode !== "select"}
             onSelectToken={(id) => {
               if (toolMode !== "select") return;
@@ -175,6 +186,52 @@ export default function DMMapCanvas({
 
         <Layer>{/* Reserved for other Layers */}</Layer>
       </Stage>
+      {tokenSettingsTarget && (
+        <TokenSettingsPanel
+          token={tokenSettingsTarget}
+          isDM={true}
+          onClose={() => setTokenSettingsTarget(null)}
+          onChangeLayer={(token, newLayer) => {
+            const oldLayer = token._layer;
+
+            setMapData((prev) => {
+              if (!prev.layers[oldLayer] || !prev.layers[newLayer]) return prev;
+
+              const removed = prev.layers[oldLayer].tokens.filter(
+                (t) => t.id !== token.id
+              );
+              const moved = [
+                ...(prev.layers[newLayer].tokens || []),
+                { ...token, _layer: newLayer },
+              ];
+
+              return {
+                ...prev,
+                layers: {
+                  ...prev.layers,
+                  [oldLayer]: {
+                    ...prev.layers[oldLayer],
+                    tokens: removed,
+                  },
+                  [newLayer]: {
+                    ...prev.layers[newLayer],
+                    tokens: moved,
+                  },
+                },
+              };
+            });
+
+            socket.emit("dmTokenLayerChange", {
+              sessionCode,
+              tokenId: token.id,
+              fromLayer: oldLayer,
+              toLayer: newLayer,
+            });
+
+            setTokenSettingsTarget(null);
+          }}
+        />
+      )}
     </div>
   );
 }

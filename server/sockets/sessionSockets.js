@@ -38,6 +38,17 @@ module.exports = function registerSessionSockets(io) {
       io.to(sessionCode).emit("playerReceiveTokenMove", tokenData);
     });
 
+    socket.on(
+      "dmTokenLayerChange",
+      ({ sessionCode, tokenId, fromLayer, toLayer }) => {
+        socket.to(sessionCode).emit("playerReceiveTokenLayerChange", {
+          tokenId,
+          fromLayer,
+          toLayer,
+        });
+      }
+    );
+
     // Player moves a token and broadcasts it
     socket.on("playerMoveToken", ({ sessionCode, tokenData }) => {
       const userId = socketToUser.get(socket.id);

@@ -10,6 +10,7 @@ export default function SessionMapTokenLayer({
   onTokenMove,
   disableInteraction = false,
   currentUserId = null,
+  onOpenSettings = () => {},
 }) {
   return (
     <>
@@ -37,6 +38,7 @@ export default function SessionMapTokenLayer({
               }
               opacity={layerKey === "dm" ? 0.5 : 1}
               disableInteraction={tokenInteractionDisabled}
+              onOpenSettings={onOpenSettings} // <-- New prop
             />
           );
         })

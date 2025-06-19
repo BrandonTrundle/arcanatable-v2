@@ -1,0 +1,50 @@
+@import "./variables.css";
+
+.panel {
+  position: absolute;
+  top: 10%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 320px;
+  background: var(--color-surface);
+  color: var(--color-light);
+  border: 1px solid var(--color-muted);
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
+  padding: 16px;
+  z-index: 1000;
+  font-family: var(--font-main);
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 1.1em;
+  margin-bottom: 10px;
+}
+
+.closeButton {
+  background: none;
+  border: none;
+  color: var(--color-light);
+  font-size: 1.2em;
+  cursor: pointer;
+}
+
+.body {
+  font-size: 0.95em;
+  line-height: 1.4;
+}
+
+.settingGroup {
+  margin-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.settingGroup label {
+  font-size: 0.85em;
+  color: var(--color-muted);
+}

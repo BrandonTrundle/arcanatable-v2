@@ -1,5 +1,5 @@
 import React, { useRef, useState, useEffect, useMemo } from "react";
-import { Image as KonvaImage, Rect, Group } from "react-konva";
+import { Image as KonvaImage, Rect, Group, Text } from "react-konva";
 import { useTokenAnimation } from "../../../hooks/tokens/useTokenAnimation";
 import { useTokenDrag } from "../../../hooks/tokens/useTokenDrag";
 import { getHpColor } from "../../../utils/token/tokenUtils";
@@ -11,6 +11,7 @@ function SessionTokenSprite({
   onTokenMove = () => {},
   isSelected = false,
   onSelect = () => {},
+  onOpenSettings = () => {}, // <--- Add this
   immediatePositionOverride = null,
   opacity = 1,
   disableInteraction = false,
@@ -138,7 +139,6 @@ function SessionTokenSprite({
           opacity={opacity}
           onClick={(e) => {
             e.cancelBubble = true;
-            //       console.log("Group clicked - selecting token:", token.id);
             onSelect(token.id);
           }}
         >
@@ -191,6 +191,36 @@ function SessionTokenSprite({
             stroke="black"
             strokeWidth={1}
           />
+
+          {isSelected && (
+            <Group>
+              <Rect
+                x={width + 4}
+                y={height / 2 - 10}
+                width={20}
+                height={20}
+                fill="white"
+                cornerRadius={10}
+                shadowBlur={4}
+                shadowOpacity={0.4}
+                onClick={(e) => {
+                  e.cancelBubble = true;
+                  onOpenSettings(token);
+                }}
+              />
+              <Text
+                x={width + 4}
+                y={height / 2 - 10}
+                width={20}
+                height={20}
+                text="⚙️"
+                fontSize={14}
+                align="center"
+                verticalAlign="middle"
+                listening={false}
+              />
+            </Group>
+          )}
         </Group>
       )}
 

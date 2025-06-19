@@ -107,12 +107,39 @@ export default function PlayerView({ inviteCode }) {
       });
     };
 
+    const handleTokenLayerChange = ({ tokenId, fromLayer, toLayer }) => {
+      setActiveMap((prev) => {
+        if (!prev?.layers?.[fromLayer] || !prev.layers[toLayer]) return prev;
+
+        const token = prev.layers[fromLayer].tokens.find(
+          (t) => t.id === tokenId
+        );
+        if (!token) return prev;
+
+        const fromTokens = prev.layers[fromLayer].tokens.filter(
+          (t) => t.id !== tokenId
+        );
+        const toTokens = [...(prev.layers[toLayer].tokens || []), token];
+
+        return {
+          ...prev,
+          layers: {
+            ...prev.layers,
+            [fromLayer]: { ...prev.layers[fromLayer], tokens: fromTokens },
+            [toLayer]: { ...prev.layers[toLayer], tokens: toTokens },
+          },
+        };
+      });
+    };
+
     socket.on("playerReceiveMap", handleReceiveMap);
     socket.on("playerReceiveTokenMove", handleTokenMove);
+    socket.on("playerReceiveTokenLayerChange", handleTokenLayerChange);
 
     return () => {
       socket.off("playerReceiveMap", handleReceiveMap);
       socket.off("playerReceiveTokenMove", handleTokenMove);
+      socket.off("playerReceiveTokenLayerChange", handleTokenLayerChange);
     };
   }, []);
 

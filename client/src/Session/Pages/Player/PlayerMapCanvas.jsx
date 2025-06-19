@@ -9,6 +9,7 @@ import SessionFogAndBlockerLayer from "../../MapLayers/SessionFogAndBlockerLayer
 import SessionMapAssetLayer from "../../MapLayers/SessionMapAssetLayer";
 import SessionMapTokenLayer from "../../MapLayers/SessionMapTokenLayer";
 import { characterToToken } from "../../../utils/token/characterToken";
+import TokenSettingsPanel from "../../Components/Shared/TokenSettingsPanel";
 
 import styles from "../../styles/MapCanvas.module.css";
 
@@ -22,6 +23,8 @@ export default function PlayerMapCanvas({
   const { user } = useContext(AuthContext);
   const [selectedTokenId, setSelectedTokenId] = useState(null);
   const [mapImage] = useImage(map?.image, "anonymous");
+  const [tokenSettingsTarget, setTokenSettingsTarget] = useState(null);
+
   const imageReady = !!mapImage;
 
   const stageRef = useRef();
@@ -156,6 +159,7 @@ export default function PlayerMapCanvas({
             activeLayer="player"
             selectedTokenId={selectedTokenId}
             onSelectToken={handleSelectToken}
+            onOpenSettings={setTokenSettingsTarget}
             onTokenMove={(id, newPos) => {
               console.log(
                 "[Player] Attempting to move token:",
@@ -202,6 +206,12 @@ export default function PlayerMapCanvas({
 
         <Layer>{/* Reserved for future layers */}</Layer>
       </Stage>
+      {tokenSettingsTarget && (
+        <TokenSettingsPanel
+          token={tokenSettingsTarget}
+          onClose={() => setTokenSettingsTarget(null)}
+        />
+      )}
     </div>
   );
 }
