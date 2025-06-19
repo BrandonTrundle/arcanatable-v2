@@ -85,6 +85,33 @@ export default function PlayerView({ inviteCode }) {
       setActiveMap(map);
     };
 
+    const handleTokenOwnershipChange = ({ tokenId, newOwnerIds }) => {
+      setActiveMap((prev) => {
+        if (!prev) return prev;
+
+        const layerKey = Object.entries(prev.layers).find(([_, l]) =>
+          (l.tokens || []).some((t) => t.id === tokenId)
+        )?.[0];
+
+        if (!layerKey) return prev;
+
+        const updatedTokens = prev.layers[layerKey].tokens.map((t) =>
+          t.id === tokenId ? { ...t, ownerIds: newOwnerIds } : t
+        );
+
+        return {
+          ...prev,
+          layers: {
+            ...prev.layers,
+            [layerKey]: {
+              ...prev.layers[layerKey],
+              tokens: updatedTokens,
+            },
+          },
+        };
+      });
+    };
+
     const handleTokenMove = ({ id, newPos, layer }) => {
       console.log("Received token move:", id, newPos, layer);
       setActiveMap((prev) => {
@@ -133,11 +160,16 @@ export default function PlayerView({ inviteCode }) {
     };
 
     socket.on("playerReceiveMap", handleReceiveMap);
+    socket.on("playerReceiveTokenOwnershipChange", handleTokenOwnershipChange);
     socket.on("playerReceiveTokenMove", handleTokenMove);
     socket.on("playerReceiveTokenLayerChange", handleTokenLayerChange);
 
     return () => {
       socket.off("playerReceiveMap", handleReceiveMap);
+      socket.off(
+        "playerReceiveTokenOwnershipChange",
+        handleTokenOwnershipChange
+      );
       socket.off("playerReceiveTokenMove", handleTokenMove);
       socket.off("playerReceiveTokenLayerChange", handleTokenLayerChange);
     };

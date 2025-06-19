@@ -6,8 +6,10 @@ export default function TokenSettingsPanel({
   onClose,
   isDM = false,
   currentUserId,
+  allPlayers = [],
   onChangeShowNameplate = () => {},
   onChangeLayer = () => {},
+  onChangeOwner = () => {},
 }) {
   console.log("Token in panel:", token);
   const availableLayers = ["dm", "player", "hidden"];
@@ -56,6 +58,56 @@ export default function TokenSettingsPanel({
             />
           </label>
         </div>
+        {(isDM || token.ownerIds?.includes(currentUserId)) && (
+          <div className={styles.settingGroup}>
+            <label className={styles.sectionTitle}>Controlled By:</label>
+            <select
+              value=""
+              onChange={(e) => {
+                const selectedId = e.target.value;
+                if (!selectedId) return;
+
+                const newOwnerIds = token.ownerIds ? [...token.ownerIds] : [];
+                if (!newOwnerIds.includes(selectedId)) {
+                  newOwnerIds.push(selectedId);
+                  onChangeOwner(token, newOwnerIds);
+                }
+              }}
+            >
+              <option value="">Add owner...</option>
+              {allPlayers
+                .filter((p) => !token.ownerIds?.includes(p._id))
+                .map((player) => (
+                  <option key={player._id} value={player._id}>
+                    {player.username}
+                  </option>
+                ))}
+            </select>
+
+            <ul className={styles.ownerList}>
+              {(token.ownerIds || []).map((id) => {
+                const player = allPlayers.find((p) => p._id === id);
+                if (!player) return null;
+                return (
+                  <li key={id} className={styles.ownerItem}>
+                    {player.username}
+                    <button
+                      onClick={() => {
+                        const updated = token.ownerIds.filter(
+                          (oid) => oid !== id
+                        );
+                        onChangeOwner(token, updated);
+                      }}
+                      className={styles.removeOwnerButton}
+                    >
+                      ×
+                    </button>
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
+        )}
       </div>
     </div>
   );

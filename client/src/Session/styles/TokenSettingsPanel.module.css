@@ -88,7 +88,7 @@
   display: flex;
   flex-direction: row;
   align-items: center;
-  justify-content: flex-start; /* or start if you want them snug */
+  justify-content: flex-start;
   gap: 10px;
   font-weight: bold;
   color: var(--color-light);
@@ -105,4 +105,28 @@
   height: 15px;
   cursor: pointer;
   transform: translateY(7px);
+}
+.ownerList {
+  margin-top: 8px;
+  list-style: none;
+  padding: 0;
+}
+
+.ownerItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 2px 2px;
+  background: var(--color-highlight);
+  border-radius: 4px;
+}
+
+.removeOwnerButton {
+  background: none;
+  border: none;
+  color: red;
+  font-weight: bold;
+  font-size: 22px;
+  cursor: pointer;
+  transform: translateY(-7px);
 }

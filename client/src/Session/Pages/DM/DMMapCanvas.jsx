@@ -23,6 +23,7 @@ export default function DMMapCanvas({
   gridVisible,
   onCanvasDrop,
   setMapData,
+  campaign,
   activeLayer,
   fogVisible,
   toolMode,
@@ -30,9 +31,12 @@ export default function DMMapCanvas({
   activeNoteCell,
   selectedNoteCell,
   onSelectToken,
+  user,
 }) {
   const [mapImage] = useImage(map?.image, "anonymous");
   const imageReady = !!mapImage;
+  const allPlayers = campaign?.players || [];
+  console.log("All players:", allPlayers);
 
   const stageRef = useRef();
   const [selectedTokenId, setSelectedTokenId] = useState(null);
@@ -188,6 +192,8 @@ export default function DMMapCanvas({
       </Stage>
       {tokenSettingsTarget && (
         <TokenSettingsPanel
+          currentUserId={user._id}
+          allPlayers={allPlayers}
           token={tokenSettingsTarget}
           isDM={true}
           onClose={() => setTokenSettingsTarget(null)}
@@ -253,7 +259,6 @@ export default function DMMapCanvas({
                 },
               };
 
-              // Update the token settings panel to reflect the new state
               const updatedToken = updatedTokens.find((t) => t.id === token.id);
               setTokenSettingsTarget({ ...updatedToken, _layer: layer });
 
@@ -261,6 +266,41 @@ export default function DMMapCanvas({
             });
 
             // Optional: emit showNameplate change via socket
+          }}
+          onChangeOwner={(token, newOwnerIds) => {
+            setMapData((prev) => {
+              const layer = Object.entries(prev.layers).find(([_, l]) =>
+                (l.tokens || []).some((t) => t.id === token.id)
+              )?.[0];
+
+              if (!layer) return prev;
+
+              const updatedTokens = prev.layers[layer].tokens.map((t) =>
+                t.id === token.id ? { ...t, ownerIds: newOwnerIds } : t
+              );
+
+              const updatedMap = {
+                ...prev,
+                layers: {
+                  ...prev.layers,
+                  [layer]: {
+                    ...prev.layers[layer],
+                    tokens: updatedTokens,
+                  },
+                },
+              };
+
+              const updatedToken = updatedTokens.find((t) => t.id === token.id);
+              setTokenSettingsTarget({ ...updatedToken, _layer: layer });
+
+              return updatedMap;
+            });
+
+            socket.emit("dmTokenOwnershipChange", {
+              sessionCode,
+              tokenId: token.id,
+              newOwnerIds, // ✅ already an array
+            });
           }}
         />
       )}

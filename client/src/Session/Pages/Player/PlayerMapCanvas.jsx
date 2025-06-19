@@ -64,7 +64,7 @@ export default function PlayerMapCanvas({
 
   const stageWidth = map.width * map.gridSize;
   const stageHeight = map.height * map.gridSize;
-
+  console.log("Current user ID (for token interaction):", user.id);
   return (
     <div
       className={styles.mapCanvas}

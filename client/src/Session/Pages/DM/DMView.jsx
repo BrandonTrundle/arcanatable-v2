@@ -194,6 +194,8 @@ export default function DMView({ sessionCode }) {
         />
       )}
       <DMMapCanvas
+        user={user}
+        campaign={campaign}
         sessionCode={sessionCode}
         map={activeMap}
         notes={activeMap?.notes || []}

@@ -49,6 +49,16 @@ module.exports = function registerSessionSockets(io) {
       }
     );
 
+    socket.on(
+      "dmTokenOwnershipChange",
+      ({ sessionCode, tokenId, newOwnerIds }) => {
+        io.to(sessionCode).emit("playerReceiveTokenOwnershipChange", {
+          tokenId,
+          newOwnerIds,
+        });
+      }
+    );
+
     // Player moves a token and broadcasts it
     socket.on("playerMoveToken", ({ sessionCode, tokenData }) => {
       const userId = socketToUser.get(socket.id);
