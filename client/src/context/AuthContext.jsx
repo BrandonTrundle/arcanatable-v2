@@ -4,6 +4,7 @@ export const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
+
   const updateUser = (updatedFields) => {
     setUser((prevUser) => ({
       ...prevUser,
@@ -16,24 +17,31 @@ export const AuthProvider = ({ children }) => {
     const userData = localStorage.getItem("user");
 
     if (token && userData) {
-      setUser(JSON.parse(userData));
+      const parsedUser = JSON.parse(userData);
+      if (!parsedUser.token) {
+        parsedUser.token = token;
+      }
+      setUser(parsedUser);
     } else if (token) {
-      const payload = JSON.parse(atob(token.split(".")[1]));
-      setUser({ id: payload.id, token });
+      try {
+        const payload = JSON.parse(atob(token.split(".")[1]));
+        setUser({ id: payload.id, token });
+      } catch (error) {
+        console.error("Failed to decode token:", error);
+      }
     }
   }, []);
 
   const login = (token, userData) => {
     const fullUser = { ...userData, token };
     localStorage.setItem("token", token);
-    localStorage.setItem("user", JSON.stringify(fullUser)); // ✅ Save full user
-    //   console.log("Logged in user:", fullUser);
+    localStorage.setItem("user", JSON.stringify(fullUser));
     setUser(fullUser);
   };
 
   const logout = () => {
     localStorage.removeItem("token");
-    localStorage.removeItem("user"); // ✅ clear stored user
+    localStorage.removeItem("user");
     setUser(null);
   };
 

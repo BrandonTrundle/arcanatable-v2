@@ -30,12 +30,19 @@ export default function PlayerMapCanvas({
   const [tokenSettingsTarget, setTokenSettingsTarget] = useState(null);
   const imageReady = !!mapImage;
   const stageRef = useRef();
-  const handleDrop = usePlayerTokenDropHandler(map, setActiveMap, sessionCode);
+  const handleDrop = usePlayerTokenDropHandler(
+    map,
+    setActiveMap,
+    sessionCode,
+    user
+  );
   const handleTokenMove = usePlayerTokenMovement(
     map,
     setActiveMap,
-    sessionCode
+    sessionCode,
+    user
   );
+
   const handleDeleteToken = usePlayerTokenDeletion(
     map,
     setActiveMap,

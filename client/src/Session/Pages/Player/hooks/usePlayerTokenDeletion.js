@@ -1,11 +1,14 @@
 import { useCallback } from "react";
 import socket from "../../../../socket";
+import { debounceSave } from "../../../utils/debounceSave";
+import { saveMap } from "../../../utils/saveMap";
 
 export default function usePlayerTokenDeletion(
   map,
   setActiveMap,
   sessionCode,
-  setTokenSettingsTarget
+  setTokenSettingsTarget,
+  user
 ) {
   return useCallback(
     (token) => {
@@ -15,11 +18,14 @@ export default function usePlayerTokenDeletion(
 
       if (!layer) return;
 
+      let updatedMap = null;
+
       setActiveMap((prev) => {
         const updatedTokens = prev.layers[layer].tokens.filter(
           (t) => t.id !== token.id
         );
-        return {
+
+        updatedMap = {
           ...prev,
           layers: {
             ...prev.layers,
@@ -29,6 +35,8 @@ export default function usePlayerTokenDeletion(
             },
           },
         };
+
+        return updatedMap;
       });
 
       socket.emit("playerDeleteToken", {
@@ -37,8 +45,11 @@ export default function usePlayerTokenDeletion(
         layer,
       });
 
+      const authToken = user?.token;
+      debounceSave(() => saveMap(updatedMap, authToken));
+
       setTokenSettingsTarget(null);
     },
-    [map, setActiveMap, sessionCode, setTokenSettingsTarget]
+    [map, setActiveMap, sessionCode, setTokenSettingsTarget, user]
   );
 }

@@ -1,9 +1,11 @@
-import { useState } from "react";
 import socket from "../../../../socket";
 
-export function useTokenSettings({ map, setMapData, sessionCode }) {
-  const [tokenSettingsTarget, setTokenSettingsTarget] = useState(null);
-
+export function useTokenSettings({
+  map,
+  setMapData,
+  sessionCode,
+  setTokenSettingsTarget,
+}) {
   const updateTokenInLayer = (tokenId, updater) => {
     setMapData((prev) => {
       const layer = Object.entries(prev.layers).find(([_, l]) =>
@@ -117,8 +119,6 @@ export function useTokenSettings({ map, setMapData, sessionCode }) {
   };
 
   return {
-    tokenSettingsTarget,
-    setTokenSettingsTarget,
     deleteToken,
     changeTokenLayer,
     changeShowNameplate,

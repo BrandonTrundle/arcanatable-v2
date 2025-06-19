@@ -57,7 +57,7 @@ export default function DMMapCanvas({
     useDMAssetControl(setMapData, activeLayer);
 
   const { deleteToken, changeTokenLayer, changeShowNameplate, changeOwner } =
-    useTokenSettings({ map, setMapData, sessionCode });
+    useTokenSettings({ map, setMapData, sessionCode, setTokenSettingsTarget });
 
   if (!map) {
     return <div className={styles.mapCanvas}>No map loaded.</div>;

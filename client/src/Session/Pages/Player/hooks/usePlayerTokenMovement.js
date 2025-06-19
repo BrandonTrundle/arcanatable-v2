@@ -1,7 +1,14 @@
 import { useCallback } from "react";
 import socket from "../../../../socket";
+import { debounceSave } from "../../../utils/debounceSave";
+import { saveMap } from "../../../utils/saveMap";
 
-export default function usePlayerTokenMovement(map, setActiveMap, sessionCode) {
+export default function usePlayerTokenMovement(
+  map,
+  setActiveMap,
+  sessionCode,
+  user
+) {
   return useCallback(
     (id, newPos) => {
       const layer = "player";
@@ -11,12 +18,14 @@ export default function usePlayerTokenMovement(map, setActiveMap, sessionCode) {
       const token = allTokens.find((t) => t.id === id);
       const ownerId = token?.ownerId;
       const ownerIds = token?.ownerIds;
+      const authToken = user?.token;
 
       setActiveMap((prev) => {
         const updatedTokens = prev.layers[layer].tokens.map((token) =>
           token.id === id ? { ...token, position: newPos } : token
         );
-        return {
+
+        const updatedMap = {
           ...prev,
           layers: {
             ...prev.layers,
@@ -26,6 +35,10 @@ export default function usePlayerTokenMovement(map, setActiveMap, sessionCode) {
             },
           },
         };
+
+        debounceSave(() => saveMap(updatedMap, authToken));
+
+        return updatedMap; // ✅ Don't forget this
       });
 
       socket.emit("playerMoveToken", {
@@ -33,6 +46,6 @@ export default function usePlayerTokenMovement(map, setActiveMap, sessionCode) {
         tokenData: { id, newPos, layer, ownerId, ownerIds },
       });
     },
-    [map, setActiveMap, sessionCode]
+    [map, setActiveMap, sessionCode, user]
   );
 }

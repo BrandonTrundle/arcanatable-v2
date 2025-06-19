@@ -1,11 +1,15 @@
 import { useEffect } from "react";
 import socket from "../../../../socket";
+import { debounceSave } from "../../../utils/debounceSave";
+import { saveMap } from "../../../utils/saveMap";
 
 export default function usePlayerSocketHandlers(
   inviteCode,
   user,
   setActiveMap
 ) {
+  const authToken = user?.token;
+
   useEffect(() => {
     if (inviteCode) {
       socket.emit("joinSession", { sessionCode: inviteCode });
@@ -14,7 +18,10 @@ export default function usePlayerSocketHandlers(
 
   useEffect(() => {
     const handleReceiveMap = (map) => {
-      setActiveMap(map);
+      setActiveMap(() => {
+        debounceSave(() => saveMap(map, authToken));
+        return map;
+      });
     };
 
     const handleTokenOwnershipChange = ({ tokenId, newOwnerIds }) => {
@@ -24,14 +31,13 @@ export default function usePlayerSocketHandlers(
         const layerKey = Object.entries(prev.layers).find(([_, l]) =>
           (l.tokens || []).some((t) => t.id === tokenId)
         )?.[0];
-
         if (!layerKey) return prev;
 
         const updatedTokens = prev.layers[layerKey].tokens.map((t) =>
           t.id === tokenId ? { ...t, ownerIds: newOwnerIds } : t
         );
 
-        return {
+        const updatedMap = {
           ...prev,
           layers: {
             ...prev.layers,
@@ -41,6 +47,9 @@ export default function usePlayerSocketHandlers(
             },
           },
         };
+
+        debounceSave(() => saveMap(updatedMap, authToken));
+        return updatedMap;
       });
     };
 
@@ -52,7 +61,7 @@ export default function usePlayerSocketHandlers(
           token.id === id ? { ...token, position: newPos } : token
         );
 
-        return {
+        const updatedMap = {
           ...prev,
           layers: {
             ...prev.layers,
@@ -62,6 +71,9 @@ export default function usePlayerSocketHandlers(
             },
           },
         };
+
+        debounceSave(() => saveMap(updatedMap, authToken));
+        return updatedMap;
       });
     };
 
@@ -79,14 +91,23 @@ export default function usePlayerSocketHandlers(
         );
         const toTokens = [...(prev.layers[toLayer].tokens || []), token];
 
-        return {
+        const updatedMap = {
           ...prev,
           layers: {
             ...prev.layers,
-            [fromLayer]: { ...prev.layers[fromLayer], tokens: fromTokens },
-            [toLayer]: { ...prev.layers[toLayer], tokens: toTokens },
+            [fromLayer]: {
+              ...prev.layers[fromLayer],
+              tokens: fromTokens,
+            },
+            [toLayer]: {
+              ...prev.layers[toLayer],
+              tokens: toTokens,
+            },
           },
         };
+
+        debounceSave(() => saveMap(updatedMap, authToken));
+        return updatedMap;
       });
     };
 
@@ -97,7 +118,7 @@ export default function usePlayerSocketHandlers(
         const playerLayer = prev.layers.player || { tokens: [], assets: [] };
         const updatedTokens = [...(playerLayer.tokens || []), token];
 
-        return {
+        const updatedMap = {
           ...prev,
           layers: {
             ...prev.layers,
@@ -107,6 +128,9 @@ export default function usePlayerSocketHandlers(
             },
           },
         };
+
+        debounceSave(() => saveMap(updatedMap, authToken));
+        return updatedMap;
       });
     };
 
@@ -117,7 +141,7 @@ export default function usePlayerSocketHandlers(
           (t) => t.id !== tokenId
         );
 
-        return {
+        const updatedMap = {
           ...prev,
           layers: {
             ...prev.layers,
@@ -127,6 +151,9 @@ export default function usePlayerSocketHandlers(
             },
           },
         };
+
+        debounceSave(() => saveMap(updatedMap, authToken));
+        return updatedMap;
       });
     };
 
@@ -150,5 +177,5 @@ export default function usePlayerSocketHandlers(
       socket.off("playerReceiveTokenDelete", handleTokenDelete);
       socket.off("dmTokenMove", handleTokenMove);
     };
-  }, [inviteCode, setActiveMap]);
+  }, [inviteCode, setActiveMap, user]);
 }

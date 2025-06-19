@@ -3,6 +3,7 @@ import { useEscapeDeselect } from "../../../../hooks/tokens/useEscapeDeselect";
 import { useKeyboardTokenControl } from "../../../../hooks/tokens/useKeyboardTokenControl";
 import { handleTokenMoveWithFog } from "../../../../utils/token/tokenMoveWithFog";
 import socket from "../../../../socket";
+import { debounceSave } from "../../../utils/debounceSave";
 
 export function useDMTokenControl({
   map,
@@ -26,14 +27,40 @@ export function useDMTokenControl({
 
     const tokenData = { id, newPos, layer: tokenLayer };
 
-    setMapData((prevMap) =>
-      handleTokenMoveWithFog({
+    setMapData((prevMap) => {
+      const updatedMap = handleTokenMoveWithFog({
         map: prevMap,
         id,
         newPos,
         activeLayer: tokenLayer,
-      })
-    );
+      });
+
+      debounceSave(() => {
+        fetch(
+          `${import.meta.env.VITE_API_BASE_URL}/api/maps/${updatedMap._id}`,
+          {
+            method: "PUT",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${user.token}`, // 👈 assuming user.token is available
+            },
+            body: JSON.stringify(updatedMap),
+          }
+        )
+          .then((res) => {
+            if (!res.ok) throw new Error("Failed to save map");
+            return res.json();
+          })
+          .then((data) => {
+            console.log("DM map saved successfully", data);
+          })
+          .catch((err) => {
+            console.error("Error saving DM map:", err);
+          });
+      });
+
+      return updatedMap;
+    });
 
     socket.emit("dmTokenMove", { sessionCode, tokenData });
   };
