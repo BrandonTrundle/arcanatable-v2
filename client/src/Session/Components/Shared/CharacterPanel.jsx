@@ -103,6 +103,8 @@ const CharacterPanel = forwardRef(
                 draggable
                 onDragStart={(e) => {
                   const tokenPayload = {
+                    acitveToken: false,
+                    effects: [],
                     id: crypto.randomUUID(),
                     name: char.name,
                     image: char.portraitImage,
@@ -111,6 +113,7 @@ const CharacterPanel = forwardRef(
                     hp: char.hp || 1,
                     maxHp: char.maxHp || 1,
                     isVisible: true,
+                    lightEmit: null,
                     rotation: 0,
                     isPC: true,
                     entityType: "PC",

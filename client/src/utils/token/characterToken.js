@@ -1,6 +1,8 @@
 export function characterToToken(character) {
   const ownerId = character.creator;
   return {
+    acitveToken: false,
+    effects: [],
     id: crypto.randomUUID(),
     name: character.name,
     image: character.portraitImage || character.image || "",
@@ -9,6 +11,7 @@ export function characterToToken(character) {
     hp: character.currenthp || character.maxHp || 1,
     maxHp: character.maxHp || 1,
     isVisible: true,
+    lightEmit: null,
     rotation: 0,
     isPC: true,
     entityType: "PC",
