@@ -1,5 +1,4 @@
-// client/src/Session/Pages/DM/DMMapCanvas.jsx
-import React, { useRef } from "react";
+import React, { useRef, useEffect } from "react";
 import { Stage, Layer } from "react-konva";
 import { useDMTokenControl } from "./hooks/useDMTokenControl";
 import { useDMAssetControl } from "./hooks/useDMAssetControl";
@@ -12,6 +11,7 @@ import SessionFogAndBlockerLayer from "../../MapLayers/SessionFogAndBlockerLayer
 import SessionMapAssetLayer from "../../MapLayers/SessionMapAssetLayer";
 import SessionMapTokenLayer from "../../MapLayers/SessionMapTokenLayer";
 import TokenSettingsPanel from "../../Components/Shared/TokenSettingsPanel";
+import socket from "../../../socket";
 
 import styles from "../../styles/MapCanvas.module.css";
 
@@ -53,11 +53,66 @@ export default function DMMapCanvas({
     user,
   });
 
+  useEffect(() => {
+    const handleDrop = (e) => {
+      e.preventDefault();
+
+      const json = e.dataTransfer.getData("application/json");
+      if (!json) return;
+
+      const droppedToken = JSON.parse(json);
+
+      const stage = stageRef.current.getStage();
+      const rect = stage.container().getBoundingClientRect();
+
+      const pointerX = e.clientX - rect.left;
+      const pointerY = e.clientY - rect.top;
+
+      const cellX = Math.floor(pointerX / map.gridSize);
+      const cellY = Math.floor(pointerY / map.gridSize);
+
+      droppedToken.position = { x: cellX, y: cellY };
+      droppedToken.id = crypto.randomUUID();
+      droppedToken._layer = activeLayer; // ✅ Ensure player side knows the layer
+
+      const updatedMap = { ...map };
+      if (!updatedMap.layers[activeLayer].tokens) {
+        updatedMap.layers[activeLayer].tokens = [];
+      }
+      updatedMap.layers[activeLayer].tokens.push(droppedToken);
+      setMapData(updatedMap);
+
+      socket.emit("dmDropToken", {
+        sessionCode: sessionCode,
+        mapId: map._id,
+        token: droppedToken,
+      });
+    };
+
+    const stage = stageRef.current?.container();
+    if (stage) {
+      stage.addEventListener("dragover", (e) => e.preventDefault());
+      stage.addEventListener("drop", handleDrop);
+    }
+
+    return () => {
+      if (stage) {
+        stage.removeEventListener("dragover", (e) => e.preventDefault());
+        stage.removeEventListener("drop", handleDrop);
+      }
+    };
+  }, [map, activeLayer, setMapData, sessionCode]);
+
   const { selectedAssetId, setSelectedAssetId, handleMoveAsset } =
     useDMAssetControl(setMapData, activeLayer);
 
   const { deleteToken, changeTokenLayer, changeShowNameplate, changeOwner } =
-    useTokenSettings({ map, setMapData, sessionCode, setTokenSettingsTarget });
+    useTokenSettings({
+      map,
+      setMapData,
+      sessionCode,
+      setTokenSettingsTarget,
+    });
 
   if (!map) {
     return <div className={styles.mapCanvas}>No map loaded.</div>;

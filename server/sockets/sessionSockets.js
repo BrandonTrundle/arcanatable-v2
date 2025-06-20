@@ -87,6 +87,11 @@ module.exports = function registerSessionSockets(io) {
       io.to(sessionCode).emit("playerReceiveTokenDelete", { tokenId, layer });
     });
 
+    socket.on("dmDropToken", ({ sessionCode, mapId, token }) => {
+      console.log(`DM dropped token in session ${sessionCode}`);
+      socket.to(sessionCode).emit("playerDropToken", { mapId, token });
+    });
+
     // Player moves a token and broadcasts it
     socket.on("playerMoveToken", ({ sessionCode, tokenData }) => {
       const userId = socketToUser.get(socket.id);

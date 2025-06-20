@@ -2,6 +2,7 @@ import { useContext, useState } from "react";
 import { AuthContext } from "../../../context/AuthContext";
 import styles from "../../styles/DMView.module.css";
 import MapsPanel from "../../Components/DM/Panel/MapsPanel";
+import DMTokenPanel from "../../Components/DM/Panel/DMTokenPanel";
 import DMMapCanvas from "./DMMapCanvas";
 import DMToolbar from "../../Components/DM/DMToolbar";
 
@@ -18,11 +19,14 @@ export default function DMView({ sessionCode }) {
   const [selectedMapId, setSelectedMapId] = useState(null);
   const [gridVisible, setGridVisible] = useState(true);
   const [fogVisible, setFogVisible] = useState(false);
+  const [showTokenPanel, setShowTokenPanel] = useState(false);
 
   const { campaign, maps, activeMap, setActiveMap } = useDMInitialData(
     sessionCode,
     user
   );
+
+  const toggleTokenPanel = () => setShowTokenPanel((prev) => !prev);
 
   useDMSocketEvents(setActiveMap, sessionCode);
 
@@ -41,6 +45,8 @@ export default function DMView({ sessionCode }) {
       <DMToolbar
         onToggleMaps={toggleMapsPanel}
         isMapsPanelOpen={showMapsPanel}
+        onToggleTokens={toggleTokenPanel}
+        isTokenPanelOpen={showTokenPanel}
         onSelectTool={setToolMode}
         currentTool={toolMode}
       />
@@ -52,6 +58,14 @@ export default function DMView({ sessionCode }) {
           onLoadMap={handleLoadMap}
           onClosePanel={() => toggleMapsPanel()}
           sessionCode={sessionCode}
+        />
+      )}
+      {showTokenPanel && campaign && (
+        <DMTokenPanel
+          campaignId={campaign._id}
+          userId={user._id}
+          sessionCode={sessionCode}
+          onClosePanel={() => setShowTokenPanel(false)}
         />
       )}
       <DMMapCanvas

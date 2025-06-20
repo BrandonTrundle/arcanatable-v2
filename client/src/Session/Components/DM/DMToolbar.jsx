@@ -17,6 +17,8 @@ import tokenIcon from "../../../assets/icons/tokenIcon.png";
 const DMToolbar = ({
   onToggleMaps,
   isMapsPanelOpen,
+  onToggleTokens,
+  isTokenPanelOpen,
   onSelectTool,
   currentTool,
 }) => {
@@ -43,7 +45,13 @@ const DMToolbar = ({
     },
     { src: musicIcon, alt: "Music", onClick: null },
     { src: pcIcon, alt: "PC Tools", onClick: null },
-    { src: tokenIcon, alt: "Tokens", onClick: null },
+    {
+      src: tokenIcon,
+      alt: "Tokens",
+      onClick: () => onToggleTokens(),
+      active: isTokenPanelOpen,
+      key: "tokens",
+    },
     { src: settingsIcon, alt: "Settings", onClick: null },
   ];
 
@@ -53,7 +61,7 @@ const DMToolbar = ({
         <div
           key={idx}
           className={`${styles.iconWrapper} ${
-            icon.key === currentTool ? styles.active : ""
+            icon.key === currentTool || icon.active ? styles.active : ""
           }`}
           onClick={icon.onClick}
         >
