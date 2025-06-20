@@ -45,17 +45,28 @@ export default function fetchTokens(currentCampaign) {
 
         const normalizedTokens = [...npcTokens, ...monsters].map((item) => {
           const content = item.content || {};
-          const isNPC = item.toolkitType?.toLowerCase() === "npc";
-          const isMonster = item.toolkitType === "Monster";
+          const toolkitType = item.toolkitType || "";
+          const isNPC = toolkitType.toLowerCase() === "npc";
+          const isMonster = toolkitType === "Monster";
+          const entityType = isNPC ? "NPC" : isMonster ? "Monster" : "NPC"; // fallback
+
+          const parsedHp = parseInt(content.hitPoints) || 10;
 
           return {
             id: item._id,
             name: content.name || item.title || "Unnamed",
             image: content.image || "/images/default-token.png",
-            maxHp: parseInt(content.hitPoints) || 10,
+            hp: parsedHp,
+            maxHp: parsedHp,
             initiative: parseInt(content.initiative) || 0,
             size: { width: 1, height: 1 },
-            type: isNPC ? "npc" : isMonster ? "creature" : "unknown",
+            type: entityType.toLowerCase(),
+            entityType,
+            entityId: item._id,
+            isPC: entityType === "PC",
+            pcId: entityType === "PC" ? item._id : undefined,
+            npcId: entityType === "NPC" ? item._id : undefined,
+            monsterId: entityType === "Monster" ? item._id : undefined,
             notes: content.description || "",
             isVisible: true,
             rotation: 0,
@@ -65,20 +76,30 @@ export default function fetchTokens(currentCampaign) {
         });
 
         const normalizedCustomTokens = Array.isArray(customTokens)
-          ? customTokens.map((token) => ({
-              id: token._id,
-              name: token.name,
-              image: token.image || "/images/default-token.png",
-              maxHp: token.maxHp,
-              initiative: token.initiative,
-              size: token.size || { width: 1, height: 1 },
-              type: "custom",
-              notes: token.notes || "",
-              isVisible: true,
-              rotation: token.rotation || 0,
-              statusConditions: [],
-              effects: [],
-            }))
+          ? customTokens.map((token) => {
+              const hp = token.hp ?? token.maxHp ?? 10;
+              return {
+                id: token._id,
+                name: token.name,
+                image: token.image || "/images/default-token.png",
+                hp,
+                maxHp: token.maxHp ?? hp,
+                initiative: token.initiative,
+                size: token.size || { width: 1, height: 1 },
+                type: "custom",
+                entityType: "NPC",
+                entityId: token._id,
+                isPC: false,
+                pcId: undefined,
+                npcId: token._id,
+                monsterId: undefined,
+                notes: token.notes || "",
+                isVisible: true,
+                rotation: token.rotation || 0,
+                statusConditions: [],
+                effects: [],
+              };
+            })
           : [];
 
         setTokens([...normalizedTokens, ...normalizedCustomTokens]);

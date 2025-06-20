@@ -69,6 +69,7 @@ export default function ToolkitMapEditor() {
 
   const handleCanvasDrop = (pointer) => {
     if (draggingToken) {
+      console.log("📋 draggingToken:", draggingToken);
       const newToken = createTokenOnDrop({
         baseToken: draggingToken,
         pointer,

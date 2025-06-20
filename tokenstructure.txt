@@ -1,0 +1,39 @@
+{
+  id: string,                        // Unique token ID (UUID or prefixed timestamp)
+  name: string,                      // Display name of the token
+  image: string,                     // Image URL (must be valid)
+
+  entityType: "PC" | "NPC" | "Monster",  // Classification
+  entityId: string,                 // The ID of the underlying entity (char._id, npc.id, etc.)
+
+  isPC: boolean,                    // true for PC, false otherwise
+  pcId?: string,                    // Only for PCs
+  npcId?: string,                   // Only for NPCs
+  monsterId?: string,               // Only for Monsters
+
+  ownerId?: string,                // Primary controller
+  ownerIds: string[],             // Allowed controllers (empty = DM-only)
+
+  hp: number,
+  maxHp: number,
+  initiative: number,
+
+  size: {
+    width: number,
+    height: number,
+  },
+
+  position: {
+    x: number,
+    y: number,
+  },
+
+  rotation: number,
+  isVisible: boolean,
+
+  // Optional/advanced fields
+  lightEmit?: number | null,
+  effects?: string[],
+  statusConditions?: string[],
+  notes?: string,
+}

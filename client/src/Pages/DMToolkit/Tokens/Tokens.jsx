@@ -6,16 +6,15 @@ import TokenDetail from "../../../Components/DMToolkit/Tokens/TokenDetail";
 import { useOutletContext } from "react-router-dom";
 import { AuthContext } from "../../../context/AuthContext";
 import { fetchCampaigns } from "../../../hooks/dmtoolkit/fetchCampaigns";
-import fetchTokens from "../../../hooks/dmtoolkit/fetchTokens";
 
 export default function Tokens() {
   const [showForm, setShowForm] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedToken, setSelectedToken] = useState(null);
   const { currentCampaign } = useOutletContext();
-  const { tokens, loading, error } = fetchTokens(currentCampaign);
   const { user } = useContext(AuthContext);
   const [campaignList, setCampaignList] = useState([]);
+  const [tokens, setTokens] = useState([]);
 
   // submit token data
   const handleTokenSubmit = async (formData) => {

@@ -31,7 +31,7 @@ const tokenSchema = new mongoose.Schema(
     id: { type: String, required: true }, // Token instance ID
     entityType: {
       type: String,
-      enum: ["Monster", "NPC", "Token"],
+      enum: ["Monster", "NPC", "Token", "PC"],
       required: true,
     },
     entityId: { type: String, required: true }, // ID of the source entity

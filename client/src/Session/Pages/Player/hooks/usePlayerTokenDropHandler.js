@@ -28,13 +28,16 @@ export default function usePlayerTokenDropHandler(
         const cellY = Math.floor(y / map.gridSize);
 
         const token = characterToToken(char);
+        if (!token.image || !token.image.startsWith("http")) {
+          console.warn("Token image is invalid. Drop aborted.", token.image);
+          return;
+        }
         token.position = { x: cellX, y: cellY };
         token.entityId = char._id || char.id;
-        token.entityType = char.isPC
-          ? "Token"
-          : char.isMonster
-          ? "Monster"
-          : "NPC";
+        token.entityType =
+          char.entityType ||
+          (char.isPC ? "PC" : char.isMonster ? "Monster" : "NPC");
+
         token.ownerId = user?.id;
         token.ownerIds = [user?.id];
 

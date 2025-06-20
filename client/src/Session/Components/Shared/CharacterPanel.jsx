@@ -102,9 +102,25 @@ const CharacterPanel = forwardRef(
                 className={styles.characterCard}
                 draggable
                 onDragStart={(e) => {
+                  const tokenPayload = {
+                    id: crypto.randomUUID(),
+                    name: char.name,
+                    image: char.portraitImage,
+                    size: { width: 1, height: 1 },
+                    position: { x: 0, y: 0 },
+                    hp: char.hp || 1,
+                    maxHp: char.maxHp || 1,
+                    isVisible: true,
+                    rotation: 0,
+                    isPC: true,
+                    entityType: "PC",
+                    pcId: char._id,
+                    ownerId: user._id,
+                    ownerIds: [user._id],
+                  };
                   e.dataTransfer.setData(
                     "application/json",
-                    JSON.stringify(char)
+                    JSON.stringify(tokenPayload)
                   );
                   e.dataTransfer.effectAllowed = "copy";
                 }}
