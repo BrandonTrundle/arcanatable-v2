@@ -6,17 +6,34 @@ import MapAssetCard from "../../../Components/DMToolkit/MapAssets/MapAssetCard";
 import MapAssetDetail from "../../../Components/DMToolkit/MapAssets/MapAssetDetail";
 import { AuthContext } from "../../../context/AuthContext";
 import fetchMapAssets from "../../../hooks/dmtoolkit/fetchMapAssets";
+import { fetchCampaigns } from "../../../hooks/dmtoolkit/fetchCampaigns";
 
 export default function MapAssets() {
   const { currentCampaign } = useOutletContext();
   const { user } = useContext(AuthContext);
 
+  const [campaignList, setCampaignList] = useState([]);
   const [showForm, setShowForm] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedAsset, setSelectedAsset] = useState(null);
   const { mapAssets, setMapAssets, loading, error } = fetchMapAssets(user);
 
-  //Submit Assets
+  useEffect(() => {
+    const loadCampaigns = async () => {
+      try {
+        const campaigns = await fetchCampaigns(user);
+        setCampaignList(campaigns);
+      } catch (err) {
+        console.error("Could not load campaigns", err);
+      }
+    };
+
+    if (user?.token) {
+      loadCampaigns();
+    }
+  }, [user]);
+
+  // Submit Assets
   const handleAssetSubmit = async (formData) => {
     setShowForm(false);
 
@@ -85,7 +102,11 @@ export default function MapAssets() {
 
   return (
     <div className={styles.assets}>
-      <h1 className={styles.title}>Map Assets – {currentCampaign}</h1>
+      <h1 className={styles.title}>
+        Map Assets –{" "}
+        {campaignList.find((c) => c._id === currentCampaign)?.name ||
+          "Unassigned"}
+      </h1>
 
       <div className={styles.topBar}>
         <button

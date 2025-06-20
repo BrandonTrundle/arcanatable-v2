@@ -1,12 +1,16 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { useOutletContext } from "react-router-dom";
 import styles from "../../../styles/DMToolkit/Maps.module.css";
 import MapForm from "../../../Components/DMToolkit/Maps/MapForm";
 import MapCard from "../../../Components/DMToolkit/Maps/MapCard";
 import MapDetail from "../../../Components/DMToolkit/Maps/MapDetail";
+import { AuthContext } from "../../../context/AuthContext";
+import { fetchCampaigns } from "../../../hooks/dmtoolkit/fetchCampaigns";
 
 export default function Maps() {
   const { currentCampaign } = useOutletContext();
+  const { user } = useContext(AuthContext);
+  const [campaignList, setCampaignList] = useState([]);
   const [showForm, setShowForm] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedMap, setSelectedMap] = useState(null);
@@ -19,11 +23,11 @@ export default function Maps() {
       const payload = new FormData();
 
       if (formData.image instanceof File) {
-        payload.append("image", formData.image); // to be handled server-side
+        payload.append("image", formData.image);
       }
 
       const mapData = {
-        id: `map-${Date.now()}`, // generate a unique id
+        id: `map-${Date.now()}`,
         name: formData.name,
         image: formData.image instanceof File ? "" : formData.image,
         width: Number(formData.width),
@@ -33,7 +37,7 @@ export default function Maps() {
         fogOfWarEnabled: formData.fogOfWarEnabled,
         snapToGrid: formData.snapToGrid,
         campaignId: currentCampaign,
-        userId: JSON.parse(localStorage.getItem("user"))?.id, // pull user id from localStorage
+        userId: JSON.parse(localStorage.getItem("user"))?.id,
         fogOfWar: { revealedCells: [], blockingCells: [] },
         notes: [],
         layers: {
@@ -103,6 +107,21 @@ export default function Maps() {
   };
 
   useEffect(() => {
+    if (!user?.token) return;
+
+    const loadCampaigns = async () => {
+      try {
+        const campaigns = await fetchCampaigns(user);
+        setCampaignList(campaigns);
+      } catch (err) {
+        console.error("Could not load campaigns", err);
+      }
+    };
+
+    loadCampaigns();
+  }, [user]);
+
+  useEffect(() => {
     const fetchMaps = async () => {
       try {
         const token = localStorage.getItem("token");
@@ -133,7 +152,11 @@ export default function Maps() {
 
   return (
     <div className={styles.maps}>
-      <h1 className={styles.title}>Maps – {currentCampaign}</h1>
+      <h1 className={styles.title}>
+        Maps –{" "}
+        {campaignList.find((c) => c._id === currentCampaign)?.name ||
+          "Unassigned"}
+      </h1>
 
       <div className={styles.topBar}>
         <button

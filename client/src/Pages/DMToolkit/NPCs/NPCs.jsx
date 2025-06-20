@@ -185,7 +185,11 @@ export default function NPCs() {
 
   return (
     <div className={styles.npcs}>
-      <h1 className={styles.title}>NPCs – {currentCampaign}</h1>
+      <h1 className={styles.title}>
+        NPCs –{" "}
+        {campaignList.find((c) => c._id === currentCampaign)?.name ||
+          "Unassigned"}
+      </h1>
 
       <div className={styles.topBar}>
         <button
