@@ -124,6 +124,7 @@ module.exports = function registerSessionSockets(io) {
           allowedAttributes: {},
         }).substring(0, 1000),
         image: message.image ? String(message.image).substring(0, 2048) : null,
+        senderId: message.senderId || null, // ✅ preserve senderId
       };
 
       console.log(

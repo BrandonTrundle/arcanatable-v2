@@ -21,6 +21,7 @@ const DMToolbar = ({
   isTokenPanelOpen,
   onSelectTool,
   currentTool,
+  onToggleDice,
 }) => {
   const icons = [
     {
@@ -33,7 +34,12 @@ const DMToolbar = ({
       key: "select",
     },
     { src: combatIcon, alt: "Combat", onClick: null },
-    { src: d20Icon, alt: "Dice", onClick: null },
+    {
+      src: d20Icon,
+      alt: "Dice",
+      onClick: onToggleDice,
+      key: "dice",
+    },
     { src: dmIcon, alt: "DM Tools", onClick: null },
     { src: fogIcon, alt: "Fog", onClick: null },
     { src: gIcon, alt: "Grid", onClick: null },

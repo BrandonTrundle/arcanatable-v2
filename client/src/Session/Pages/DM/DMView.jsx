@@ -6,6 +6,7 @@ import DMTokenPanel from "../../Components/DM/Panel/DMTokenPanel";
 import DMMapCanvas from "./DMMapCanvas";
 import DMToolbar from "../../Components/DM/DMToolbar";
 import ChatPanel from "../../Components/Shared/ChatPanel";
+import DiceRollerPanel from "../../Components/Shared/DiceRollerPanel";
 
 import { useDMInitialData } from "./hooks/useDMInitialData";
 import { useDMSocketEvents } from "./hooks/useDMSocketEvents";
@@ -24,6 +25,8 @@ export default function DMView({ sessionCode }) {
   const [showTokenPanel, setShowTokenPanel] = useState(false);
   const [chatMessages, setChatMessages] = useState([]);
   const sendChatMessage = useDMChatEmitter(sessionCode);
+  const [showDicePanel, setShowDicePanel] = useState(false);
+  const [selectedTokenId, setSelectedTokenId] = useState("");
 
   const { campaign, maps, activeMap, setActiveMap } = useDMInitialData(
     sessionCode,
@@ -42,10 +45,15 @@ export default function DMView({ sessionCode }) {
       sender: message.sender || user?.username || "DM",
       text: message.text,
       image: message.image || null,
-      _local: true, // Add a private flag
+      senderId: user?.id, // ✅ tag sender
     };
 
-    sendChatMessage(fullMessage);
+    if (message._local) {
+      setChatMessages((prev) => [...prev, fullMessage]); // only local, do not emit
+    } else {
+      setChatMessages((prev) => [...prev, fullMessage]);
+      sendChatMessage(fullMessage); // emit if not local
+    }
   };
 
   const toggleTokenPanel = () => setShowTokenPanel((prev) => !prev);
@@ -54,7 +62,9 @@ export default function DMView({ sessionCode }) {
     setActiveMap,
     sessionCode,
     (message) => {
-      setChatMessages((prev) => [...prev, message]);
+      if (message.senderId !== user?.id) {
+        setChatMessages((prev) => [...prev, message]);
+      }
     },
     user
   );
@@ -73,6 +83,7 @@ export default function DMView({ sessionCode }) {
     <div className={styles.dmView}>
       <DMToolbar
         onToggleMaps={toggleMapsPanel}
+        onToggleDice={() => setShowDicePanel((prev) => !prev)}
         isMapsPanelOpen={showMapsPanel}
         onToggleTokens={toggleTokenPanel}
         isTokenPanelOpen={showTokenPanel}
@@ -116,11 +127,21 @@ export default function DMView({ sessionCode }) {
           console.log("Token selected in DMView:", token)
         }
       />
+      {showDicePanel && (
+        <DiceRollerPanel
+          isDM={true}
+          onClose={() => setShowDicePanel(false)}
+          sendMessage={handleSendMessage}
+          selectedToken={dmOwnedTokens.find((t) => t.id === selectedTokenId)}
+          defaultSender={user?.username}
+        />
+      )}
       <ChatPanel
         messages={chatMessages}
         onSendMessage={handleSendMessage}
         availableTokens={dmOwnedTokens}
         defaultSender={user?.username}
+        onSelectToken={setSelectedTokenId}
       />
     </div>
   );

@@ -6,6 +6,7 @@ import CharacterPanel from "../../Components/Shared/CharacterPanel";
 import CharacterSheetPanel from "../../Components/Shared/CharacterSheetPanel";
 import ChatPanel from "../../Components/Shared/ChatPanel";
 import { usePlayerChatEmitter } from "./hooks/usePlayerSocketHandlers";
+import DiceRollerPanel from "../../Components/Shared/DiceRollerPanel";
 
 import styles from "../../styles/DMView.module.css";
 import usePlayerSocketHandlers from "./hooks/usePlayerSocketHandlers";
@@ -23,6 +24,8 @@ export default function PlayerView({ inviteCode }) {
   const [toolMode, setToolMode] = useState(null);
   const [chatMessages, setChatMessages] = useState([]);
   const sendChatMessage = usePlayerChatEmitter(inviteCode);
+  const [showDicePanel, setShowDicePanel] = useState(false);
+  const [selectedTokenId, setSelectedTokenId] = useState("");
 
   const handleSendMessage = (message) => {
     const fullMessage = {
@@ -41,7 +44,9 @@ export default function PlayerView({ inviteCode }) {
 
   usePlayerSessionLoader(inviteCode, user, setCampaign, setMaps, setActiveMap);
   usePlayerSocketHandlers(inviteCode, user, setActiveMap, (message) => {
-    setChatMessages((prev) => [...prev, message]);
+    if (!message._local) {
+      setChatMessages((prev) => [...prev, message]);
+    }
   });
 
   return (
@@ -50,6 +55,7 @@ export default function PlayerView({ inviteCode }) {
         onSelectCharacters={() => setShowCharacterPanel(true)}
         onSelectTool={setToolMode}
         currentTool={toolMode}
+        onToggleDice={() => setShowDicePanel((prev) => !prev)}
       />
 
       {showCharacterPanel && (
@@ -87,9 +93,20 @@ export default function PlayerView({ inviteCode }) {
           onSendMessage={handleSendMessage}
           availableTokens={playerOwnedTokens}
           defaultSender={user?.username}
+          onSelectToken={setSelectedTokenId}
         />
       </div>
-
+      {showDicePanel && (
+        <DiceRollerPanel
+          isDM={false}
+          onClose={() => setShowDicePanel(false)}
+          sendMessage={handleSendMessage}
+          selectedToken={playerOwnedTokens.find(
+            (t) => t.id === selectedTokenId
+          )}
+          defaultSender={user?.username}
+        />
+      )}
       {activeCharacter && (
         <CharacterSheetPanel
           character={activeCharacter}

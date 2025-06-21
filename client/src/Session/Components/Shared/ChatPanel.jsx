@@ -6,6 +6,7 @@ export default function ChatPanel({
   onSendMessage,
   availableTokens = [],
   defaultSender = "Player",
+  onSelectToken,
 }) {
   const [input, setInput] = useState("");
   const [selectedTokenId, setSelectedTokenId] = useState("");
@@ -95,7 +96,11 @@ export default function ChatPanel({
           <select
             id="tokenSelect"
             value={selectedTokenId}
-            onChange={(e) => setSelectedTokenId(e.target.value)}
+            onChange={(e) => {
+              const id = e.target.value;
+              setSelectedTokenId(id);
+              onSelectToken?.(id); // ✅ Notify parent (DMView) of selected token
+            }}
           >
             <option value="">Yourself</option>
             {availableTokens.map((token) => (

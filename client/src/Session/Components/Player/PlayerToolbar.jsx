@@ -7,7 +7,12 @@ import pcIcon from "../../../assets/icons/pcIcon.png";
 import settingsIcon from "../../../assets/icons/settingsIcon.png";
 import selectorIcon from "../../../assets/icons/selectorIcon.png";
 
-const PlayerToolbar = ({ onSelectCharacters, onSelectTool, currentTool }) => {
+const PlayerToolbar = ({
+  onSelectCharacters,
+  onSelectTool,
+  currentTool,
+  onToggleDice,
+}) => {
   const icons = [
     {
       src: selectorIcon,
@@ -15,7 +20,12 @@ const PlayerToolbar = ({ onSelectCharacters, onSelectTool, currentTool }) => {
       key: "select",
       onClick: () => onSelectTool(currentTool === "select" ? null : "select"),
     },
-    { src: d20Icon, alt: "Roll Dice", onClick: null },
+    {
+      src: d20Icon,
+      alt: "Roll Dice",
+      onClick: onToggleDice,
+      key: "dice",
+    },
     { src: pcIcon, alt: "Characters", onClick: onSelectCharacters },
     { src: settingsIcon, alt: "Settings", onClick: null },
   ];
