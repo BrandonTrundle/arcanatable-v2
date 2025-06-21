@@ -6,7 +6,8 @@ import { saveMap } from "../../../utils/saveMap";
 export default function usePlayerSocketHandlers(
   inviteCode,
   user,
-  setActiveMap
+  setActiveMap,
+  onChatMessage
 ) {
   const authToken = user?.token;
 
@@ -16,6 +17,20 @@ export default function usePlayerSocketHandlers(
       socket.emit("joinSession", { sessionCode: inviteCode });
     }
   }, [inviteCode]);
+
+  useEffect(() => {
+    const handleChatMessageReceived = ({ sessionCode: code, message }) => {
+      if (message.sender === user?.username) return; // Skip local echo
+      console.log("[Player Socket] Received chat message:", message);
+      onChatMessage(message);
+    };
+
+    socket.on("chatMessageReceived", handleChatMessageReceived);
+
+    return () => {
+      socket.off("chatMessageReceived", handleChatMessageReceived);
+    };
+  }, [onChatMessage, user]);
 
   useEffect(() => {
     const handleReceiveMap = (map) => {
@@ -252,4 +267,10 @@ export default function usePlayerSocketHandlers(
       socket.off("dmDropToken", handleDMTokenDrop);
     };
   }, [inviteCode, setActiveMap, user]);
+}
+
+export function usePlayerChatEmitter(sessionCode) {
+  return (message) => {
+    socket.emit("chatMessageSent", { sessionCode, message });
+  };
 }

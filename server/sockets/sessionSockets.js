@@ -9,7 +9,7 @@ module.exports = function registerSessionSockets(io) {
       socket.join(sessionCode);
       socketToUser.set(socket.id, userId);
       console.log(
-        `Socket ${socket.id} joined session ${sessionCode} as user ${userId}`
+        `[Server] Socket ${socket.id} joined session ${sessionCode} as user ${userId}`
       );
     });
 
@@ -80,6 +80,61 @@ module.exports = function registerSessionSockets(io) {
       console.log(`Player ${userId} requested deletion of token ${tokenId}`);
 
       io.to(sessionCode).emit("playerReceiveTokenDelete", { tokenId, layer });
+    });
+
+    const sanitizeHtml = require("sanitize-html");
+
+    socket.on("chatMessageSent", ({ sessionCode, message }) => {
+      console.log("[Server] chatMessageSent received:", {
+        sessionCode,
+        message,
+      });
+
+      if (!sessionCode || !message || typeof message.text !== "string") return;
+
+      const sanitizedMessage = {
+        sender: String(message.sender || "Unknown").substring(0, 50),
+        text: sanitizeHtml(message.text, {
+          allowedTags: [],
+          allowedAttributes: {},
+        }).substring(0, 1000),
+        image: message.image ? String(message.image).substring(0, 2048) : null,
+      };
+
+      console.log("[Server] Broadcasting sanitized message:", sanitizedMessage);
+
+      socket.to(sessionCode).emit("chatMessageReceived", {
+        sessionCode,
+        message: sanitizedMessage,
+      });
+    });
+
+    socket.on("dmChatMessageSent", ({ sessionCode, message }) => {
+      console.log("[Server] dmChatMessageSent received:", {
+        sessionCode,
+        message,
+      });
+
+      if (!sessionCode || !message || typeof message.text !== "string") return;
+
+      const sanitizedMessage = {
+        sender: String(message.sender || "DM").substring(0, 50),
+        text: sanitizeHtml(message.text, {
+          allowedTags: [],
+          allowedAttributes: {},
+        }).substring(0, 1000),
+        image: message.image ? String(message.image).substring(0, 2048) : null,
+      };
+
+      console.log(
+        "[Server] Broadcasting sanitized DM message:",
+        sanitizedMessage
+      );
+
+      io.to(sessionCode).emit("chatMessageReceived", {
+        sessionCode,
+        message: sanitizedMessage,
+      });
     });
 
     socket.on("dmDeleteToken", ({ sessionCode, tokenId, layer }) => {

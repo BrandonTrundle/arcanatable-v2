@@ -122,7 +122,7 @@ export default function NPCForm({
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    console.log("🧪 Submitted campaigns:", formData.campaigns);
+    //  console.log("🧪 Submitted campaigns:", formData.campaigns);
     onSubmit(formData, currentCampaign);
   };
 

@@ -5,6 +5,7 @@ import PlayerMapCanvas from "./PlayerMapCanvas";
 import CharacterPanel from "../../Components/Shared/CharacterPanel";
 import CharacterSheetPanel from "../../Components/Shared/CharacterSheetPanel";
 import ChatPanel from "../../Components/Shared/ChatPanel";
+import { usePlayerChatEmitter } from "./hooks/usePlayerSocketHandlers";
 
 import styles from "../../styles/DMView.module.css";
 import usePlayerSocketHandlers from "./hooks/usePlayerSocketHandlers";
@@ -21,17 +22,27 @@ export default function PlayerView({ inviteCode }) {
   const characterPanelRef = useRef();
   const [toolMode, setToolMode] = useState(null);
   const [chatMessages, setChatMessages] = useState([]);
+  const sendChatMessage = usePlayerChatEmitter(inviteCode);
 
-  const handleSendMessage = (messageText) => {
-    const newMessage = {
-      sender: user?.username || "Player",
-      text: messageText,
+  const handleSendMessage = (message) => {
+    const fullMessage = {
+      sender: message.sender || user?.username || "Player",
+      text: message.text,
+      image: message.image || null,
     };
-    setChatMessages((prev) => [...prev, newMessage]);
+
+    sendChatMessage(fullMessage); // Emit to server
+    setChatMessages((prev) => [...prev, fullMessage]); // Optimistically update
   };
+  const playerOwnedTokens = (activeMap?.layers?.player?.tokens || []).filter(
+    (token) =>
+      Array.isArray(token.ownerIds) && token.ownerIds.includes(user?.id)
+  );
 
   usePlayerSessionLoader(inviteCode, user, setCampaign, setMaps, setActiveMap);
-  usePlayerSocketHandlers(inviteCode, user, setActiveMap);
+  usePlayerSocketHandlers(inviteCode, user, setActiveMap, (message) => {
+    setChatMessages((prev) => [...prev, message]);
+  });
 
   return (
     <div className={styles.dmView}>
@@ -71,7 +82,12 @@ export default function PlayerView({ inviteCode }) {
             <p>Waiting for the DM to select a map...</p>
           </div>
         )}
-        <ChatPanel messages={chatMessages} onSendMessage={handleSendMessage} />
+        <ChatPanel
+          messages={chatMessages}
+          onSendMessage={handleSendMessage}
+          availableTokens={playerOwnedTokens}
+          defaultSender={user?.username}
+        />
       </div>
 
       {activeCharacter && (

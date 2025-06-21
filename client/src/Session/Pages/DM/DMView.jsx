@@ -10,6 +10,7 @@ import ChatPanel from "../../Components/Shared/ChatPanel";
 import { useDMInitialData } from "./hooks/useDMInitialData";
 import { useDMSocketEvents } from "./hooks/useDMSocketEvents";
 import { useDMMapPanelControl } from "./hooks/useDMMapPanelControl";
+import { useDMChatEmitter } from "./hooks/useDMSocketEvents";
 
 export default function DMView({ sessionCode }) {
   const { user } = useContext(AuthContext);
@@ -22,23 +23,41 @@ export default function DMView({ sessionCode }) {
   const [fogVisible, setFogVisible] = useState(false);
   const [showTokenPanel, setShowTokenPanel] = useState(false);
   const [chatMessages, setChatMessages] = useState([]);
+  const sendChatMessage = useDMChatEmitter(sessionCode);
 
   const { campaign, maps, activeMap, setActiveMap } = useDMInitialData(
     sessionCode,
     user
   );
 
-  const handleSendMessage = (messageText) => {
-    const newMessage = {
-      sender: user?.username || "DM",
-      text: messageText,
+  const dmOwnedTokens = Object.values(activeMap?.layers || {})
+    .flatMap((layer) => layer.tokens || [])
+    .filter(
+      (token) =>
+        Array.isArray(token.ownerIds) && token.ownerIds.includes(user?.id)
+    );
+
+  const handleSendMessage = (message) => {
+    const fullMessage = {
+      sender: message.sender || user?.username || "DM",
+      text: message.text,
+      image: message.image || null,
+      _local: true, // Add a private flag
     };
-    setChatMessages((prev) => [...prev, newMessage]);
+
+    sendChatMessage(fullMessage);
   };
 
   const toggleTokenPanel = () => setShowTokenPanel((prev) => !prev);
 
-  useDMSocketEvents(setActiveMap, sessionCode);
+  useDMSocketEvents(
+    setActiveMap,
+    sessionCode,
+    (message) => {
+      setChatMessages((prev) => [...prev, message]);
+    },
+    user
+  );
 
   const { showMapsPanel, toggleMapsPanel, handleLoadMap } =
     useDMMapPanelControl({
@@ -73,7 +92,7 @@ export default function DMView({ sessionCode }) {
       {showTokenPanel && campaign && (
         <DMTokenPanel
           campaignId={campaign._id}
-          userId={user._id}
+          userId={user.id}
           sessionCode={sessionCode}
           onClosePanel={() => setShowTokenPanel(false)}
         />
@@ -97,7 +116,12 @@ export default function DMView({ sessionCode }) {
           console.log("Token selected in DMView:", token)
         }
       />
-      <ChatPanel messages={chatMessages} onSendMessage={handleSendMessage} />
+      <ChatPanel
+        messages={chatMessages}
+        onSendMessage={handleSendMessage}
+        availableTokens={dmOwnedTokens}
+        defaultSender={user?.username}
+      />
     </div>
   );
 }

@@ -50,14 +50,14 @@ export default function ToolkitMapEditor() {
   }, [toolMode]);
 
   useEffect(() => {
-    console.log("Available tokens:", availableTokens);
+    //  console.log("Available tokens:", availableTokens);
   }, [availableTokens]);
 
   useEffect(() => {
     const allTokens = Object.values(mapData.layers || {}).flatMap(
       (layer) => layer.tokens || []
     );
-    console.log("🧩 All tokens on map:", allTokens);
+    //  console.log("🧩 All tokens on map:", allTokens);
   }, [mapData]);
 
   const handleSizeUpdate = (newSize) => {
@@ -69,7 +69,7 @@ export default function ToolkitMapEditor() {
 
   const handleCanvasDrop = (pointer) => {
     if (draggingToken) {
-      console.log("📋 draggingToken:", draggingToken);
+      //     console.log("📋 draggingToken:", draggingToken);
       const newToken = createTokenOnDrop({
         baseToken: draggingToken,
         pointer,
@@ -247,7 +247,7 @@ export default function ToolkitMapEditor() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || "Failed to save map");
 
-      console.log("✅ Map saved successfully:", data);
+      //      console.log("✅ Map saved successfully:", data);
     } catch (err) {
       console.error("❌ Failed to save map:", err);
     }

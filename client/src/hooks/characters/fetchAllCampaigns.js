@@ -9,10 +9,10 @@ export async function fetchAllCampaigns(user) {
     throw new Error("User token is required to fetch campaigns.");
   }
 
-  console.log("fetchAllCampaigns: Fetching campaigns for user", user.id);
+  //  console.log("fetchAllCampaigns: Fetching campaigns for user", user.id);
 
   const url = `${import.meta.env.VITE_API_BASE_URL}/api/campaigns`;
-  console.log("fetchAllCampaigns: Requesting from", url);
+  //  console.log("fetchAllCampaigns: Requesting from", url);
 
   try {
     const response = await fetch(url, {
@@ -21,7 +21,7 @@ export async function fetchAllCampaigns(user) {
       },
     });
 
-    console.log("fetchAllCampaigns: Response status", response.status);
+    //  console.log("fetchAllCampaigns: Response status", response.status);
 
     if (!response.ok) {
       const errorText = await response.text();
@@ -30,10 +30,10 @@ export async function fetchAllCampaigns(user) {
     }
 
     const data = await response.json();
-    console.log("fetchAllCampaigns: Raw response data:", data);
+    //  console.log("fetchAllCampaigns: Raw response data:", data);
 
     const campaigns = Array.isArray(data.campaigns) ? data.campaigns : [];
-    console.log("fetchAllCampaigns: Returning", campaigns.length, "campaigns");
+    //  console.log("fetchAllCampaigns: Returning", campaigns.length, "campaigns");
     return campaigns;
   } catch (error) {
     console.error("fetchAllCampaigns: Error caught:", error);

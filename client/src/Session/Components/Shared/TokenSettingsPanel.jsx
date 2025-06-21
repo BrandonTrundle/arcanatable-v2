@@ -12,7 +12,7 @@ export default function TokenSettingsPanel({
   onChangeOwner = () => {},
   onDeleteToken = () => {},
 }) {
-  console.log("Token in panel:", token);
+  //  console.log("Token in panel:", token);
   const availableLayers = ["dm", "player", "hidden"];
   const safeOwnerIds = Array.isArray(token.ownerIds) ? token.ownerIds : [];
 
@@ -20,13 +20,13 @@ export default function TokenSettingsPanel({
     safeOwnerIds.push(token.ownerId);
   }
 
-  console.log("TokenSettingsPanel - token.ownerIds:", token.ownerIds);
-  console.log("TokenSettingsPanel - currentUserId:", currentUserId);
-  console.log("TokenSettingsPanel - isDM:", isDM);
-  console.log(
-    "Show Ownership UI?",
-    isDM || safeOwnerIds.includes(currentUserId)
-  );
+  //  console.log("TokenSettingsPanel - token.ownerIds:", token.ownerIds);
+  //  console.log("TokenSettingsPanel - currentUserId:", currentUserId);
+  //  console.log("TokenSettingsPanel - isDM:", isDM);
+  //  console.log(
+  //    "Show Ownership UI?",
+  //    isDM || safeOwnerIds.includes(currentUserId)
+  //  );
 
   return (
     <div className={styles.panel}>

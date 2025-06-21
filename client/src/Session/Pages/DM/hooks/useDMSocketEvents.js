@@ -1,7 +1,12 @@
 import { useEffect } from "react";
 import socket from "../../../../socket";
 
-export function useDMSocketEvents(setActiveMap, sessionCode) {
+export function useDMSocketEvents(
+  setActiveMap,
+  sessionCode,
+  onChatMessage,
+  user
+) {
   useEffect(() => {
     if (sessionCode) {
       socket.emit("joinSession", { sessionCode });
@@ -67,14 +72,28 @@ export function useDMSocketEvents(setActiveMap, sessionCode) {
       });
     }
 
+    function handleChatMessageReceived({ sessionCode: code, message }) {
+      if (message._local) return; // Skip local echo
+      console.log("[DM Socket] Received chat message:", message);
+      onChatMessage(message);
+    }
+
     socket.on("playerDropToken", handlePlayerDropToken);
     socket.on("playerReceiveTokenDelete", handleTokenDelete);
     socket.on("playerReceiveTokenMove", handlePlayerTokenMove);
+    socket.on("chatMessageReceived", handleChatMessageReceived);
 
     return () => {
       socket.off("playerDropToken", handlePlayerDropToken);
       socket.off("playerReceiveTokenDelete", handleTokenDelete);
       socket.off("playerReceiveTokenMove", handlePlayerTokenMove);
+      socket.off("chatMessageReceived", handleChatMessageReceived);
     };
-  }, [setActiveMap]);
+  }, [setActiveMap, sessionCode, onChatMessage, user]);
+}
+
+export function useDMChatEmitter(sessionCode) {
+  return (message) => {
+    socket.emit("dmChatMessageSent", { sessionCode, message });
+  };
 }
