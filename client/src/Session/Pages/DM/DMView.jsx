@@ -5,6 +5,7 @@ import MapsPanel from "../../Components/DM/Panel/MapsPanel";
 import DMTokenPanel from "../../Components/DM/Panel/DMTokenPanel";
 import DMMapCanvas from "./DMMapCanvas";
 import DMToolbar from "../../Components/DM/DMToolbar";
+import ChatPanel from "../../Components/Shared/ChatPanel";
 
 import { useDMInitialData } from "./hooks/useDMInitialData";
 import { useDMSocketEvents } from "./hooks/useDMSocketEvents";
@@ -20,11 +21,20 @@ export default function DMView({ sessionCode }) {
   const [gridVisible, setGridVisible] = useState(true);
   const [fogVisible, setFogVisible] = useState(false);
   const [showTokenPanel, setShowTokenPanel] = useState(false);
+  const [chatMessages, setChatMessages] = useState([]);
 
   const { campaign, maps, activeMap, setActiveMap } = useDMInitialData(
     sessionCode,
     user
   );
+
+  const handleSendMessage = (messageText) => {
+    const newMessage = {
+      sender: user?.username || "DM",
+      text: messageText,
+    };
+    setChatMessages((prev) => [...prev, newMessage]);
+  };
 
   const toggleTokenPanel = () => setShowTokenPanel((prev) => !prev);
 
@@ -87,6 +97,7 @@ export default function DMView({ sessionCode }) {
           console.log("Token selected in DMView:", token)
         }
       />
+      <ChatPanel messages={chatMessages} onSendMessage={handleSendMessage} />
     </div>
   );
 }

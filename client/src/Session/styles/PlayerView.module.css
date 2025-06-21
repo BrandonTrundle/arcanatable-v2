@@ -1,0 +1,16 @@
+@import "./variables.css";
+
+.playerView {
+  display: flex;
+  flex-direction: row; /* This stacks child components horizontally */
+  height: 100vh; /* Match DMView */
+  width: 100%;
+  background-color: var(--color-background);
+  font-family: var(--font-main);
+}
+
+.info {
+  text-align: center;
+  padding: 20px;
+  color: var(--color-light);
+}

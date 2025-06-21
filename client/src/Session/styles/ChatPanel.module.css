@@ -1,0 +1,44 @@
+.chatPanel {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 14%;
+  max-width: 50%;
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-neutral);
+  border-radius: 8px;
+  padding: 10px;
+  font-family: var(--font-main);
+}
+
+.messages {
+  flex: 1;
+  overflow-y: auto;
+  margin-bottom: 8px;
+  color: var(--color-light);
+}
+
+.message {
+  margin-bottom: 4px;
+}
+
+.inputRow {
+  display: flex;
+  gap: 8px;
+}
+
+.inputRow input {
+  flex: 1;
+  padding: 6px;
+  border-radius: 4px;
+  border: 1px solid var(--color-muted);
+}
+
+.inputRow button {
+  padding: 6px 12px;
+  background-color: var(--color-primary);
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}

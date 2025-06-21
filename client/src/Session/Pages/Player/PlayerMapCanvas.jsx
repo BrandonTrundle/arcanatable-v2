@@ -30,6 +30,7 @@ export default function PlayerMapCanvas({
   const [tokenSettingsTarget, setTokenSettingsTarget] = useState(null);
   const imageReady = !!mapImage;
   const stageRef = useRef();
+
   const handleDrop = usePlayerTokenDropHandler(
     map,
     setActiveMap,
@@ -42,14 +43,12 @@ export default function PlayerMapCanvas({
     sessionCode,
     user
   );
-
   const handleDeleteToken = usePlayerTokenDeletion(
     map,
     setActiveMap,
     sessionCode,
     setTokenSettingsTarget
   );
-
   const { handleChangeOwner, handleChangeShowNameplate } =
     usePlayerTokenSettings(
       map,
@@ -80,7 +79,6 @@ export default function PlayerMapCanvas({
         console.log("[Player] Deselected token via Escape key");
       }
     };
-
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, []);
@@ -161,6 +159,7 @@ export default function PlayerMapCanvas({
 
         <Layer>{/* Reserved for future layers */}</Layer>
       </Stage>
+
       {tokenSettingsTarget && (
         <TokenSettingsPanel
           token={tokenSettingsTarget}

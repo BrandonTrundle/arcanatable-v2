@@ -4,7 +4,9 @@ import PlayerToolbar from "../../Components/Player/PlayerToolbar";
 import PlayerMapCanvas from "./PlayerMapCanvas";
 import CharacterPanel from "../../Components/Shared/CharacterPanel";
 import CharacterSheetPanel from "../../Components/Shared/CharacterSheetPanel";
-import styles from "../../styles/PlayerView.module.css";
+import ChatPanel from "../../Components/Shared/ChatPanel";
+
+import styles from "../../styles/DMView.module.css";
 import usePlayerSocketHandlers from "./hooks/usePlayerSocketHandlers";
 import usePlayerSessionLoader from "./hooks/usePlayerSessionLoader";
 
@@ -18,12 +20,21 @@ export default function PlayerView({ inviteCode }) {
   const [activeCharacter, setActiveCharacter] = useState(null);
   const characterPanelRef = useRef();
   const [toolMode, setToolMode] = useState(null);
+  const [chatMessages, setChatMessages] = useState([]);
+
+  const handleSendMessage = (messageText) => {
+    const newMessage = {
+      sender: user?.username || "Player",
+      text: messageText,
+    };
+    setChatMessages((prev) => [...prev, newMessage]);
+  };
 
   usePlayerSessionLoader(inviteCode, user, setCampaign, setMaps, setActiveMap);
   usePlayerSocketHandlers(inviteCode, user, setActiveMap);
 
   return (
-    <div className={styles.playerView}>
+    <div className={styles.dmView}>
       <PlayerToolbar
         onSelectCharacters={() => setShowCharacterPanel(true)}
         onSelectTool={setToolMode}
@@ -40,25 +51,28 @@ export default function PlayerView({ inviteCode }) {
         />
       )}
 
-      {activeMap ? (
-        <PlayerMapCanvas
-          sessionCode={inviteCode}
-          map={activeMap}
-          fogVisible={fogVisible}
-          setActiveMap={setActiveMap}
-          toolMode={toolMode}
-          campaign={campaign}
-        />
-      ) : (
-        <div className={styles.info}>
-          <h2>Welcome to the game!</h2>
-          <p>
-            You have joined the session with invite code:{" "}
-            <strong>{inviteCode}</strong>
-          </p>
-          <p>Waiting for the DM to select a map...</p>
-        </div>
-      )}
+      <div className={styles.mapContainer}>
+        {activeMap ? (
+          <PlayerMapCanvas
+            sessionCode={inviteCode}
+            map={activeMap}
+            fogVisible={fogVisible}
+            setActiveMap={setActiveMap}
+            toolMode={toolMode}
+            campaign={campaign}
+          />
+        ) : (
+          <div className={styles.selectMapPrompt}>
+            <h2>Welcome to the game!</h2>
+            <p>
+              You have joined the session with invite code:{" "}
+              <strong>{inviteCode}</strong>
+            </p>
+            <p>Waiting for the DM to select a map...</p>
+          </div>
+        )}
+        <ChatPanel messages={chatMessages} onSendMessage={handleSendMessage} />
+      </div>
 
       {activeCharacter && (
         <CharacterSheetPanel
