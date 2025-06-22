@@ -138,6 +138,7 @@ function SessionTokenSprite({
           scaleY={1}
           opacity={opacity}
           onClick={(e) => {
+            if (disableInteraction) return;
             e.cancelBubble = true;
             onSelect(token.id);
           }}
