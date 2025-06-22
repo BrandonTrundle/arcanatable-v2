@@ -148,6 +148,16 @@ module.exports = function registerSessionSockets(io) {
       socket.to(sessionCode).emit("playerDropToken", { mapId, token });
     });
 
+    socket.on("dm:teleportPlayerView", ({ sessionCode, cell }) => {
+      if (!sessionCode || !cell) return;
+
+      socket.to(sessionCode).emit("dm:teleportPlayerView", { cell });
+
+      console.log(
+        `[Server] DM pinged player view to (${cell.x}, ${cell.y}) for session ${sessionCode}`
+      );
+    });
+
     // Player moves a token and broadcasts it
     socket.on("playerMoveToken", ({ sessionCode, tokenData }) => {
       const userId = socketToUser.get(socket.id);

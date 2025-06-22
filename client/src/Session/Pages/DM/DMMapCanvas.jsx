@@ -30,6 +30,7 @@ export default function DMMapCanvas({
   activeNoteCell,
   selectedNoteCell,
   onSelectToken,
+  selectorMode,
   user,
 }) {
   const stageRef = useRef();
@@ -193,6 +194,27 @@ export default function DMMapCanvas({
         }}
         onMouseUp={handleCanvasMouseUp}
         style={{ border: "2px solid #444" }}
+        onClick={(e) => {
+          if (toolMode === "select" && selectorMode === "point") {
+            const stage = e.target.getStage();
+            const pointer = stage.getPointerPosition();
+            const scale = stage.scaleX();
+
+            const cellX = Math.floor(
+              (pointer.x - stage.x()) / (map.gridSize * scale)
+            );
+            const cellY = Math.floor(
+              (pointer.y - stage.y()) / (map.gridSize * scale)
+            );
+
+            socket.emit("dm:teleportPlayerView", {
+              sessionCode,
+              cell: { x: cellX, y: cellY },
+            });
+
+            console.log(`[DM] Emitted teleport to (${cellX}, ${cellY})`);
+          }
+        }}
       >
         <SessionStaticMapLayer
           mapImage={mapImage}
@@ -230,7 +252,9 @@ export default function DMMapCanvas({
             activeLayer={activeLayer}
             selectedTokenId={selectedTokenId}
             onOpenSettings={handleOpenSettings}
-            disableInteraction={toolMode !== "select"}
+            disableInteraction={
+              toolMode !== "select" || selectorMode !== "selector"
+            }
             onSelectToken={handleSelectToken}
             onTokenMove={(id, newPos) => {
               if (toolMode !== "select") return;

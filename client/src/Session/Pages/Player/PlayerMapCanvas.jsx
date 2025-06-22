@@ -23,13 +23,14 @@ export default function PlayerMapCanvas({
   setActiveMap,
   toolMode,
   campaign,
+  stageRef,
 }) {
   const { user } = useContext(AuthContext);
   const [selectedTokenId, setSelectedTokenId] = useState(null);
   const [mapImage] = useImage(map?.image, "anonymous");
   const [tokenSettingsTarget, setTokenSettingsTarget] = useState(null);
   const imageReady = !!mapImage;
-  const stageRef = useRef();
+
   const [stageScale, setStageScale] = useState(1);
   const [stagePos, setStagePos] = useState({ x: 0, y: 0 });
 

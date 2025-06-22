@@ -26,6 +26,7 @@ export default function PlayerView({ inviteCode }) {
   const sendChatMessage = usePlayerChatEmitter(inviteCode);
   const [showDicePanel, setShowDicePanel] = useState(false);
   const [selectedTokenId, setSelectedTokenId] = useState("");
+  const stageRef = useRef();
 
   const handleSendMessage = (message) => {
     const fullMessage = {
@@ -43,11 +44,18 @@ export default function PlayerView({ inviteCode }) {
   );
 
   usePlayerSessionLoader(inviteCode, user, setCampaign, setMaps, setActiveMap);
-  usePlayerSocketHandlers(inviteCode, user, setActiveMap, (message) => {
-    if (!message._local) {
-      setChatMessages((prev) => [...prev, message]);
-    }
-  });
+  usePlayerSocketHandlers(
+    inviteCode,
+    user,
+    setActiveMap,
+    (message) => {
+      if (!message._local) {
+        setChatMessages((prev) => [...prev, message]);
+      }
+    },
+    stageRef,
+    activeMap
+  );
 
   return (
     <div className={styles.dmView}>
@@ -77,6 +85,7 @@ export default function PlayerView({ inviteCode }) {
             setActiveMap={setActiveMap}
             toolMode={toolMode}
             campaign={campaign}
+            stageRef={stageRef}
           />
         ) : (
           <div className={styles.selectMapPrompt}>

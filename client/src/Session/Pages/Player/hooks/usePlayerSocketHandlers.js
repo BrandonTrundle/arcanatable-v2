@@ -7,9 +7,45 @@ export default function usePlayerSocketHandlers(
   inviteCode,
   user,
   setActiveMap,
-  onChatMessage
+  onChatMessage,
+  stageRef,
+  map
 ) {
   const authToken = user?.token;
+
+  useEffect(() => {
+    if (!map || !stageRef?.current) return;
+
+    const handleTeleport = ({ cell }) => {
+      console.log("[Player] Received teleport to cell:", cell);
+
+      const stage = stageRef.current.getStage();
+      const gridSize = map.gridSize;
+
+      const centerX = cell.x * gridSize + gridSize / 2;
+      const centerY = cell.y * gridSize + gridSize / 2;
+
+      const containerWidth = window.innerWidth;
+      const containerHeight = window.innerHeight;
+
+      const newX = containerWidth / 2 - centerX * stage.scaleX();
+      const newY = containerHeight / 2 - centerY * stage.scaleY();
+
+      // Animate position instead of setting directly
+      stage.to({
+        x: newX,
+        y: newY,
+        duration: 1, // half a second
+        easing: Konva.Easings.EaseInOut, // nice easing function
+      });
+    };
+
+    socket.on("dm:teleportPlayerView", handleTeleport);
+
+    return () => {
+      socket.off("dm:teleportPlayerView", handleTeleport);
+    };
+  }, [map, stageRef]);
 
   useEffect(() => {
     if (inviteCode) {

@@ -7,6 +7,7 @@ import DMMapCanvas from "./DMMapCanvas";
 import DMToolbar from "../../Components/DM/DMToolbar";
 import ChatPanel from "../../Components/Shared/ChatPanel";
 import DiceRollerPanel from "../../Components/Shared/DiceRollerPanel";
+import SelectorBar from "../../Components/Shared/SelectorBar";
 
 import { useDMInitialData } from "./hooks/useDMInitialData";
 import { useDMSocketEvents } from "./hooks/useDMSocketEvents";
@@ -27,6 +28,7 @@ export default function DMView({ sessionCode }) {
   const sendChatMessage = useDMChatEmitter(sessionCode);
   const [showDicePanel, setShowDicePanel] = useState(false);
   const [selectedTokenId, setSelectedTokenId] = useState("");
+  const [selectorMode, setSelectorMode] = useState("selector");
 
   const { campaign, maps, activeMap, setActiveMap } = useDMInitialData(
     sessionCode,
@@ -123,6 +125,7 @@ export default function DMView({ sessionCode }) {
         setActiveNoteCell={setActiveNoteCell}
         activeNoteCell={activeNoteCell}
         selectedNoteCell={selectedNoteCell}
+        selectorMode={selectorMode}
         onSelectToken={(token) =>
           console.log("Token selected in DMView:", token)
         }
@@ -136,6 +139,14 @@ export default function DMView({ sessionCode }) {
           defaultSender={user?.username}
         />
       )}
+
+      {toolMode === "select" && (
+        <SelectorBar
+          selectorMode={selectorMode}
+          setSelectorMode={setSelectorMode}
+        />
+      )}
+
       <ChatPanel
         messages={chatMessages}
         onSendMessage={handleSendMessage}
