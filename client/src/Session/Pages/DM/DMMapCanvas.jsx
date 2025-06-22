@@ -1,4 +1,4 @@
-import React, { useRef, useEffect } from "react";
+import React, { useRef, useEffect, useState } from "react";
 import { Stage, Layer } from "react-konva";
 import { useDMTokenControl } from "./hooks/useDMTokenControl";
 import { useDMAssetControl } from "./hooks/useDMAssetControl";
@@ -36,6 +36,8 @@ export default function DMMapCanvas({
   const allPlayers = campaign?.players || [];
   const { mapImage, imageReady } = useMapImage(map);
   const { handleCanvasMouseUp } = useMapDropHandler(map, onCanvasDrop);
+  const [stageScale, setStageScale] = useState(1);
+  const [stagePos, setStagePos] = useState({ x: 0, y: 0 });
 
   const {
     selectedTokenId,
@@ -54,6 +56,37 @@ export default function DMMapCanvas({
   });
 
   useEffect(() => {
+    const stage = stageRef.current?.getStage();
+    const container = stage?.container();
+
+    const handleWheel = (e) => {
+      e.evt.preventDefault();
+      const scaleBy = 1.05;
+      const oldScale = stage.scaleX();
+      const mousePointTo = {
+        x: stage.getPointerPosition().x / oldScale - stage.x() / oldScale,
+        y: stage.getPointerPosition().y / oldScale - stage.y() / oldScale,
+      };
+
+      const direction = e.evt.deltaY > 0 ? 1 : -1;
+      const newScale = direction > 0 ? oldScale / scaleBy : oldScale * scaleBy;
+      setStageScale(newScale);
+
+      setStagePos({
+        x:
+          -(mousePointTo.x - stage.getPointerPosition().x / newScale) *
+          newScale,
+        y:
+          -(mousePointTo.y - stage.getPointerPosition().y / newScale) *
+          newScale,
+      });
+    };
+
+    container?.addEventListener("wheel", handleWheel);
+    return () => container?.removeEventListener("wheel", handleWheel);
+  }, []);
+
+  useEffect(() => {
     const handleDrop = (e) => {
       e.preventDefault();
 
@@ -65,8 +98,9 @@ export default function DMMapCanvas({
       const stage = stageRef.current.getStage();
       const rect = stage.container().getBoundingClientRect();
 
-      const pointerX = e.clientX - rect.left;
-      const pointerY = e.clientY - rect.top;
+      const scale = stage.scaleX();
+      const pointerX = (e.clientX - rect.left - stage.x()) / scale;
+      const pointerY = (e.clientY - rect.top - stage.y()) / scale;
 
       const cellX = Math.floor(pointerX / map.gridSize);
       const cellY = Math.floor(pointerY / map.gridSize);
@@ -127,6 +161,36 @@ export default function DMMapCanvas({
         width={stageWidth}
         height={stageHeight}
         ref={stageRef}
+        draggable
+        scaleX={stageScale}
+        scaleY={stageScale}
+        x={stagePos.x}
+        y={stagePos.y}
+        onDragEnd={(e) => {
+          setStagePos({ x: e.target.x(), y: e.target.y() });
+        }}
+        onWheel={(e) => {
+          e.evt.preventDefault();
+          const scaleBy = 1.05;
+          const stage = e.target.getStage();
+          const oldScale = stage.scaleX();
+
+          const mousePointTo = {
+            x: (stage.getPointerPosition().x - stage.x()) / oldScale,
+            y: (stage.getPointerPosition().y - stage.y()) / oldScale,
+          };
+
+          const direction = e.evt.deltaY > 0 ? 1 : -1;
+          const newScale =
+            direction > 0 ? oldScale / scaleBy : oldScale * scaleBy;
+          setStageScale(newScale);
+
+          const newPos = {
+            x: stage.getPointerPosition().x - mousePointTo.x * newScale,
+            y: stage.getPointerPosition().y - mousePointTo.y * newScale,
+          };
+          setStagePos(newPos);
+        }}
         onMouseUp={handleCanvasMouseUp}
         style={{ border: "2px solid #444" }}
       >

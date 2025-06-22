@@ -8,7 +8,8 @@ export default function usePlayerTokenDropHandler(
   map,
   setActiveMap,
   sessionCode,
-  user
+  user,
+  stageRef
 ) {
   return useCallback(
     (e) => {
@@ -19,13 +20,15 @@ export default function usePlayerTokenDropHandler(
       try {
         const char = JSON.parse(json);
 
-        const stage = document.querySelector("canvas");
-        const boundingRect = stage.getBoundingClientRect();
-        const x = e.clientX - boundingRect.left;
-        const y = e.clientY - boundingRect.top;
+        const stage = stageRef.current.getStage();
+        const scale = stage.scaleX();
+        const rect = stage.container().getBoundingClientRect();
 
-        const cellX = Math.floor(x / map.gridSize);
-        const cellY = Math.floor(y / map.gridSize);
+        const pointerX = (e.clientX - rect.left - stage.x()) / scale;
+        const pointerY = (e.clientY - rect.top - stage.y()) / scale;
+
+        const cellX = Math.floor(pointerX / map.gridSize);
+        const cellY = Math.floor(pointerY / map.gridSize);
 
         const token = characterToToken(char);
         if (!token.image || !token.image.startsWith("http")) {

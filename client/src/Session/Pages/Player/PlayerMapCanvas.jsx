@@ -30,12 +30,15 @@ export default function PlayerMapCanvas({
   const [tokenSettingsTarget, setTokenSettingsTarget] = useState(null);
   const imageReady = !!mapImage;
   const stageRef = useRef();
+  const [stageScale, setStageScale] = useState(1);
+  const [stagePos, setStagePos] = useState({ x: 0, y: 0 });
 
   const handleDrop = usePlayerTokenDropHandler(
     map,
     setActiveMap,
     sessionCode,
-    user
+    user,
+    stageRef
   );
   const handleTokenMove = usePlayerTokenMovement(
     map,
@@ -102,7 +105,37 @@ export default function PlayerMapCanvas({
         width={stageWidth}
         height={stageHeight}
         ref={stageRef}
+        draggable
+        scaleX={stageScale}
+        scaleY={stageScale}
+        x={stagePos.x}
+        y={stagePos.y}
+        onDragEnd={(e) => {
+          setStagePos({ x: e.target.x(), y: e.target.y() });
+        }}
         style={{ border: "2px solid #444" }}
+        onWheel={(e) => {
+          e.evt.preventDefault();
+          const scaleBy = 1.05;
+          const stage = e.target.getStage();
+          const oldScale = stage.scaleX();
+
+          const mousePointTo = {
+            x: (stage.getPointerPosition().x - stage.x()) / oldScale,
+            y: (stage.getPointerPosition().y - stage.y()) / oldScale,
+          };
+
+          const direction = e.evt.deltaY > 0 ? 1 : -1;
+          const newScale =
+            direction > 0 ? oldScale / scaleBy : oldScale * scaleBy;
+          setStageScale(newScale);
+
+          const newPos = {
+            x: stage.getPointerPosition().x - mousePointTo.x * newScale,
+            y: stage.getPointerPosition().y - mousePointTo.y * newScale,
+          };
+          setStagePos(newPos);
+        }}
       >
         <SessionStaticMapLayer
           mapImage={mapImage}
