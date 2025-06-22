@@ -328,6 +328,46 @@ export default function usePlayerSocketHandlers(
     socket.on("playerReceiveTokenDelete", handleTokenDelete);
     socket.on("dmTokenMove", handleTokenMove);
     socket.on("dmDropToken", handleDMTokenDrop);
+    socket.on("broadcast_ping", ({ cellX, cellY, from }) => {
+      if (from === "player" && stageRef?.current) {
+        const stage = stageRef.current;
+        const layer = stage.findOne("#PingLayer");
+        if (!layer) return;
+
+        const gridSize = map?.gridSize || 50;
+        const x = cellX * gridSize + gridSize / 2;
+        const y = cellY * gridSize + gridSize / 2;
+
+        // ✅ Add this line here
+        console.log(
+          "Ping at (stage coords):",
+          x,
+          y,
+          "with scale:",
+          stage.scaleX()
+        );
+
+        const ring = new Konva.Circle({
+          x,
+          y,
+          radius: 0,
+          stroke: "blue",
+          strokeWidth: 4,
+          opacity: 0.8,
+        });
+
+        layer.add(ring);
+        ring.to({
+          radius: gridSize * 1.5,
+          opacity: 0,
+          duration: 1,
+          easing: Konva.Easings.EaseOut,
+          onFinish: () => ring.destroy(),
+        });
+
+        layer.batchDraw();
+      }
+    });
 
     return () => {
       socket.off("playerReceiveMap", handleReceiveMap);

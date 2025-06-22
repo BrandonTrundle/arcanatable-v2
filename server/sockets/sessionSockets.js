@@ -120,7 +120,7 @@ module.exports = function registerSessionSockets(io) {
     });
 
     socket.on("player_ping", ({ sessionCode, cellX, cellY }) => {
-      io.to(sessionCode).emit("broadcast_ping", {
+      socket.to(sessionCode).emit("broadcast_ping", {
         cellX,
         cellY,
         from: "player",

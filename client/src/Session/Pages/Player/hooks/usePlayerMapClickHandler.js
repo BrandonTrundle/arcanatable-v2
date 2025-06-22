@@ -60,8 +60,10 @@ export default function usePlayerMapClickHandler({
           });
 
           layer.batchDraw();
-          socket.emit("player_ping", { sessionCode, cellX, cellY });
         }
+
+        // Emit player ping event
+        socket.emit("player_ping", { sessionCode, cellX, cellY });
       }
     },
     [toolMode, selectorMode, map, sessionCode]
