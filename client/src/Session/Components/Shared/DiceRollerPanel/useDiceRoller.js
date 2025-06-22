@@ -18,14 +18,14 @@ export function useDiceRoller({
       selectedToken?.name || defaultSender || (isDM ? "DM" : "Player");
     const image = selectedToken?.image || null;
 
-    // Parse complex formulas like "2d6 + 3"
-    const match = type.match(/(\d+)d(\d+)(?:\s*([\+\-])\s*(\d+))?/);
+    // Parse complex formulas like "2d6 + 3" or simple "d20"
+    const match = type.match(/(?:(\d*)d)?(\d+)(?:\s*([\+\-])\s*(\d+))?/);
     if (!match) {
       console.error("Invalid roll formula:", type);
       return;
     }
 
-    const count = parseInt(match[1], 10);
+    const count = parseInt(match[1] || "1", 10);
     const sides = parseInt(match[2], 10);
     const op = match[3];
     const modVal = match[4] ? parseInt(match[4], 10) : 0;
