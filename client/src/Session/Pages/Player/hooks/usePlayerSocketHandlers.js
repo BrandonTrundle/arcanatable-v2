@@ -16,6 +16,46 @@ export default function usePlayerSocketHandlers(
   useEffect(() => {
     if (!map || !stageRef?.current) return;
 
+    const handlePing = ({ cell }) => {
+      const stage = stageRef.current.getStage();
+      const layer = stage.findOne("#PingLayer");
+      if (!layer) {
+        console.warn("[Player] PingLayer not found.");
+        return;
+      }
+
+      const { gridSize } = map;
+      const x = cell.x * gridSize + gridSize / 2;
+      const y = cell.y * gridSize + gridSize / 2;
+
+      const ring = new Konva.Circle({
+        x,
+        y,
+        radius: 0,
+        stroke: "blue",
+        strokeWidth: 4,
+        opacity: 0.8,
+      });
+
+      layer.add(ring);
+      ring.to({
+        radius: gridSize * 1.5,
+        opacity: 0,
+        duration: 1,
+        easing: Konva.Easings.EaseOut,
+        onFinish: () => ring.destroy(),
+      });
+
+      layer.batchDraw();
+    };
+
+    socket.on("dm:pingCell", handlePing);
+    return () => socket.off("dm:pingCell", handlePing);
+  }, [map, stageRef]);
+
+  useEffect(() => {
+    if (!map || !stageRef?.current) return;
+
     const handleTeleport = ({ cell }) => {
       console.log("[Player] Received teleport to cell:", cell);
 

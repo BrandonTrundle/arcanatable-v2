@@ -156,7 +156,7 @@ export default function PlayerMapCanvas({
           showBlockers={false}
         />
 
-        <Layer>
+        <Layer id="PingLayer">
           <SessionMapAssetLayer
             map={{
               ...map,

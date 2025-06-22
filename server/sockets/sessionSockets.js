@@ -109,6 +109,16 @@ module.exports = function registerSessionSockets(io) {
       });
     });
 
+    socket.on("dm:pingCell", ({ sessionCode, cell }) => {
+      if (!sessionCode || !cell) return;
+
+      socket.to(sessionCode).emit("dm:pingCell", { cell });
+
+      console.log(
+        `[Server] DM pinged map cell (${cell.x}, ${cell.y}) for session ${sessionCode}`
+      );
+    });
+
     socket.on("dmChatMessageSent", ({ sessionCode, message }) => {
       console.log("[Server] dmChatMessageSent received:", {
         sessionCode,
