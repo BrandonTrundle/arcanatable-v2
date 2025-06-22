@@ -5,10 +5,10 @@ import pointDownIcon from "../../../assets/icons/pointDownIcon.png";
 import ringIcon from "../../../assets/icons/ringIcon.png";
 import { motion, AnimatePresence } from "framer-motion";
 
-const SelectorBar = ({ selectorMode, setSelectorMode }) => {
+const SelectorBar = ({ selectorMode, setSelectorMode, isDM = false }) => {
   const icons = [
     { key: "selector", src: selectorIcon, alt: "Selector" },
-    { key: "point", src: pointDownIcon, alt: "Point Down" },
+    ...(isDM ? [{ key: "point", src: pointDownIcon, alt: "Point Down" }] : []),
     { key: "ring", src: ringIcon, alt: "Ring" },
   ];
 

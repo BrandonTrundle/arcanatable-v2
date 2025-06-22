@@ -144,6 +144,7 @@ export default function DMView({ sessionCode }) {
         <SelectorBar
           selectorMode={selectorMode}
           setSelectorMode={setSelectorMode}
+          isDM={true}
         />
       )}
 

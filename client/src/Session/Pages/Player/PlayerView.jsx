@@ -7,6 +7,7 @@ import CharacterSheetPanel from "../../Components/Shared/CharacterSheetPanel";
 import ChatPanel from "../../Components/Shared/ChatPanel";
 import { usePlayerChatEmitter } from "./hooks/usePlayerSocketHandlers";
 import DiceRollerPanel from "../../Components/Shared/DiceRollerPanel";
+import SelectorBar from "../../Components/Shared/SelectorBar";
 
 import styles from "../../styles/DMView.module.css";
 import usePlayerSocketHandlers from "./hooks/usePlayerSocketHandlers";
@@ -26,6 +27,7 @@ export default function PlayerView({ inviteCode }) {
   const sendChatMessage = usePlayerChatEmitter(inviteCode);
   const [showDicePanel, setShowDicePanel] = useState(false);
   const [selectedTokenId, setSelectedTokenId] = useState("");
+  const [selectorMode, setSelectorMode] = useState("selector");
   const stageRef = useRef();
 
   const handleSendMessage = (message) => {
@@ -86,6 +88,7 @@ export default function PlayerView({ inviteCode }) {
             toolMode={toolMode}
             campaign={campaign}
             stageRef={stageRef}
+            selectorMode={selectorMode}
           />
         ) : (
           <div className={styles.selectMapPrompt}>
@@ -125,6 +128,13 @@ export default function PlayerView({ inviteCode }) {
               characterPanelRef.current.refreshCharacters();
             }
           }}
+        />
+      )}
+      {toolMode === "select" && (
+        <SelectorBar
+          selectorMode={selectorMode}
+          setSelectorMode={setSelectorMode}
+          isDM={false}
         />
       )}
     </div>

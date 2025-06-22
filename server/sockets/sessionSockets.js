@@ -119,6 +119,14 @@ module.exports = function registerSessionSockets(io) {
       );
     });
 
+    socket.on("player_ping", ({ sessionCode, cellX, cellY }) => {
+      io.to(sessionCode).emit("broadcast_ping", {
+        cellX,
+        cellY,
+        from: "player",
+      });
+    });
+
     socket.on("dmChatMessageSent", ({ sessionCode, message }) => {
       console.log("[Server] dmChatMessageSent received:", {
         sessionCode,

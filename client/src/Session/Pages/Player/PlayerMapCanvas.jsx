@@ -2,6 +2,7 @@ import React, { useRef, useContext, useState, useEffect } from "react";
 import { AuthContext } from "../../../context/AuthContext";
 import { Stage, Layer } from "react-konva";
 import useImage from "use-image";
+import socket from "../../../socket";
 
 import SessionStaticMapLayer from "../../MapLayers/SessionStaticMapLayer";
 import SessionFogAndBlockerLayer from "../../MapLayers/SessionFogAndBlockerLayer";
@@ -24,6 +25,7 @@ export default function PlayerMapCanvas({
   toolMode,
   campaign,
   stageRef,
+  selectorMode,
 }) {
   const { user } = useContext(AuthContext);
   const [selectedTokenId, setSelectedTokenId] = useState(null);
@@ -113,6 +115,61 @@ export default function PlayerMapCanvas({
         y={stagePos.y}
         onDragEnd={(e) => {
           setStagePos({ x: e.target.x(), y: e.target.y() });
+        }}
+        onClick={(e) => {
+          if (toolMode === "select") {
+            const stage = e.target.getStage();
+            const pointer = stage.getPointerPosition();
+            const scale = stage.scaleX();
+
+            const cellX = Math.floor(
+              (pointer.x - stage.x()) / (map.gridSize * scale)
+            );
+            const cellY = Math.floor(
+              (pointer.y - stage.y()) / (map.gridSize * scale)
+            );
+
+            if (selectorMode === "point") {
+              console.log(`[Player] Teleporting view to (${cellX}, ${cellY})`);
+              stage.to({
+                x: -cellX * map.gridSize * scale + stage.width() / 2,
+                y: -cellY * map.gridSize * scale + stage.height() / 2,
+                duration: 0.5,
+                easing: Konva.Easings.EaseInOut,
+              });
+            }
+
+            if (selectorMode === "ring") {
+              console.log(`[Player] Pinging cell at (${cellX}, ${cellY})`);
+
+              const layer = stage.findOne("#PingLayer");
+              if (layer) {
+                const x = cellX * map.gridSize + map.gridSize / 2;
+                const y = cellY * map.gridSize + map.gridSize / 2;
+
+                const ring = new Konva.Circle({
+                  x,
+                  y,
+                  radius: 0,
+                  stroke: "blue",
+                  strokeWidth: 4,
+                  opacity: 0.8,
+                });
+
+                layer.add(ring);
+                ring.to({
+                  radius: map.gridSize * 1.5,
+                  opacity: 0,
+                  duration: 1,
+                  easing: Konva.Easings.EaseOut,
+                  onFinish: () => ring.destroy(),
+                });
+
+                layer.batchDraw();
+                socket.emit("player_ping", { sessionCode, cellX, cellY });
+              }
+            }
+          }
         }}
         style={{ border: "2px solid #444" }}
         onWheel={(e) => {
