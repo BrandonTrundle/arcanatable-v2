@@ -94,3 +94,67 @@
 .buttons button:hover {
   background: var(--color-info);
 }
+
+.savedRolls {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.savedRollDropdown {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.savedRollDropdown select {
+  padding: 0.4rem;
+  background: var(--color-background);
+  color: var(--color-light);
+  border: 1px solid var(--color-neutral);
+  border-radius: 6px;
+  font-size: 1rem;
+}
+
+.rollOptions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.rollOptions button {
+  padding: 0.4rem 0.6rem;
+  background: var(--color-highlight);
+  border: none;
+  border-radius: 8px;
+  color: var(--color-light);
+  font-weight: bold;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+.rollOptions button:hover {
+  background: var(--color-info);
+}
+
+.newRollForm {
+  gap: 0.5rem;
+}
+
+.newRollForm input,
+.newRollForm select {
+  flex: 1 1 120px;
+  padding: 0.4rem;
+  background: var(--color-background);
+  color: var(--color-light);
+  border: 1px solid var(--color-neutral);
+  border-radius: 6px;
+}
+
+.SRPLabel {
+  margin-bottom: -2px;
+}
+
+.diceType {
+  margin-bottom: 8px;
+}

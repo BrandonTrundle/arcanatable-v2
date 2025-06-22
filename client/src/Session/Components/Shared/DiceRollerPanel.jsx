@@ -8,6 +8,13 @@ import d12Icon from "../../../assets/icons/d12Icon.png";
 import d20Icon from "../../../assets/icons/d20Icon.png";
 import d100Icon from "../../../assets/icons/d100Icon.png";
 
+import { useDiceRoller } from "./DiceRollerPanel/useDiceRoller";
+import { useSavedRolls } from "./DiceRollerPanel/useSavedRolls";
+import SavedRollsPanel from "./DiceRollerPanel/SavedRollsPanel";
+import DiceIconList from "./DiceRollerPanel/DiceIconList";
+import ModifierInputs from "./DiceRollerPanel/ModifierInputs";
+import RollControls from "./DiceRollerPanel/RollControls";
+
 const diceTypes = [
   { type: "d4", icon: d4Icon },
   { type: "d6", icon: d6Icon },
@@ -24,62 +31,40 @@ export default function DiceRollerPanel({
   sendMessage,
   selectedToken,
   defaultSender,
-  defaultSenderId, // ✅ added
+  defaultSenderId,
 }) {
   const [isCollapsed, setIsCollapsed] = useState(false);
-  const [modifier, setModifier] = useState(0);
-  const [diceCount, setDiceCount] = useState(1);
-  const [selectedDie, setSelectedDie] = useState("d20");
   const [position, setPosition] = useState({ x: 100, y: 100 });
   const [dragging, setDragging] = useState(false);
   const dragOffset = useRef({ x: 0, y: 0 });
+  const [isSavedRollsView, setIsSavedRollsView] = useState(false);
 
-  const rollDie = (sides) => Math.floor(Math.random() * sides) + 1;
+  const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
-  const handleRoll = (type, mode) => {
-    const sender =
-      selectedToken?.name || defaultSender || (isDM ? "DM" : "Player");
-    const image = selectedToken?.image || null;
+  const {
+    modifier,
+    setModifier,
+    diceCount,
+    setDiceCount,
+    selectedDie,
+    setSelectedDie,
+    handleRoll,
+  } = useDiceRoller({
+    isDM,
+    sendMessage,
+    selectedToken,
+    defaultSender,
+    defaultSenderId,
+  });
 
-    const sides = parseInt(type.replace("d", ""));
-    let rolls = [];
-
-    if (mode === "advantage" || mode === "disadvantage") {
-      const firstSet = Array.from({ length: diceCount }, () => rollDie(sides));
-      const secondSet = Array.from({ length: diceCount }, () => rollDie(sides));
-      const total1 = firstSet.reduce((a, b) => a + b, 0);
-      const total2 = secondSet.reduce((a, b) => a + b, 0);
-      const selected =
-        mode === "advantage"
-          ? Math.max(total1, total2)
-          : Math.min(total1, total2);
-      const total = selected + modifier;
-      const message = `Rolled ${diceCount}${type} with ${mode}: ${firstSet} vs ${secondSet} ⇒ ${selected} + ${modifier} = ${total}`;
-
-      sendMessage({
-        sender,
-        text: message,
-        image,
-        broadcast: mode !== "secret",
-        senderId: defaultSenderId, // ✅ include ID
-      });
-      return;
-    }
-
-    rolls = Array.from({ length: diceCount }, () => rollDie(sides));
-    const sum = rolls.reduce((a, b) => a + b, 0);
-    const total = sum + modifier;
-    const message = `Rolled ${diceCount}${type} + ${modifier}: [${rolls.join(
-      ", "
-    )}]= ${total}`;
-    sendMessage({
-      sender,
-      text: message,
-      image,
-      _local: isDM && mode === "secret",
-      senderId: defaultSenderId, // ✅ include ID
-    });
-  };
+  const {
+    savedRolls,
+    setSavedRolls,
+    newRoll,
+    setNewRoll,
+    createRoll,
+    deleteRoll,
+  } = useSavedRolls(isSavedRollsView, API_BASE);
 
   const toggleCollapse = () => setIsCollapsed(!isCollapsed);
 
@@ -112,60 +97,46 @@ export default function DiceRollerPanel({
       <div className={styles.header} onMouseDown={handleMouseDown}>
         <span>Dice Roller</span>
         <div className={styles.controls}>
+          <button onClick={() => setIsSavedRollsView((v) => !v)}>
+            {isSavedRollsView ? "Saved" : "Rolls"}
+          </button>
           <button onClick={toggleCollapse}>{isCollapsed ? "+" : "-"}</button>
           <button onClick={onClose}>x</button>
         </div>
       </div>
+
       {!isCollapsed && (
         <div className={styles.content}>
-          <div className={styles.diceList}>
-            {diceTypes.map(({ type, icon }) => (
-              <img
-                key={type}
-                src={icon}
-                alt={type}
-                className={`${styles.dieIcon} ${
-                  selectedDie === type ? styles.selected : ""
-                }`}
-                onClick={() => setSelectedDie(type)}
+          {isSavedRollsView ? (
+            <SavedRollsPanel
+              isDM={isDM}
+              savedRolls={savedRolls}
+              newRoll={newRoll}
+              setNewRoll={setNewRoll}
+              handleRoll={handleRoll}
+              createRoll={createRoll}
+              deleteRoll={deleteRoll}
+            />
+          ) : (
+            <>
+              <DiceIconList
+                diceTypes={diceTypes}
+                selectedDie={selectedDie}
+                setSelectedDie={setSelectedDie}
               />
-            ))}
-          </div>
-
-          <div className={styles.modifierRow}>
-            <label>Dice:</label>
-            <input
-              type="number"
-              min="1"
-              value={diceCount}
-              onChange={(e) =>
-                setDiceCount(Math.max(1, parseInt(e.target.value, 10) || 1))
-              }
-            />
-            <label>Mod:</label>
-            <input
-              type="number"
-              value={modifier}
-              onChange={(e) => setModifier(parseInt(e.target.value, 10) || 0)}
-            />
-          </div>
-
-          <div className={styles.buttons}>
-            <button onClick={() => handleRoll(selectedDie, "normal")}>
-              Roll
-            </button>
-            <button onClick={() => handleRoll(selectedDie, "advantage")}>
-              Adv
-            </button>
-            <button onClick={() => handleRoll(selectedDie, "disadvantage")}>
-              Dis
-            </button>
-            {isDM && (
-              <button onClick={() => handleRoll(selectedDie, "secret")}>
-                Secret
-              </button>
-            )}
-          </div>
+              <ModifierInputs
+                diceCount={diceCount}
+                setDiceCount={setDiceCount}
+                modifier={modifier}
+                setModifier={setModifier}
+              />
+              <RollControls
+                isDM={isDM}
+                selectedDie={selectedDie}
+                handleRoll={handleRoll}
+              />
+            </>
+          )}
         </div>
       )}
     </div>
