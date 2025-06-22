@@ -1,10 +1,14 @@
-import React, { useRef, useEffect, useState } from "react";
+import { useRef, useEffect } from "react";
 import { Stage, Layer } from "react-konva";
 import { useDMTokenControl } from "./hooks/useDMTokenControl";
 import { useDMAssetControl } from "./hooks/useDMAssetControl";
 import { useTokenSettings } from "./hooks/useTokenSettings";
 import { useMapDropHandler } from "./hooks/useMapDropHandler";
 import { useMapImage } from "./hooks/useMapImage";
+import { useZoomAndPan } from "./hooks/useZoomAndPan";
+import { useTokenDropHandler } from "./hooks/useTokenDropHandler";
+import { usePingBroadcast } from "./hooks/usePingBroadcast";
+import { handleMapClickAction } from "./utils/handleMapClickAction";
 
 import SessionStaticMapLayer from "../../MapLayers/SessionStaticMapLayer";
 import SessionFogAndBlockerLayer from "../../MapLayers/SessionFogAndBlockerLayer";
@@ -34,11 +38,12 @@ export default function DMMapCanvas({
   user,
 }) {
   const stageRef = useRef();
+  const { stageScale, stagePos, setStagePos, handleWheel } =
+    useZoomAndPan(stageRef);
+  useTokenDropHandler(stageRef, map, setMapData, activeLayer, sessionCode);
   const allPlayers = campaign?.players || [];
   const { mapImage, imageReady } = useMapImage(map);
   const { handleCanvasMouseUp } = useMapDropHandler(map, onCanvasDrop);
-  const [stageScale, setStageScale] = useState(1);
-  const [stagePos, setStagePos] = useState({ x: 0, y: 0 });
 
   const {
     selectedTokenId,
@@ -56,88 +61,6 @@ export default function DMMapCanvas({
     user,
   });
 
-  useEffect(() => {
-    const stage = stageRef.current?.getStage();
-    const container = stage?.container();
-
-    const handleWheel = (e) => {
-      e.evt.preventDefault();
-      const scaleBy = 1.05;
-      const oldScale = stage.scaleX();
-      const mousePointTo = {
-        x: stage.getPointerPosition().x / oldScale - stage.x() / oldScale,
-        y: stage.getPointerPosition().y / oldScale - stage.y() / oldScale,
-      };
-
-      const direction = e.evt.deltaY > 0 ? 1 : -1;
-      const newScale = direction > 0 ? oldScale / scaleBy : oldScale * scaleBy;
-      setStageScale(newScale);
-
-      setStagePos({
-        x:
-          -(mousePointTo.x - stage.getPointerPosition().x / newScale) *
-          newScale,
-        y:
-          -(mousePointTo.y - stage.getPointerPosition().y / newScale) *
-          newScale,
-      });
-    };
-
-    container?.addEventListener("wheel", handleWheel);
-    return () => container?.removeEventListener("wheel", handleWheel);
-  }, []);
-
-  useEffect(() => {
-    const handleDrop = (e) => {
-      e.preventDefault();
-
-      const json = e.dataTransfer.getData("application/json");
-      if (!json) return;
-
-      const droppedToken = JSON.parse(json);
-
-      const stage = stageRef.current.getStage();
-      const rect = stage.container().getBoundingClientRect();
-
-      const scale = stage.scaleX();
-      const pointerX = (e.clientX - rect.left - stage.x()) / scale;
-      const pointerY = (e.clientY - rect.top - stage.y()) / scale;
-
-      const cellX = Math.floor(pointerX / map.gridSize);
-      const cellY = Math.floor(pointerY / map.gridSize);
-
-      droppedToken.position = { x: cellX, y: cellY };
-      droppedToken.id = crypto.randomUUID();
-      droppedToken._layer = activeLayer; // ✅ Ensure player side knows the layer
-
-      const updatedMap = { ...map };
-      if (!updatedMap.layers[activeLayer].tokens) {
-        updatedMap.layers[activeLayer].tokens = [];
-      }
-      updatedMap.layers[activeLayer].tokens.push(droppedToken);
-      setMapData(updatedMap);
-
-      socket.emit("dmDropToken", {
-        sessionCode: sessionCode,
-        mapId: map._id,
-        token: droppedToken,
-      });
-    };
-
-    const stage = stageRef.current?.container();
-    if (stage) {
-      stage.addEventListener("dragover", (e) => e.preventDefault());
-      stage.addEventListener("drop", handleDrop);
-    }
-
-    return () => {
-      if (stage) {
-        stage.removeEventListener("dragover", (e) => e.preventDefault());
-        stage.removeEventListener("drop", handleDrop);
-      }
-    };
-  }, [map, activeLayer, setMapData, sessionCode]);
-
   const { selectedAssetId, setSelectedAssetId, handleMoveAsset } =
     useDMAssetControl(setMapData, activeLayer);
 
@@ -149,48 +72,14 @@ export default function DMMapCanvas({
       setTokenSettingsTarget,
     });
 
-  if (!map) {
-    return <div className={styles.mapCanvas}>No map loaded.</div>;
-  }
-
   const stageWidth = map?.width * map?.gridSize || 0;
   const stageHeight = map?.height * map?.gridSize || 0;
 
-  useEffect(() => {
-    const stage = stageRef.current?.getStage();
-    if (!stage) return;
+  usePingBroadcast(stageRef, map);
 
-    const handleBroadcastPing = ({ cellX, cellY }) => {
-      const layer = stage.findOne("#PingLayer");
-      if (!layer) return;
-
-      const x = cellX * map.gridSize + map.gridSize / 2;
-      const y = cellY * map.gridSize + map.gridSize / 2;
-
-      const ring = new Konva.Circle({
-        x,
-        y,
-        radius: 0,
-        stroke: "blue",
-        strokeWidth: 4,
-        opacity: 0.8,
-      });
-
-      layer.add(ring);
-      ring.to({
-        radius: map.gridSize * 1.5,
-        opacity: 0,
-        duration: 1,
-        easing: Konva.Easings.EaseOut,
-        onFinish: () => ring.destroy(),
-      });
-
-      layer.batchDraw();
-    };
-
-    socket.on("broadcast_ping", handleBroadcastPing);
-    return () => socket.off("broadcast_ping", handleBroadcastPing);
-  }, [map]);
+  if (!map) {
+    return <div className={styles.mapCanvas}>No map loaded.</div>;
+  }
 
   return (
     <div className={styles.mapCanvas}>
@@ -206,88 +95,18 @@ export default function DMMapCanvas({
         onDragEnd={(e) => {
           setStagePos({ x: e.target.x(), y: e.target.y() });
         }}
-        onWheel={(e) => {
-          e.evt.preventDefault();
-          const scaleBy = 1.05;
-          const stage = e.target.getStage();
-          const oldScale = stage.scaleX();
-
-          const mousePointTo = {
-            x: (stage.getPointerPosition().x - stage.x()) / oldScale,
-            y: (stage.getPointerPosition().y - stage.y()) / oldScale,
-          };
-
-          const direction = e.evt.deltaY > 0 ? 1 : -1;
-          const newScale =
-            direction > 0 ? oldScale / scaleBy : oldScale * scaleBy;
-          setStageScale(newScale);
-
-          const newPos = {
-            x: stage.getPointerPosition().x - mousePointTo.x * newScale,
-            y: stage.getPointerPosition().y - mousePointTo.y * newScale,
-          };
-          setStagePos(newPos);
-        }}
+        onWheel={handleWheel}
         onMouseUp={handleCanvasMouseUp}
         style={{ border: "2px solid #444" }}
-        onClick={(e) => {
-          if (toolMode === "select") {
-            const stage = e.target.getStage();
-            const pointer = stage.getPointerPosition();
-            const scale = stage.scaleX();
-
-            const cellX = Math.floor(
-              (pointer.x - stage.x()) / (map.gridSize * scale)
-            );
-            const cellY = Math.floor(
-              (pointer.y - stage.y()) / (map.gridSize * scale)
-            );
-
-            if (selectorMode === "point") {
-              socket.emit("dm:teleportPlayerView", {
-                sessionCode,
-                cell: { x: cellX, y: cellY },
-              });
-
-              console.log(`[DM] Emitted teleport to (${cellX}, ${cellY})`);
-            }
-
-            if (selectorMode === "ring") {
-              socket.emit("dm:pingCell", {
-                sessionCode,
-                cell: { x: cellX, y: cellY },
-              });
-
-              console.log(`[DM] Emitted ping to (${cellX}, ${cellY})`);
-
-              const layer = stage.findOne("#PingLayer");
-              if (layer) {
-                const x = cellX * map.gridSize + map.gridSize / 2;
-                const y = cellY * map.gridSize + map.gridSize / 2;
-
-                const ring = new Konva.Circle({
-                  x,
-                  y,
-                  radius: 0,
-                  stroke: "blue",
-                  strokeWidth: 4,
-                  opacity: 0.8,
-                });
-
-                layer.add(ring);
-                ring.to({
-                  radius: map.gridSize * 1.5,
-                  opacity: 0,
-                  duration: 1,
-                  easing: Konva.Easings.EaseOut,
-                  onFinish: () => ring.destroy(),
-                });
-
-                layer.batchDraw();
-              }
-            }
-          }
-        }}
+        onClick={(e) =>
+          handleMapClickAction({
+            e,
+            map,
+            sessionCode,
+            toolMode,
+            selectorMode,
+          })
+        }
       >
         <SessionStaticMapLayer
           mapImage={mapImage}
