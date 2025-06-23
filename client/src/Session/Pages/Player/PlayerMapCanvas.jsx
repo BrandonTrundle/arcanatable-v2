@@ -6,6 +6,7 @@ import socket from "../../../socket";
 import usePlayerMapClickHandler from "./hooks/usePlayerMapClickHandler";
 import usePlayerMapZoomHandler from "./hooks/usePlayerZoomHandler";
 import usePlayerTokenSelection from "./hooks/usePlayerTokenSelection";
+import { usePingBroadcast } from "../DM/hooks/usePingBroadcast";
 
 import SessionStaticMapLayer from "../../MapLayers/SessionStaticMapLayer";
 import SessionFogAndBlockerLayer from "../../MapLayers/SessionFogAndBlockerLayer";
@@ -38,6 +39,7 @@ export default function PlayerMapCanvas({
   const [stageScale, setStageScale] = useState(1);
   const [stagePos, setStagePos] = useState({ x: 0, y: 0 });
   const handleZoom = usePlayerMapZoomHandler(setStageScale, setStagePos);
+  usePingBroadcast(stageRef, map, stageScale, stagePos, sessionCode);
 
   const handleMapClick = usePlayerMapClickHandler({
     toolMode,

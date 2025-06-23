@@ -13,21 +13,17 @@ export default function usePlayerMapClickHandler({
       if (toolMode !== "select") return;
 
       const stage = e.target.getStage();
-      const pointer = stage.getPointerPosition();
-      const scale = stage.scaleX();
+      const transform = stage.getAbsoluteTransform().copy().invert();
+      const pointer = transform.point(stage.getPointerPosition());
 
-      const cellX = Math.floor(
-        (pointer.x - stage.x()) / (map.gridSize * scale)
-      );
-      const cellY = Math.floor(
-        (pointer.y - stage.y()) / (map.gridSize * scale)
-      );
+      const cellX = Math.floor(pointer.x / map.gridSize);
+      const cellY = Math.floor(pointer.y / map.gridSize);
 
       if (selectorMode === "point") {
         console.log(`[Player] Teleporting view to (${cellX}, ${cellY})`);
         stage.to({
-          x: -cellX * map.gridSize * scale + stage.width() / 2,
-          y: -cellY * map.gridSize * scale + stage.height() / 2,
+          x: -cellX * map.gridSize * stage.scaleX() + stage.width() / 2,
+          y: -cellY * map.gridSize * stage.scaleY() + stage.height() / 2,
           duration: 0.5,
           easing: Konva.Easings.EaseInOut,
         });
