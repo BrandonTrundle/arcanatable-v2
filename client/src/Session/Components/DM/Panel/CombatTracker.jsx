@@ -19,6 +19,7 @@ export default function CombatTracker({ activeMap, setMapData, sendMessage }) {
     "Blinded",
     "Paralyzed",
     "Charmed",
+    "Dead",
   ];
 
   const npcTokens = Object.values(activeMap?.layers || {})
