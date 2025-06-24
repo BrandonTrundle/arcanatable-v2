@@ -41,28 +41,13 @@ export function useTokenDropHandler(
       droppedToken.id = crypto.randomUUID();
       droppedToken._layer = activeLayer;
 
+      // Update map state with token name adjustment logic inside
       setMapData((prevMap) => {
-        const updatedMap = {
-          ...prevMap,
-          layers: {
-            ...prevMap.layers,
-            [activeLayer]: {
-              ...prevMap.layers[activeLayer],
-              tokens: [...(prevMap.layers[activeLayer].tokens || [])],
-            },
-          },
-        };
-
-        console.log(
-          "Existing tokens before drop:",
-          updatedMap.layers[activeLayer].tokens
-        );
-
-        const existingTokens = updatedMap.layers[activeLayer].tokens;
+        const tokens = [...(prevMap.layers?.[activeLayer]?.tokens || [])];
         const baseName = droppedToken.name;
         let count = 1;
 
-        existingTokens.forEach((token) => {
+        tokens.forEach((token) => {
           const regex = new RegExp(`^${baseName}(?:\\s(\\d+))?$`);
           const match = token.name.match(regex);
           if (match) {
@@ -78,14 +63,23 @@ export function useTokenDropHandler(
           console.log(`Token name remains: ${droppedToken.name}`);
         }
 
-        updatedMap.layers[activeLayer].tokens.push(droppedToken);
+        tokens.push(droppedToken);
 
-        console.log(
-          "Tokens after drop:",
-          updatedMap.layers[activeLayer].tokens
-        );
+        const updatedMap = {
+          ...prevMap,
+          layers: {
+            ...prevMap.layers,
+            [activeLayer]: {
+              ...prevMap.layers[activeLayer],
+              tokens,
+            },
+          },
+        };
+
+        console.log("Tokens after drop:", tokens);
         console.log("Updated map state with new token:", updatedMap);
 
+        // Emit token with correct name
         socket.emit("dmDropToken", {
           sessionCode,
           mapId: updatedMap._id,
