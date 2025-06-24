@@ -8,6 +8,7 @@ import DMToolbar from "../../Components/DM/DMToolbar";
 import ChatPanel from "../../Components/Shared/ChatPanel";
 import DiceRollerPanel from "../../Components/Shared/DiceRollerPanel";
 import SelectorBar from "../../Components/Shared/SelectorBar";
+import CombatTracker from "../../Components/DM/Panel/CombatTracker";
 
 import { useDMInitialData } from "./hooks/useDMInitialData";
 import { useDMSocketEvents } from "./hooks/useDMSocketEvents";
@@ -29,6 +30,7 @@ export default function DMView({ sessionCode }) {
   const [showDicePanel, setShowDicePanel] = useState(false);
   const [selectedTokenId, setSelectedTokenId] = useState("");
   const [selectorMode, setSelectorMode] = useState("selector");
+  const [showCombatTracker, setShowCombatTracker] = useState(false);
 
   const { campaign, maps, activeMap, setActiveMap } = useDMInitialData(
     sessionCode,
@@ -91,6 +93,7 @@ export default function DMView({ sessionCode }) {
         isTokenPanelOpen={showTokenPanel}
         onSelectTool={setToolMode}
         currentTool={toolMode}
+        onToggleCombat={() => setShowCombatTracker((prev) => !prev)}
       />
       {showMapsPanel && (
         <MapsPanel
@@ -137,6 +140,14 @@ export default function DMView({ sessionCode }) {
           sendMessage={handleSendMessage}
           selectedToken={dmOwnedTokens.find((t) => t.id === selectedTokenId)}
           defaultSender={user?.username}
+        />
+      )}
+
+      {showCombatTracker && activeMap && (
+        <CombatTracker
+          activeMap={activeMap}
+          setMapData={setActiveMap}
+          sendMessage={handleSendMessage}
         />
       )}
 

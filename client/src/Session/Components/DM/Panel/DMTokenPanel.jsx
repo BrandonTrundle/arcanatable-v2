@@ -89,6 +89,7 @@ export default function DMTokenPanel({ campaignId, onClosePanel, userId }) {
                         name: token.name,
                         image: token.image,
                         size: token.size || { width: 1, height: 1 },
+                        initiative: token.initiative,
                         position: { x: 0, y: 0 },
                         hp: token.hp || 1,
                         maxHp: token.maxHp || 1,

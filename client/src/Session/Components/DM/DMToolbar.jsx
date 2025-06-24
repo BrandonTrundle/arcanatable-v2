@@ -22,6 +22,7 @@ const DMToolbar = ({
   onSelectTool,
   currentTool,
   onToggleDice,
+  onToggleCombat,
 }) => {
   const icons = [
     {
@@ -33,7 +34,7 @@ const DMToolbar = ({
       },
       key: "select",
     },
-    { src: combatIcon, alt: "Combat", onClick: null },
+    { src: combatIcon, alt: "Combat", onClick: onToggleCombat, key: "combat" },
     {
       src: d20Icon,
       alt: "Dice",
