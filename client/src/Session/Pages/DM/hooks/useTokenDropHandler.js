@@ -41,23 +41,27 @@ export function useTokenDropHandler(
       droppedToken.id = crypto.randomUUID();
       droppedToken._layer = activeLayer;
 
-      // Update map state with token name adjustment logic inside
       setMapData((prevMap) => {
-        const tokens = [...(prevMap.layers?.[activeLayer]?.tokens || [])];
-        const baseName = droppedToken.name;
-        let count = 1;
+        const allTokens = Object.values(prevMap.layers || {}).flatMap(
+          (layer) => layer.tokens || []
+        );
 
-        tokens.forEach((token) => {
+        const tokens = [...(prevMap.layers?.[activeLayer]?.tokens || [])];
+
+        const baseName = droppedToken.name.trim();
+        let highestSuffix = -1;
+
+        allTokens.forEach((token) => {
           const regex = new RegExp(`^${baseName}(?:\\s(\\d+))?$`);
           const match = token.name.match(regex);
           if (match) {
-            const suffix = match[1] ? parseInt(match[1], 10) : 1;
-            if (suffix >= count) count = suffix + 1;
+            const suffix = match[1] ? parseInt(match[1], 10) : 0;
+            if (suffix > highestSuffix) highestSuffix = suffix;
           }
         });
 
-        if (count > 1) {
-          droppedToken.name = `${baseName} ${count}`;
+        if (highestSuffix >= 0) {
+          droppedToken.name = `${baseName} ${highestSuffix + 1}`;
           console.log(`Adjusted token name to: ${droppedToken.name}`);
         } else {
           console.log(`Token name remains: ${droppedToken.name}`);
@@ -79,7 +83,6 @@ export function useTokenDropHandler(
         console.log("Tokens after drop:", tokens);
         console.log("Updated map state with new token:", updatedMap);
 
-        // Emit token with correct name
         socket.emit("dmDropToken", {
           sessionCode,
           mapId: updatedMap._id,

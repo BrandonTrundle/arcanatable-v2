@@ -1,23 +1,21 @@
-import React, { useRef, useContext, useState, useEffect } from "react";
-import { AuthContext } from "../../../context/AuthContext";
+import { useRef, useState, useContext } from "react";
 import { Stage, Layer } from "react-konva";
 import useImage from "use-image";
-import socket from "../../../socket";
-import usePlayerMapClickHandler from "./hooks/usePlayerMapClickHandler";
-import usePlayerMapZoomHandler from "./hooks/usePlayerZoomHandler";
-import usePlayerTokenSelection from "./hooks/usePlayerTokenSelection";
+import { AuthContext } from "../../../context/AuthContext";
 import { usePingBroadcast } from "../DM/hooks/usePingBroadcast";
+import usePlayerMapZoomHandler from "./hooks/usePlayerZoomHandler";
+import usePlayerMapClickHandler from "./hooks/usePlayerMapClickHandler";
+import usePlayerTokenSelection from "./hooks/usePlayerTokenSelection";
+import usePlayerTokenDropHandler from "./hooks/usePlayerTokenDropHandler";
+import usePlayerTokenMovement from "./hooks/usePlayerTokenMovement";
+import usePlayerTokenDeletion from "./hooks/usePlayerTokenDeletion";
+import usePlayerTokenSettings from "./hooks/usePlayerTokenSettings";
 
 import SessionStaticMapLayer from "../../MapLayers/SessionStaticMapLayer";
 import SessionFogAndBlockerLayer from "../../MapLayers/SessionFogAndBlockerLayer";
 import SessionMapAssetLayer from "../../MapLayers/SessionMapAssetLayer";
 import SessionMapTokenLayer from "../../MapLayers/SessionMapTokenLayer";
 import TokenSettingsPanel from "../../Components/Shared/TokenSettingsPanel";
-
-import usePlayerTokenDropHandler from "./hooks/usePlayerTokenDropHandler";
-import usePlayerTokenMovement from "./hooks/usePlayerTokenMovement";
-import usePlayerTokenDeletion from "./hooks/usePlayerTokenDeletion";
-import usePlayerTokenSettings from "./hooks/usePlayerTokenSettings";
 
 import styles from "../../styles/MapCanvas.module.css";
 
@@ -30,6 +28,7 @@ export default function PlayerMapCanvas({
   campaign,
   stageRef,
   selectorMode,
+  activeTurnTokenId,
 }) {
   const { user } = useContext(AuthContext);
   const [mapImage] = useImage(map?.image, "anonymous");
@@ -39,6 +38,7 @@ export default function PlayerMapCanvas({
   const [stageScale, setStageScale] = useState(1);
   const [stagePos, setStagePos] = useState({ x: 0, y: 0 });
   const handleZoom = usePlayerMapZoomHandler(setStageScale, setStagePos);
+
   usePingBroadcast(stageRef, map, stageScale, stagePos, sessionCode);
 
   const handleMapClick = usePlayerMapClickHandler({
@@ -83,14 +83,13 @@ export default function PlayerMapCanvas({
     user
   );
 
-  if (!map) {
-    return (
-      <div className={styles.mapCanvas}>Waiting for DM to load map...</div>
-    );
-  }
+  const allPlayers = campaign?.players || [];
+  const stageWidth = map?.width * map?.gridSize || 0;
+  const stageHeight = map?.height * map?.gridSize || 0;
 
-  const stageWidth = map.width * map.gridSize;
-  const stageHeight = map.height * map.gridSize;
+  if (!map) {
+    return <div className={styles.mapCanvas}>No map loaded.</div>;
+  }
 
   return (
     <div
@@ -110,9 +109,9 @@ export default function PlayerMapCanvas({
         onDragEnd={(e) => {
           setStagePos({ x: e.target.x(), y: e.target.y() });
         }}
+        onWheel={handleZoom}
         onClick={handleMapClick}
         style={{ border: "2px solid #444" }}
-        onWheel={handleZoom}
       >
         <SessionStaticMapLayer
           mapImage={mapImage}
@@ -159,22 +158,23 @@ export default function PlayerMapCanvas({
             gridSize={map.gridSize}
             activeLayer="player"
             selectedTokenId={selectedTokenId}
-            onSelectToken={handleSelectToken}
             onOpenSettings={setTokenSettingsTarget}
-            onTokenMove={handleTokenMove}
             disableInteraction={toolMode !== "select"}
+            onSelectToken={handleSelectToken}
+            onTokenMove={handleTokenMove}
             currentUserId={user.id}
+            activeTurnTokenId={activeTurnTokenId} // <-- Correct
           />
         </Layer>
 
-        <Layer>{/* Reserved for future layers */}</Layer>
+        <Layer>{/* Reserved for other layers */}</Layer>
       </Stage>
 
       {tokenSettingsTarget && (
         <TokenSettingsPanel
           token={tokenSettingsTarget}
           currentUserId={user.id}
-          allPlayers={campaign?.players || []}
+          allPlayers={allPlayers}
           onClose={() => setTokenSettingsTarget(null)}
           onDeleteToken={handleDeleteToken}
           onChangeShowNameplate={handleChangeShowNameplate}

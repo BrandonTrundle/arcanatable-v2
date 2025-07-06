@@ -36,6 +36,7 @@ export default function DMMapCanvas({
   onSelectToken,
   selectorMode,
   user,
+  activeTurnTokenId,
 }) {
   const stageRef = useRef();
   const { stageScale, stagePos, setStagePos, handleWheel } =
@@ -139,6 +140,7 @@ export default function DMMapCanvas({
           />
 
           <SessionMapTokenLayer
+            key={`token-layer-${activeTurnTokenId}`}
             map={map}
             gridSize={map.gridSize}
             activeLayer={activeLayer}
@@ -152,6 +154,7 @@ export default function DMMapCanvas({
               if (toolMode !== "select") return;
               handleTokenMove(id, newPos);
             }}
+            activeTurnTokenId={activeTurnTokenId} // <-- Correct prop name
           />
         </Layer>
 

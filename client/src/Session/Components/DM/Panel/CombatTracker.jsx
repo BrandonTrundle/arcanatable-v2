@@ -1,7 +1,14 @@
 import { useState, useRef } from "react";
 import styles from "../../../styles/CombatTracker.module.css";
+import socket from "../../../../socket";
 
-export default function CombatTracker({ activeMap, setMapData, sendMessage }) {
+export default function CombatTracker({
+  activeMap,
+  setMapData,
+  sendMessage,
+  sessionCode,
+  setActiveTurnTokenId,
+}) {
   const [initiativeOrder, setInitiativeOrder] = useState([]);
   const [combatActive, setCombatActive] = useState(false);
   const [showPCList, setShowPCList] = useState(false);
@@ -12,6 +19,7 @@ export default function CombatTracker({ activeMap, setMapData, sendMessage }) {
   const trackerRef = useRef(null);
   const isDragging = useRef(false);
   const offset = useRef({ x: 0, y: 0 });
+  const [currentTurnIndex, setCurrentTurnIndex] = useState(0);
 
   const availableConditions = [
     "Stunned",
@@ -24,22 +32,17 @@ export default function CombatTracker({ activeMap, setMapData, sendMessage }) {
 
   const npcTokens = Object.values(activeMap?.layers || {})
     .flatMap((layer) => layer.tokens || [])
-    .filter((token) => token.entityType === "NPC");
-
+    .filter((t) => t.entityType === "NPC");
   const monsterTokens = Object.values(activeMap?.layers || {})
     .flatMap((layer) => layer.tokens || [])
-    .filter((token) => token.entityType === "Monster");
-
+    .filter((t) => t.entityType === "Monster");
   const pcTokens = Object.values(activeMap?.layers || {})
     .flatMap((layer) => layer.tokens || [])
-    .filter((token) => token.entityType === "PC");
+    .filter((t) => t.entityType === "PC");
 
   const handleMouseDown = (e) => {
     isDragging.current = true;
-    offset.current = {
-      x: e.clientX - position.x,
-      y: e.clientY - position.y,
-    };
+    offset.current = { x: e.clientX - position.x, y: e.clientY - position.y };
     document.addEventListener("mousemove", handleMouseMove);
     document.addEventListener("mouseup", handleMouseUp);
   };
@@ -70,37 +73,109 @@ export default function CombatTracker({ activeMap, setMapData, sendMessage }) {
 
   const updateHP = (tokenId, newValue, isMax) => {
     const updatedMap = { ...activeMap };
-    for (const layer of Object.values(updatedMap.layers || {})) {
-      const token = layer.tokens?.find((t) => t.id === tokenId);
-      if (token) {
-        if (isMax) token.maxHp = Math.max(1, newValue);
-        else token.hp = Math.max(0, newValue);
+    let updatedToken = null;
+
+    for (const layerKey of Object.keys(updatedMap.layers || {})) {
+      const layer = updatedMap.layers[layerKey];
+      if (layer?.tokens) {
+        const updatedTokens = layer.tokens.map((t) => {
+          if (t.id === tokenId) {
+            updatedToken = {
+              ...t,
+              hp: isMax ? t.hp : Math.max(0, newValue),
+              maxHp: isMax ? Math.max(1, newValue) : t.maxHp,
+            };
+            return updatedToken;
+          }
+          return t;
+        });
+
+        updatedMap.layers[layerKey] = {
+          ...layer,
+          tokens: updatedTokens,
+        };
       }
     }
+
     setMapData(updatedMap);
+
+    if (updatedToken) {
+      socket.emit("updateTokenHP", {
+        sessionCode,
+        tokenId: updatedToken.id,
+        hp: updatedToken.hp,
+        maxHp: updatedToken.maxHp,
+      });
+    }
   };
 
   const toggleCondition = (tokenId, condition) => {
     const updatedMap = { ...activeMap };
-    for (const layer of Object.values(updatedMap.layers || {})) {
-      const token = layer.tokens?.find((t) => t.id === tokenId);
-      if (token) {
-        token.statusConditions = token.statusConditions || [];
-        if (token.statusConditions.includes(condition)) {
-          token.statusConditions = token.statusConditions.filter(
-            (c) => c !== condition
-          );
-        } else {
-          token.statusConditions.push(condition);
-        }
+    let updatedToken = null;
+
+    for (const layerKey of Object.keys(updatedMap.layers || {})) {
+      const layer = updatedMap.layers[layerKey];
+      if (layer?.tokens) {
+        const updatedTokens = layer.tokens.map((t) => {
+          if (t.id === tokenId) {
+            const updatedConditions = t.statusConditions?.includes(condition)
+              ? t.statusConditions.filter((c) => c !== condition)
+              : [...(t.statusConditions || []), condition];
+
+            updatedToken = { ...t, statusConditions: updatedConditions };
+            return updatedToken;
+          }
+          return t;
+        });
+
+        updatedMap.layers[layerKey] = {
+          ...layer,
+          tokens: updatedTokens,
+        };
       }
     }
+
     setMapData(updatedMap);
+
+    if (updatedToken) {
+      socket.emit("updateTokenStatus", {
+        sessionCode,
+        tokenId: updatedToken.id,
+        statusConditions: updatedToken.statusConditions,
+      });
+    }
   };
 
   const startCombat = () => {
+    if (initiativeOrder.length === 0) {
+      sendMessage({ text: "Cannot start combat: Initiative order is empty." });
+      return;
+    }
     setCombatActive(true);
+    setCurrentTurnIndex(0);
+    setActiveTurnTokenId(initiativeOrder[0]?.tokenId || null);
     sendMessage({ text: "Combat has started!" });
+
+    socket.emit("activeTurnChanged", {
+      sessionCode,
+      tokenId: initiativeOrder[0]?.tokenId || null,
+    });
+  };
+
+  const nextTurn = () => {
+    if (initiativeOrder.length === 0) return;
+    const nextIndex = (currentTurnIndex + 1) % initiativeOrder.length;
+    setCurrentTurnIndex(nextIndex);
+
+    const activeTokenId = initiativeOrder[nextIndex]?.tokenId || null;
+    setActiveTurnTokenId(activeTokenId);
+
+    socket.emit("activeTurnChanged", {
+      sessionCode,
+      tokenId: activeTokenId,
+    });
+
+    sendMessage({ text: `${initiativeOrder[nextIndex]?.name}'s turn.` });
   };
 
   const addToInitiative = (token) => {
@@ -144,138 +219,154 @@ export default function CombatTracker({ activeMap, setMapData, sendMessage }) {
 
         {!collapsed && (
           <>
-            {!combatActive ? (
-              <button onClick={startCombat}>Start Combat</button>
-            ) : (
-              <>
-                <button onClick={rollInitiative}>Roll Initiative</button>
-                <button onClick={() => setShowPCList(!showPCList)}>
-                  Add PCs
-                </button>
-                <button onClick={() => setShowNPCList(!showNPCList)}>
-                  Add NPC
-                </button>
-                <button onClick={() => setShowMonsterList(!showMonsterList)}>
-                  Add Monster
-                </button>
+            <>
+              {!combatActive ? (
+                <>
+                  <button onClick={rollInitiative}>Roll Initiative</button>
+                  <button onClick={startCombat}>Start Combat</button>
 
-                {showPCList && (
-                  <div className={styles.tokenList}>
-                    <h4>PCs Available:</h4>
-                    {pcTokens.map((pc) => (
-                      <div
-                        key={pc.id}
-                        className={styles.tokenRow}
-                        onClick={() => addToInitiative(pc)}
-                      >
-                        <strong>{pc.name}</strong>
-                      </div>
-                    ))}
+                  <button onClick={() => setShowPCList(!showPCList)}>
+                    Add PCs
+                  </button>
+                  <button onClick={() => setShowNPCList(!showNPCList)}>
+                    Add NPC
+                  </button>
+                  <button onClick={() => setShowMonsterList(!showMonsterList)}>
+                    Add Monster
+                  </button>
+                </>
+              ) : (
+                <>
+                  <button onClick={nextTurn}>Next Turn</button>
+
+                  <button onClick={() => setShowPCList(!showPCList)}>
+                    Add PCs
+                  </button>
+                  <button onClick={() => setShowNPCList(!showNPCList)}>
+                    Add NPC
+                  </button>
+                  <button onClick={() => setShowMonsterList(!showMonsterList)}>
+                    Add Monster
+                  </button>
+                </>
+              )}
+            </>
+
+            {showPCList && (
+              <div className={styles.tokenList}>
+                <h4>PCs Available:</h4>
+                {pcTokens.map((pc) => (
+                  <div
+                    key={pc.id}
+                    className={styles.tokenRow}
+                    onClick={() => addToInitiative(pc)}
+                  >
+                    <strong>{pc.name}</strong>
                   </div>
-                )}
-
-                {showNPCList && (
-                  <div className={styles.tokenList}>
-                    <h4>NPCs Available:</h4>
-                    {npcTokens.map((npc) => (
-                      <div
-                        key={npc.id}
-                        className={styles.tokenRow}
-                        onClick={() => addToInitiative(npc)}
-                      >
-                        <strong>{npc.name}</strong>
-                      </div>
-                    ))}
-                  </div>
-                )}
-
-                {showMonsterList && (
-                  <div className={styles.tokenList}>
-                    <h4>Monsters Available:</h4>
-                    {monsterTokens.map((monster) => (
-                      <div
-                        key={monster.id}
-                        className={styles.tokenRow}
-                        onClick={() => addToInitiative(monster)}
-                      >
-                        <strong>{monster.name}</strong>
-                      </div>
-                    ))}
-                  </div>
-                )}
-
-                <div className={styles.tokenList}>
-                  {initiativeOrder.map((entry) => {
-                    const token = Object.values(activeMap.layers || {})
-                      .flatMap((layer) => layer.tokens || [])
-                      .find((t) => t.id === entry.tokenId);
-                    if (!token) return null;
-                    return (
-                      <div className={styles.tokenRow} key={token.id}>
-                        <div className={styles.tokenHeader}>
-                          <span className={styles.initiative}>
-                            {entry.initiative}
-                          </span>
-                          <strong className={styles.name}>{token.name}</strong>
-                          <label>
-                            Max HP:
-                            <input
-                              type="number"
-                              min="1"
-                              value={token.maxHp || 1}
-                              onChange={(e) =>
-                                updateHP(
-                                  token.id,
-                                  parseInt(e.target.value) || 1,
-                                  true
-                                )
-                              }
-                              className={styles.hpInput}
-                            />
-                          </label>
-                          <label>
-                            HP:
-                            <input
-                              type="number"
-                              min="0"
-                              value={token.hp || 0}
-                              onChange={(e) =>
-                                updateHP(
-                                  token.id,
-                                  parseInt(e.target.value) || 0,
-                                  false
-                                )
-                              }
-                              className={styles.hpInput}
-                            />
-                          </label>
-                          <select
-                            value=""
-                            onChange={(e) =>
-                              toggleCondition(token.id, e.target.value)
-                            }
-                          >
-                            <option value="">Add Condition</option>
-                            {availableConditions.map((cond) => (
-                              <option key={cond} value={cond}>
-                                {cond}
-                              </option>
-                            ))}
-                          </select>
-                        </div>
-                        <div className={styles.conditions}>
-                          {token.statusConditions?.map((cond) => (
-                            <span key={cond} className={styles.conditionBadge}>
-                              {cond}
-                            </span>
-                          ))}
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </>
+                ))}
+              </div>
             )}
+
+            {showNPCList && (
+              <div className={styles.tokenList}>
+                <h4>NPCs Available:</h4>
+                {npcTokens.map((npc) => (
+                  <div
+                    key={npc.id}
+                    className={styles.tokenRow}
+                    onClick={() => addToInitiative(npc)}
+                  >
+                    <strong>{npc.name}</strong>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {showMonsterList && (
+              <div className={styles.tokenList}>
+                <h4>Monsters Available:</h4>
+                {monsterTokens.map((monster) => (
+                  <div
+                    key={monster.id}
+                    className={styles.tokenRow}
+                    onClick={() => addToInitiative(monster)}
+                  >
+                    <strong>{monster.name}</strong>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            <div className={styles.tokenList}>
+              {initiativeOrder.map((entry) => {
+                const token = Object.values(activeMap.layers || {})
+                  .flatMap((layer) => layer.tokens || [])
+                  .find((t) => t.id === entry.tokenId);
+                if (!token) return null;
+                return (
+                  <div className={styles.tokenRow} key={token.id}>
+                    <div className={styles.tokenHeader}>
+                      <span className={styles.initiative}>
+                        {entry.initiative}
+                      </span>
+                      <strong className={styles.name}>{token.name}</strong>
+                      <label>
+                        Max HP:
+                        <input
+                          type="number"
+                          min="1"
+                          value={token.maxHp || 1}
+                          onChange={(e) =>
+                            updateHP(
+                              token.id,
+                              parseInt(e.target.value) || 1,
+                              true
+                            )
+                          }
+                          className={styles.hpInput}
+                        />
+                      </label>
+                      <label>
+                        HP:
+                        <input
+                          type="number"
+                          min="0"
+                          value={token.hp || 0}
+                          onChange={(e) =>
+                            updateHP(
+                              token.id,
+                              parseInt(e.target.value) || 0,
+                              false
+                            )
+                          }
+                          className={styles.hpInput}
+                        />
+                      </label>
+                      <select
+                        value=""
+                        onChange={(e) =>
+                          toggleCondition(token.id, e.target.value)
+                        }
+                      >
+                        <option value="">Add Condition</option>
+                        {availableConditions.map((cond) => (
+                          <option key={cond} value={cond}>
+                            {cond}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    <div className={styles.conditions}>
+                      {token.statusConditions?.map((cond) => (
+                        <span key={cond} className={styles.conditionBadge}>
+                          {cond}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
           </>
         )}
       </div>

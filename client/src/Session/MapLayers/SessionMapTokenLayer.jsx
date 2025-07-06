@@ -11,6 +11,7 @@ export default function SessionMapTokenLayer({
   disableInteraction = false,
   currentUserId = null,
   onOpenSettings = () => {},
+  activeTurnTokenId,
 }) {
   return (
     <>
@@ -31,6 +32,7 @@ export default function SessionMapTokenLayer({
               token={token}
               gridSize={gridSize}
               isSelected={token.id === selectedTokenId}
+              isActiveTurn={token.id === activeTurnTokenId}
               onSelect={onSelectToken}
               onTokenMove={onTokenMove}
               immediatePositionOverride={

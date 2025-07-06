@@ -34,6 +34,30 @@ export function useDMSocketEvents(
       });
     }
 
+    function handleTokenHPUpdated({ tokenId, hp, maxHp }) {
+      setActiveMap((prev) => {
+        if (!prev) return prev;
+
+        const updatedMap = { ...prev };
+
+        for (const layerKey of Object.keys(updatedMap.layers || {})) {
+          const layer = updatedMap.layers[layerKey];
+          if (layer?.tokens) {
+            const updatedTokens = layer.tokens.map((t) =>
+              t.id === tokenId ? { ...t, hp, maxHp } : t
+            );
+
+            updatedMap.layers[layerKey] = {
+              ...layer,
+              tokens: updatedTokens,
+            };
+          }
+        }
+
+        return updatedMap;
+      });
+    }
+
     function handleTokenDelete({ tokenId, layer }) {
       setActiveMap((prev) => {
         if (!prev?.layers?.[layer]) return prev;
@@ -82,12 +106,14 @@ export function useDMSocketEvents(
     socket.on("playerReceiveTokenDelete", handleTokenDelete);
     socket.on("playerReceiveTokenMove", handlePlayerTokenMove);
     socket.on("chatMessageReceived", handleChatMessageReceived);
+    socket.on("tokenHPUpdated", handleTokenHPUpdated);
 
     return () => {
       socket.off("playerDropToken", handlePlayerDropToken);
       socket.off("playerReceiveTokenDelete", handleTokenDelete);
       socket.off("playerReceiveTokenMove", handlePlayerTokenMove);
       socket.off("chatMessageReceived", handleChatMessageReceived);
+      socket.off("tokenHPUpdated", handleTokenHPUpdated);
     };
   }, [setActiveMap, sessionCode, onChatMessage, user]);
 }

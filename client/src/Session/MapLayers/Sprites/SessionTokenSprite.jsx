@@ -4,14 +4,21 @@ import { useTokenAnimation } from "../../../hooks/tokens/useTokenAnimation";
 import { useTokenDrag } from "../../../hooks/tokens/useTokenDrag";
 import { getHpColor } from "../../../utils/token/tokenUtils";
 import { getCachedImage } from "../../../utils/image/imageCache";
+import stunnedIcon from "../../../assets/icons/stunnedIcon.png";
+import poisonedIcon from "../../../assets/icons/poisonedIcon.png";
+import blindedIcon from "../../../assets/icons/blindedIcon.png";
+import paralyzedIcon from "../../../assets/icons/paralyzedIcon.png";
+import charmedIcon from "../../../assets/icons/charmedIcon.png";
+import deadIcon from "../../../assets/icons/deadIcon.png";
 
 function SessionTokenSprite({
   token,
   gridSize,
   onTokenMove = () => {},
   isSelected = false,
+  isActiveTurn = false,
   onSelect = () => {},
-  onOpenSettings = () => {}, // <--- Add this
+  onOpenSettings = () => {},
   immediatePositionOverride = null,
   opacity = 1,
   disableInteraction = false,
@@ -30,6 +37,17 @@ function SessionTokenSprite({
     x: (token.position?.x ?? 0) * gridSize,
     y: (token.position?.y ?? 0) * gridSize,
   });
+
+  const statusIcons = useMemo(() => {
+    const icons = {};
+    (token.statusConditions || []).forEach((cond) => {
+      const iconSrc = getStatusIcon(cond);
+      if (iconSrc) {
+        icons[cond] = getCachedImage(iconSrc);
+      }
+    });
+    return icons;
+  }, [token.statusConditions]);
 
   const {
     ghostPos,
@@ -56,6 +74,25 @@ function SessionTokenSprite({
     visualPos,
     setVisualPos,
   });
+
+  function getStatusIcon(condition) {
+    switch (condition) {
+      case "Stunned":
+        return stunnedIcon;
+      case "Poisoned":
+        return poisonedIcon;
+      case "Blinded":
+        return blindedIcon;
+      case "Paralyzed":
+        return paralyzedIcon;
+      case "Charmed":
+        return charmedIcon;
+      case "Dead":
+        return deadIcon;
+      default:
+        return null;
+    }
+  }
 
   useEffect(() => {
     if (!immediatePositionOverride) return;
@@ -154,6 +191,7 @@ function SessionTokenSprite({
               cornerRadius={4}
             />
           )}
+
           <KonvaImage
             image={image}
             width={width}
@@ -168,6 +206,21 @@ function SessionTokenSprite({
             shadowOpacity={isSelected ? 0.6 : 0}
             listening={!isDragging}
           />
+
+          {isActiveTurn && (
+            <Rect
+              x={-4}
+              y={-4}
+              width={width + 8}
+              height={height + 8}
+              stroke="red"
+              strokeWidth={4}
+              cornerRadius={4}
+              shadowColor="red"
+              shadowBlur={10}
+              shadowOpacity={0.6}
+            />
+          )}
           <Rect
             x={0}
             y={0}
@@ -210,6 +263,24 @@ function SessionTokenSprite({
               listening={false}
             />
           )}
+
+          {(token.statusConditions || []).map((cond, idx) => {
+            const iconImage = statusIcons[cond];
+            if (!iconImage) return null;
+
+            return (
+              <KonvaImage
+                key={cond}
+                image={iconImage}
+                width={gridSize * 0.4}
+                height={gridSize * 0.4}
+                x={idx * gridSize * 0.45}
+                y={-gridSize * 0.35}
+                shadowBlur={2}
+                shadowOpacity={0.4}
+              />
+            );
+          })}
 
           {isSelected && (
             <Group>
@@ -279,5 +350,6 @@ export default React.memo(
     prev.token === next.token &&
     prev.gridSize === next.gridSize &&
     prev.isSelected === next.isSelected &&
-    prev.disableInteraction === next.disableInteraction
+    prev.disableInteraction === next.disableInteraction &&
+    prev.isActiveTurn === next.isActiveTurn
 );

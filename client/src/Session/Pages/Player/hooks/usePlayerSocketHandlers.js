@@ -9,7 +9,8 @@ export default function usePlayerSocketHandlers(
   setActiveMap,
   onChatMessage,
   stageRef,
-  map
+  map,
+  setActiveTurnTokenId
 ) {
   const authToken = user?.token;
 
@@ -61,22 +62,39 @@ export default function usePlayerSocketHandlers(
 
       const stage = stageRef.current.getStage();
       const gridSize = map.gridSize;
+      const scale = stage.scaleX();
 
-      const centerX = cell.x * gridSize + gridSize / 2;
-      const centerY = cell.y * gridSize + gridSize / 2;
+      const centerX = (cell.x + 0.5) * gridSize * scale;
+      const centerY = (cell.y + 0.5) * gridSize * scale;
 
-      const containerWidth = window.innerWidth;
-      const containerHeight = window.innerHeight;
+      const containerWidth = stage.container().offsetWidth;
+      const containerHeight = stage.container().offsetHeight;
 
-      const newX = containerWidth / 2 - centerX * stage.scaleX();
-      const newY = containerHeight / 2 - centerY * stage.scaleY();
+      const newX = containerWidth / 2 - centerX;
+      const newY = containerHeight / 2 - centerY;
 
-      // Animate position instead of setting directly
+      console.log("[Player] Teleport Debug:", {
+        gridSize,
+        scale,
+        cell,
+        centerX,
+        centerY,
+        containerWidth,
+        containerHeight,
+        newX,
+        newY,
+        stagePosition: {
+          x: stage.x(),
+          y: stage.y(),
+        },
+        stageScale: stage.scale(),
+      });
+
       stage.to({
         x: newX,
         y: newY,
-        duration: 1, // half a second
-        easing: Konva.Easings.EaseInOut, // nice easing function
+        duration: 1,
+        easing: Konva.Easings.EaseInOut,
       });
     };
 
@@ -88,11 +106,11 @@ export default function usePlayerSocketHandlers(
   }, [map, stageRef]);
 
   useEffect(() => {
-    if (inviteCode) {
-      console.log("[Player] Joining session:", inviteCode);
-      socket.emit("joinSession", { sessionCode: inviteCode });
+    if (inviteCode && user?.id) {
+      console.log("[Player] Joining session:", inviteCode, "as", user.id);
+      socket.emit("joinSession", { sessionCode: inviteCode, userId: user.id });
     }
-  }, [inviteCode]);
+  }, [inviteCode, user?.id]);
 
   useEffect(() => {
     const handleChatMessageReceived = ({ sessionCode: code, message }) => {
@@ -320,6 +338,32 @@ export default function usePlayerSocketHandlers(
       });
     };
 
+    const handleTokenHPUpdated = ({ tokenId, hp, maxHp }) => {
+      console.log("[Player] Token HP updated:", { tokenId, hp, maxHp });
+      setActiveMap((prev) => {
+        const updatedMap = { ...prev };
+        for (const layerKey of Object.keys(updatedMap.layers || {})) {
+          const layer = updatedMap.layers[layerKey];
+          if (layer?.tokens) {
+            const updatedTokens = layer.tokens.map((t) =>
+              t.id === tokenId ? { ...t, hp, maxHp } : t
+            );
+
+            updatedMap.layers[layerKey] = {
+              ...layer,
+              tokens: updatedTokens,
+            };
+          }
+        }
+        return updatedMap;
+      });
+    };
+
+    const handleActiveTurnChanged = ({ tokenId }) => {
+      console.log("[Player] Active turn updated:", tokenId);
+      setActiveTurnTokenId(tokenId);
+    };
+
     socket.on("playerReceiveMap", handleReceiveMap);
     socket.on("playerReceiveTokenOwnershipChange", handleTokenOwnershipChange);
     socket.on("playerReceiveTokenMove", handleTokenMove);
@@ -328,6 +372,32 @@ export default function usePlayerSocketHandlers(
     socket.on("playerReceiveTokenDelete", handleTokenDelete);
     socket.on("dmTokenMove", handleTokenMove);
     socket.on("dmDropToken", handleDMTokenDrop);
+    socket.on("tokenHPUpdated", handleTokenHPUpdated);
+    socket.on("activeTurnChanged", handleActiveTurnChanged);
+    socket.on("updateTokenStatus", ({ tokenId, statusConditions }) => {
+      setActiveMap((prevMap) => {
+        const updatedMap = { ...prevMap };
+        for (const layerKey of Object.keys(updatedMap.layers || {})) {
+          const layer = updatedMap.layers[layerKey];
+          if (layer?.tokens) {
+            const tokenIndex = layer.tokens.findIndex((t) => t.id === tokenId);
+            if (tokenIndex !== -1) {
+              const token = layer.tokens[tokenIndex];
+              const updatedToken = { ...token, statusConditions };
+              updatedMap.layers[layerKey] = {
+                ...layer,
+                tokens: [
+                  ...layer.tokens.slice(0, tokenIndex),
+                  updatedToken,
+                  ...layer.tokens.slice(tokenIndex + 1),
+                ],
+              };
+            }
+          }
+        }
+        return updatedMap;
+      });
+    });
 
     return () => {
       socket.off("playerReceiveMap", handleReceiveMap);
@@ -341,6 +411,9 @@ export default function usePlayerSocketHandlers(
       socket.off("playerReceiveTokenDelete", handleTokenDelete);
       socket.off("dmTokenMove", handleTokenMove);
       socket.off("dmDropToken", handleDMTokenDrop);
+      socket.off("updateTokenStatus");
+      socket.off("tokenHPUpdated", handleTokenHPUpdated);
+      socket.off("activeTurnChanged", handleActiveTurnChanged);
     };
   }, [inviteCode, setActiveMap, user]);
 }

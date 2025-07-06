@@ -1,4 +1,4 @@
-import { useContext, useState } from "react";
+import { useContext, useState, useEffect } from "react";
 import { AuthContext } from "../../../context/AuthContext";
 import styles from "../../styles/DMView.module.css";
 import MapsPanel from "../../Components/DM/Panel/MapsPanel";
@@ -9,6 +9,7 @@ import ChatPanel from "../../Components/Shared/ChatPanel";
 import DiceRollerPanel from "../../Components/Shared/DiceRollerPanel";
 import SelectorBar from "../../Components/Shared/SelectorBar";
 import CombatTracker from "../../Components/DM/Panel/CombatTracker";
+import socket from "../../../socket";
 
 import { useDMInitialData } from "./hooks/useDMInitialData";
 import { useDMSocketEvents } from "./hooks/useDMSocketEvents";
@@ -31,6 +32,7 @@ export default function DMView({ sessionCode }) {
   const [selectedTokenId, setSelectedTokenId] = useState("");
   const [selectorMode, setSelectorMode] = useState("selector");
   const [showCombatTracker, setShowCombatTracker] = useState(false);
+  const [activeTurnTokenId, setActiveTurnTokenId] = useState(null);
 
   const { campaign, maps, activeMap, setActiveMap } = useDMInitialData(
     sessionCode,
@@ -83,6 +85,10 @@ export default function DMView({ sessionCode }) {
       user,
     });
 
+  useEffect(() => {
+    setSelectedTokenId(""); // Clear selection when turn changes
+  }, [activeTurnTokenId]);
+
   return (
     <div className={styles.dmView}>
       <DMToolbar
@@ -93,7 +99,21 @@ export default function DMView({ sessionCode }) {
         isTokenPanelOpen={showTokenPanel}
         onSelectTool={setToolMode}
         currentTool={toolMode}
-        onToggleCombat={() => setShowCombatTracker((prev) => !prev)}
+        onToggleCombat={() => {
+          setShowCombatTracker((prev) => {
+            const next = !prev;
+            if (!next) {
+              setSelectedTokenId(""); // Deselect any selected token
+              setActiveTurnTokenId(null); // Clear active turn indicator
+
+              socket.emit("activeTurnChanged", {
+                sessionCode,
+                tokenId: null, // Inform players to clear active turn highlight
+              });
+            }
+            return next;
+          });
+        }}
       />
       {showMapsPanel && (
         <MapsPanel
@@ -132,6 +152,7 @@ export default function DMView({ sessionCode }) {
         onSelectToken={(token) =>
           console.log("Token selected in DMView:", token)
         }
+        activeTurnTokenId={activeTurnTokenId}
       />
       {showDicePanel && (
         <DiceRollerPanel
@@ -148,6 +169,8 @@ export default function DMView({ sessionCode }) {
           activeMap={activeMap}
           setMapData={setActiveMap}
           sendMessage={handleSendMessage}
+          sessionCode={sessionCode}
+          setActiveTurnTokenId={setActiveTurnTokenId}
         />
       )}
 

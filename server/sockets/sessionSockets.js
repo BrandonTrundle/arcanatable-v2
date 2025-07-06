@@ -7,7 +7,9 @@ module.exports = function registerSessionSockets(io) {
     // Join a session room
     socket.on("joinSession", ({ sessionCode, userId }) => {
       socket.join(sessionCode);
-      socketToUser.set(socket.id, userId);
+      if (!socketToUser.has(socket.id)) {
+        socketToUser.set(socket.id, userId);
+      }
       console.log(
         `[Server] Socket ${socket.id} joined session ${sessionCode} as user ${userId}`
       );
@@ -19,6 +21,20 @@ module.exports = function registerSessionSockets(io) {
       io.to(sessionCode).emit("playerReceiveMap", map);
     });
 
+    socket.on(
+      "updateTokenStatus",
+      ({ sessionCode, tokenId, statusConditions }) => {
+        io.to(sessionCode).emit("updateTokenStatus", {
+          tokenId,
+          statusConditions,
+        });
+      }
+    );
+
+    socket.on("activeTurnChanged", ({ sessionCode, tokenId }) => {
+      io.to(sessionCode).emit("activeTurnChanged", { tokenId });
+    });
+
     socket.on("disconnect", () => {
       console.log("User disconnected:", socket.id);
       socketToUser.delete(socket.id);
@@ -27,6 +43,10 @@ module.exports = function registerSessionSockets(io) {
     socket.on("playerDropToken", ({ sessionCode, mapId, token }) => {
       console.log(`Player dropped token in session ${sessionCode}`);
       socket.to(sessionCode).emit("playerDropToken", { mapId, token });
+    });
+
+    socket.on("updateTokenHP", ({ sessionCode, tokenId, hp, maxHp }) => {
+      io.to(sessionCode).emit("tokenHPUpdated", { tokenId, hp, maxHp });
     });
 
     // DM moves a token and broadcasts it
@@ -126,6 +146,20 @@ module.exports = function registerSessionSockets(io) {
         from: "player",
       });
     });
+
+    socket.on(
+      "updateTokenStatus",
+      ({ sessionCode, tokenId, statusConditions }) => {
+        console.log(
+          `[Socket] Status update for token ${tokenId} in session ${sessionCode}`
+        );
+
+        // Broadcast to all in session room, except sender
+        socket
+          .to(sessionCode)
+          .emit("updateTokenStatus", { tokenId, statusConditions });
+      }
+    );
 
     socket.on("dmChatMessageSent", ({ sessionCode, message }) => {
       console.log("[Server] dmChatMessageSent received:", {
