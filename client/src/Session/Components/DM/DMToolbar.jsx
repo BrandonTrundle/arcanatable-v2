@@ -44,6 +44,12 @@ const DMToolbar = ({
       key: "aoe",
     },
     {
+      src: rulerIcon,
+      alt: "Ruler Tool",
+      onClick: () => onSelectTool(currentTool === "ruler" ? null : "ruler"),
+      key: "ruler",
+    },
+    {
       src: d20Icon,
       alt: "Dice",
       onClick: onToggleDice,

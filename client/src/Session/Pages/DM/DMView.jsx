@@ -11,6 +11,7 @@ import SelectorBar from "../../Components/Shared/SelectorBar";
 import CombatTracker from "../../Components/DM/Panel/CombatTracker";
 import socket from "../../../socket";
 import AoEControlPanel from "../../Components/Shared/AoEControlPanel";
+import MeasurementPanel from "../../Components/Shared/MeasurementPanel";
 
 import { useDMInitialData } from "./hooks/useDMInitialData";
 import { useDMSocketEvents } from "./hooks/useDMSocketEvents";
@@ -39,6 +40,11 @@ export default function DMView({ sessionCode }) {
   const [shapeSettings, setShapeSettings] = useState({});
   const [isAnchored, setIsAnchored] = useState(false);
   const [snapMode, setSnapMode] = useState("center");
+  const [broadcastEnabled, setBroadcastEnabled] = useState(false);
+  const [measurementColor, setMeasurementColor] = useState("#ff0000");
+  const [snapSetting, setSnapSetting] = useState("center");
+  const [lockMeasurement, setLockMeasurement] = useState(false);
+  const [lockedMeasurements, setLockedMeasurements] = useState([]);
 
   const { campaign, maps, activeMap, setActiveMap } = useDMInitialData(
     sessionCode,
@@ -165,6 +171,11 @@ export default function DMView({ sessionCode }) {
         selectedShape={selectedShape}
         shapeSettings={shapeSettings}
         snapMode={snapMode}
+        measurementColor={measurementColor}
+        broadcastEnabled={broadcastEnabled}
+        lockMeasurement={lockMeasurement}
+        setLockedMeasurements={setLockedMeasurements}
+        lockedMeasurements={lockedMeasurements}
       />
 
       {showDicePanel && (
@@ -205,6 +216,26 @@ export default function DMView({ sessionCode }) {
           setShapeSettings={setShapeSettings}
           snapMode={snapMode}
           setSnapMode={setSnapMode}
+        />
+      )}
+
+      {toolMode === "ruler" && (
+        <MeasurementPanel
+          broadcastEnabled={broadcastEnabled}
+          setBroadcastEnabled={setBroadcastEnabled}
+          measurementColor={measurementColor}
+          setMeasurementColor={setMeasurementColor}
+          snapSetting={snapSetting}
+          setSnapSetting={setSnapSetting}
+          lockMeasurement={lockMeasurement}
+          setLockMeasurement={setLockMeasurement}
+          lockedMeasurements={lockedMeasurements}
+          setLockedMeasurements={setLockedMeasurements}
+          isDM={true}
+          mapId={activeMap?._id}
+          userId={user?.id}
+          socket={socket}
+          onClose={() => setToolMode(null)}
         />
       )}
 

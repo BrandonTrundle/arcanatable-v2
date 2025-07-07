@@ -7,6 +7,7 @@ import pcIcon from "../../../assets/icons/pcIcon.png";
 import settingsIcon from "../../../assets/icons/settingsIcon.png";
 import selectorIcon from "../../../assets/icons/selectorIcon.png";
 import aoeIcon from "../../../assets/icons/AoEIcon.png";
+import rulerIcon from "../../../assets/icons/rulerIcon.png";
 
 const PlayerToolbar = ({
   onSelectCharacters,
@@ -32,6 +33,12 @@ const PlayerToolbar = ({
       alt: "AoE Tool",
       onClick: () => onSelectTool(currentTool === "aoe" ? null : "aoe"),
       key: "aoe",
+    },
+    {
+      src: rulerIcon,
+      alt: "Ruler Tool",
+      onClick: () => onSelectTool(currentTool === "ruler" ? null : "ruler"),
+      key: "ruler",
     },
     { src: pcIcon, alt: "Characters", onClick: onSelectCharacters },
     { src: settingsIcon, alt: "Settings", onClick: null },
