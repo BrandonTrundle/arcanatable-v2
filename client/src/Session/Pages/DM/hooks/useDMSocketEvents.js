@@ -37,7 +37,11 @@ export function useDMSocketEvents(
 
     function handleAoEPlaced({ aoe }) {
       console.log("[DM Socket] Received AoE placement:", aoe);
-      setAoes((prev) => [...prev, aoe]);
+      setAoes((prev) => {
+        const exists = prev.some((a) => a.id === aoe.id);
+        if (exists) return prev;
+        return [...prev, aoe];
+      });
     }
 
     function handleTokenHPUpdated({ tokenId, hp, maxHp }) {
