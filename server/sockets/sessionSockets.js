@@ -31,6 +31,18 @@ module.exports = function registerSessionSockets(io) {
       }
     );
 
+    socket.on("aoePlaced", ({ sessionCode, aoe }) => {
+      console.log(
+        `[Server] Received AoE placement for session ${sessionCode}:`,
+        aoe
+      );
+      io.to(sessionCode).emit("aoePlaced", { aoe });
+    });
+
+    socket.on("aoeDeleted", ({ sessionCode, aoeId }) => {
+      io.to(sessionCode).emit("aoeDeleted", { aoeId });
+    });
+
     socket.on("activeTurnChanged", ({ sessionCode, tokenId }) => {
       io.to(sessionCode).emit("activeTurnChanged", { tokenId });
     });

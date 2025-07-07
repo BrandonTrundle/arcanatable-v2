@@ -33,6 +33,7 @@ export default function DMView({ sessionCode }) {
   const [selectorMode, setSelectorMode] = useState("selector");
   const [showCombatTracker, setShowCombatTracker] = useState(false);
   const [activeTurnTokenId, setActiveTurnTokenId] = useState(null);
+  const [aoes, setAoes] = useState([]);
 
   const { campaign, maps, activeMap, setActiveMap } = useDMInitialData(
     sessionCode,
@@ -72,7 +73,8 @@ export default function DMView({ sessionCode }) {
         setChatMessages((prev) => [...prev, message]);
       }
     },
-    user
+    user,
+    setAoes
   );
 
   const { showMapsPanel, toggleMapsPanel, handleLoadMap } =
@@ -153,7 +155,10 @@ export default function DMView({ sessionCode }) {
           console.log("Token selected in DMView:", token)
         }
         activeTurnTokenId={activeTurnTokenId}
+        aoes={aoes}
+        setAoes={setAoes}
       />
+
       {showDicePanel && (
         <DiceRollerPanel
           isDM={true}

@@ -29,6 +29,7 @@ export default function PlayerView({ inviteCode }) {
   const [selectedTokenId, setSelectedTokenId] = useState("");
   const [selectorMode, setSelectorMode] = useState("selector");
   const [activeTurnTokenId, setActiveTurnTokenId] = useState(null);
+  const [aoes, setAoes] = useState([]);
 
   const stageRef = useRef();
 
@@ -61,7 +62,8 @@ export default function PlayerView({ inviteCode }) {
     },
     stageRef,
     activeMap,
-    setActiveTurnTokenId
+    setActiveTurnTokenId,
+    setAoes
   );
 
   return (
@@ -94,6 +96,8 @@ export default function PlayerView({ inviteCode }) {
           stageRef={stageRef}
           selectorMode={selectorMode}
           activeTurnTokenId={activeTurnTokenId}
+          aoes={aoes}
+          setAoes={setAoes}
         />
       ) : (
         <div className={styles.selectMapPrompt}>

@@ -13,6 +13,7 @@ import musicIcon from "../../../assets/icons/musicIcon.png";
 import pcIcon from "../../../assets/icons/pcIcon.png";
 import settingsIcon from "../../../assets/icons/settingsIcon.png";
 import tokenIcon from "../../../assets/icons/tokenIcon.png";
+import aoeIcon from "../../../assets/icons/AoEIcon.png";
 
 const DMToolbar = ({
   onToggleMaps,
@@ -35,6 +36,12 @@ const DMToolbar = ({
       key: "select",
     },
     { src: combatIcon, alt: "Combat", onClick: onToggleCombat, key: "combat" },
+    {
+      src: aoeIcon,
+      alt: "AoE Tool",
+      onClick: () => onSelectTool(currentTool === "aoe" ? null : "aoe"),
+      key: "aoe",
+    },
     {
       src: d20Icon,
       alt: "Dice",

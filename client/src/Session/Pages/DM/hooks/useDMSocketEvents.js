@@ -5,7 +5,8 @@ export function useDMSocketEvents(
   setActiveMap,
   sessionCode,
   onChatMessage,
-  user
+  user,
+  setAoes
 ) {
   useEffect(() => {
     if (sessionCode) {
@@ -32,6 +33,11 @@ export function useDMSocketEvents(
           },
         };
       });
+    }
+
+    function handleAoEPlaced({ aoe }) {
+      console.log("[DM Socket] Received AoE placement:", aoe);
+      setAoes((prev) => [...prev, aoe]);
     }
 
     function handleTokenHPUpdated({ tokenId, hp, maxHp }) {
@@ -96,6 +102,10 @@ export function useDMSocketEvents(
       });
     }
 
+    function handleAoEDeleted({ aoeId }) {
+      setAoes((prev) => prev.filter((a) => a.id !== aoeId));
+    }
+
     function handleChatMessageReceived({ sessionCode: code, message }) {
       if (message._local) return; // Skip local echo
       console.log("[DM Socket] Received chat message:", message);
@@ -107,6 +117,8 @@ export function useDMSocketEvents(
     socket.on("playerReceiveTokenMove", handlePlayerTokenMove);
     socket.on("chatMessageReceived", handleChatMessageReceived);
     socket.on("tokenHPUpdated", handleTokenHPUpdated);
+    socket.on("aoePlaced", handleAoEPlaced);
+    socket.on("aoeDeleted", handleAoEDeleted);
 
     return () => {
       socket.off("playerDropToken", handlePlayerDropToken);
@@ -114,6 +126,8 @@ export function useDMSocketEvents(
       socket.off("playerReceiveTokenMove", handlePlayerTokenMove);
       socket.off("chatMessageReceived", handleChatMessageReceived);
       socket.off("tokenHPUpdated", handleTokenHPUpdated);
+      socket.off("aoePlaced", handleAoEPlaced);
+      socket.off("aoeDeleted", handleAoEDeleted);
     };
   }, [setActiveMap, sessionCode, onChatMessage, user]);
 }

@@ -10,7 +10,8 @@ export default function usePlayerSocketHandlers(
   onChatMessage,
   stageRef,
   map,
-  setActiveTurnTokenId
+  setActiveTurnTokenId,
+  setAoes
 ) {
   const authToken = user?.token;
 
@@ -364,6 +365,15 @@ export default function usePlayerSocketHandlers(
       setActiveTurnTokenId(tokenId);
     };
 
+    const handleAoEPlaced = ({ aoe }) => {
+      console.log("[Player] Received AoE placement:", aoe);
+      setAoes((prev) => [...prev, aoe]);
+    };
+
+    socket.on("aoeDeleted", ({ aoeId }) => {
+      setAoes((prev) => prev.filter((a) => a.id !== aoeId));
+    });
+
     socket.on("playerReceiveMap", handleReceiveMap);
     socket.on("playerReceiveTokenOwnershipChange", handleTokenOwnershipChange);
     socket.on("playerReceiveTokenMove", handleTokenMove);
@@ -374,6 +384,7 @@ export default function usePlayerSocketHandlers(
     socket.on("dmDropToken", handleDMTokenDrop);
     socket.on("tokenHPUpdated", handleTokenHPUpdated);
     socket.on("activeTurnChanged", handleActiveTurnChanged);
+    socket.on("aoePlaced", handleAoEPlaced);
     socket.on("updateTokenStatus", ({ tokenId, statusConditions }) => {
       setActiveMap((prevMap) => {
         const updatedMap = { ...prevMap };
@@ -414,6 +425,7 @@ export default function usePlayerSocketHandlers(
       socket.off("updateTokenStatus");
       socket.off("tokenHPUpdated", handleTokenHPUpdated);
       socket.off("activeTurnChanged", handleActiveTurnChanged);
+      socket.off("aoePlaced", handleAoEPlaced);
     };
   }, [inviteCode, setActiveMap, user]);
 }

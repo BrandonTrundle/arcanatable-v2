@@ -6,6 +6,7 @@ import d20Icon from "../../../assets/icons/d20Icon.png";
 import pcIcon from "../../../assets/icons/pcIcon.png";
 import settingsIcon from "../../../assets/icons/settingsIcon.png";
 import selectorIcon from "../../../assets/icons/selectorIcon.png";
+import aoeIcon from "../../../assets/icons/AoEIcon.png";
 
 const PlayerToolbar = ({
   onSelectCharacters,
@@ -25,6 +26,12 @@ const PlayerToolbar = ({
       alt: "Roll Dice",
       onClick: onToggleDice,
       key: "dice",
+    },
+    {
+      src: aoeIcon,
+      alt: "AoE Tool",
+      onClick: () => onSelectTool(currentTool === "aoe" ? null : "aoe"),
+      key: "aoe",
     },
     { src: pcIcon, alt: "Characters", onClick: onSelectCharacters },
     { src: settingsIcon, alt: "Settings", onClick: null },
