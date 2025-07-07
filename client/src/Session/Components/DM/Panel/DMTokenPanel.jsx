@@ -3,6 +3,7 @@ import styles from "../../../styles/TokenPanel.module.css";
 import tokenIcon from "../../../../assets/icons/tokenIcon.png";
 import fetchTokens from "../../../../hooks/dmtoolkit/fetchTokens";
 import TokenCreationModal from "./TokenCreationModal";
+import { getNextZIndex } from "../../../utils/zIndexManager";
 
 export default function DMTokenPanel({ campaignId, onClosePanel, userId }) {
   const { tokens, loading, error } = fetchTokens(campaignId);
@@ -11,8 +12,12 @@ export default function DMTokenPanel({ campaignId, onClosePanel, userId }) {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [zIndex, setZIndex] = useState(getNextZIndex());
+
+  const bringToFront = () => setZIndex(getNextZIndex());
 
   const startDrag = (e) => {
+    bringToFront();
     const panel = panelRef.current;
     pos.current = {
       x: e.clientX - panel.offsetLeft,
@@ -43,10 +48,18 @@ export default function DMTokenPanel({ campaignId, onClosePanel, userId }) {
   );
 
   return (
-    <div className={styles.panel} ref={panelRef} style={{ top: 80, left: 360 }}>
+    <div
+      className={styles.panel}
+      ref={panelRef}
+      style={{ top: 80, left: 360, zIndex }}
+      onMouseDown={bringToFront}
+    >
       <div
         className={styles.header}
-        onMouseDown={startDrag}
+        onMouseDown={(e) => {
+          bringToFront();
+          startDrag(e);
+        }}
         onDoubleClick={() => setIsCollapsed((prev) => !prev)}
       >
         <img

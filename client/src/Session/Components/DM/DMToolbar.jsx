@@ -14,6 +14,7 @@ import pcIcon from "../../../assets/icons/pcIcon.png";
 import settingsIcon from "../../../assets/icons/settingsIcon.png";
 import tokenIcon from "../../../assets/icons/tokenIcon.png";
 import aoeIcon from "../../../assets/icons/AoEIcon.png";
+import rulerIcon from "../../../assets/icons/rulerIcon.png";
 
 const DMToolbar = ({
   onToggleMaps,

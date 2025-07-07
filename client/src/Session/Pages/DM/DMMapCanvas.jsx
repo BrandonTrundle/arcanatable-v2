@@ -271,19 +271,6 @@ export default function DMMapCanvas({
         </Layer>
       </Stage>
 
-      {toolMode === "aoe" && (
-        <AoEControlPanel
-          selectedShape={selectedShape}
-          setSelectedShape={setSelectedShape}
-          isAnchored={isAnchored}
-          setIsAnchored={setIsAnchored}
-          shapeSettings={shapeSettings}
-          setShapeSettings={setShapeSettings}
-          snapMode={snapMode}
-          setSnapMode={setSnapMode}
-        />
-      )}
-
       {tokenSettingsTarget && (
         <TokenSettingsPanel
           currentUserId={user._id}

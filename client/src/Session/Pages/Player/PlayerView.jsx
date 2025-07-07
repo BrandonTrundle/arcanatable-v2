@@ -12,6 +12,7 @@ import SelectorBar from "../../Components/Shared/SelectorBar";
 import usePlayerSocketHandlers from "./hooks/usePlayerSocketHandlers";
 import usePlayerSessionLoader from "./hooks/usePlayerSessionLoader";
 import { usePlayerChatEmitter } from "./hooks/usePlayerSocketHandlers";
+import AoEControlPanel from "../../Components/Shared/AoEControlPanel";
 
 export default function PlayerView({ inviteCode }) {
   const { user } = useContext(AuthContext);
@@ -30,6 +31,10 @@ export default function PlayerView({ inviteCode }) {
   const [selectorMode, setSelectorMode] = useState("selector");
   const [activeTurnTokenId, setActiveTurnTokenId] = useState(null);
   const [aoes, setAoes] = useState([]);
+  const [selectedShape, setSelectedShape] = useState("circle");
+  const [shapeSettings, setShapeSettings] = useState({});
+  const [isAnchored, setIsAnchored] = useState(false);
+  const [snapMode, setSnapMode] = useState("center");
 
   const stageRef = useRef();
 
@@ -98,6 +103,9 @@ export default function PlayerView({ inviteCode }) {
           activeTurnTokenId={activeTurnTokenId}
           aoes={aoes}
           setAoes={setAoes}
+          selectedShape={selectedShape}
+          shapeSettings={shapeSettings}
+          snapMode={snapMode}
         />
       ) : (
         <div className={styles.selectMapPrompt}>
@@ -119,6 +127,19 @@ export default function PlayerView({ inviteCode }) {
             (t) => t.id === selectedTokenId
           )}
           defaultSender={user?.username}
+        />
+      )}
+
+      {toolMode === "aoe" && (
+        <AoEControlPanel
+          selectedShape={selectedShape}
+          setSelectedShape={setSelectedShape}
+          isAnchored={isAnchored}
+          setIsAnchored={setIsAnchored}
+          shapeSettings={shapeSettings}
+          setShapeSettings={setShapeSettings}
+          snapMode={snapMode}
+          setSnapMode={setSnapMode}
         />
       )}
 

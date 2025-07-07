@@ -9,6 +9,7 @@ import {
 import styles from "../../styles/CharacterPanel.module.css";
 import characterIcon from "../../../assets/icons/pcIcon.png";
 import socket from "../../../socket";
+import { getNextZIndex } from "../../utils/zIndexManager";
 
 const CharacterPanel = forwardRef(
   ({ onClose, campaign, user, onOpenCharacter }, ref) => {
@@ -16,7 +17,8 @@ const CharacterPanel = forwardRef(
     const pos = useRef({ x: 0, y: 0 });
     const [isCollapsed, setIsCollapsed] = useState(false);
     const [characters, setCharacters] = useState([]);
-
+    const [zIndex, setZIndex] = useState(getNextZIndex());
+    const bringToFront = () => setZIndex(getNextZIndex());
     const isDM = campaign?.creatorId === user._id;
 
     const fetchCharacters = async () => {
@@ -53,6 +55,7 @@ const CharacterPanel = forwardRef(
     }, [campaign, user]);
 
     const startDrag = (e) => {
+      bringToFront();
       const panel = panelRef.current;
       pos.current = {
         x: e.clientX - panel.offsetLeft,
@@ -77,7 +80,8 @@ const CharacterPanel = forwardRef(
       <div
         className={styles.panel}
         ref={panelRef}
-        style={{ top: 100, left: 100 }}
+        style={{ position: "absolute", top: 100, left: 100, zIndex }}
+        onMouseDown={bringToFront}
       >
         <div
           className={styles.header}

@@ -1,6 +1,7 @@
 import { useState, useRef } from "react";
 import styles from "../../../styles/CombatTracker.module.css";
 import socket from "../../../../socket";
+import { getNextZIndex } from "../../../utils/zIndexManager";
 
 export default function CombatTracker({
   activeMap,
@@ -20,6 +21,9 @@ export default function CombatTracker({
   const isDragging = useRef(false);
   const offset = useRef({ x: 0, y: 0 });
   const [currentTurnIndex, setCurrentTurnIndex] = useState(0);
+  const [zIndex, setZIndex] = useState(getNextZIndex());
+  console.log("CombatTracker initial zIndex:", zIndex);
+  const bringToFront = () => setZIndex(getNextZIndex());
 
   const availableConditions = [
     "Stunned",
@@ -41,6 +45,7 @@ export default function CombatTracker({
     .filter((t) => t.entityType === "PC");
 
   const handleMouseDown = (e) => {
+    bringToFront();
     isDragging.current = true;
     offset.current = { x: e.clientX - position.x, y: e.clientY - position.y };
     document.addEventListener("mousemove", handleMouseMove);
@@ -202,8 +207,9 @@ export default function CombatTracker({
         position: "absolute",
         top: 0,
         left: 0,
-        zIndex: 10,
+        zIndex,
       }}
+      onMouseDown={bringToFront}
     >
       <div className={styles.combatTracker}>
         <div

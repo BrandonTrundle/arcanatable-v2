@@ -1,6 +1,7 @@
-import React, { useRef, useEffect, useState } from "react";
+import React, { useRef, useState } from "react";
 import styles from "../../styles/AoEControlPanel.module.css";
 import AoEIcon from "../../../assets/icons/AoEIcon.png";
+import { getNextZIndex } from "../../utils/zIndexManager";
 
 const SHAPES = ["cone", "circle", "square", "rectangle"];
 
@@ -15,33 +16,35 @@ export default function AoEControlPanel({
   setSnapMode,
 }) {
   const panelRef = useRef(null);
-  const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
-  const [isDragging, setIsDragging] = useState(false);
+  const pos = useRef({ x: 0, y: 0 });
+  const [zIndex, setZIndex] = useState(getNextZIndex());
+  console.log("AoEControlPanel initial zIndex:", zIndex);
 
-  useEffect(() => {
-    const panel = panelRef.current;
-
-    const handleMouseMove = (e) => {
-      if (!isDragging) return;
-      panel.style.left = `${e.clientX - dragOffset.x}px`;
-      panel.style.top = `${e.clientY - dragOffset.y}px`;
-    };
-
-    const handleMouseUp = () => setIsDragging(false);
-
-    window.addEventListener("mousemove", handleMouseMove);
-    window.addEventListener("mouseup", handleMouseUp);
-
-    return () => {
-      window.removeEventListener("mousemove", handleMouseMove);
-      window.removeEventListener("mouseup", handleMouseUp);
-    };
-  }, [isDragging, dragOffset]);
-
+  const bringToFront = () => {
+    const next = getNextZIndex();
+    console.log("AoEControlPanel bringToFront zIndex:", next);
+    setZIndex(next);
+  };
   const startDrag = (e) => {
-    const rect = panelRef.current.getBoundingClientRect();
-    setDragOffset({ x: e.clientX - rect.left, y: e.clientY - rect.top });
-    setIsDragging(true);
+    bringToFront();
+    const panel = panelRef.current;
+    pos.current = {
+      x: e.clientX - panel.offsetLeft,
+      y: e.clientY - panel.offsetTop,
+    };
+    document.addEventListener("mousemove", drag);
+    document.addEventListener("mouseup", stopDrag);
+  };
+
+  const drag = (e) => {
+    const panel = panelRef.current;
+    panel.style.left = `${e.clientX - pos.current.x}px`;
+    panel.style.top = `${e.clientY - pos.current.y}px`;
+  };
+
+  const stopDrag = () => {
+    document.removeEventListener("mousemove", drag);
+    document.removeEventListener("mouseup", stopDrag);
   };
 
   const updateShapeSetting = (field, value) => {
@@ -188,11 +191,17 @@ export default function AoEControlPanel({
   };
 
   return (
-    <div className={styles.panel} ref={panelRef}>
+    <div
+      className={styles.panel}
+      ref={panelRef}
+      style={{ position: "absolute", top: 100, left: 100, zIndex }}
+      onMouseDown={bringToFront}
+    >
       <div className={styles.header} onMouseDown={startDrag}>
         <img src={AoEIcon} alt="AoE Icon" className={styles.icon} />
         Area of Effect Settings
       </div>
+
       <div className={styles.shapeButtons}>
         {SHAPES.map((shape) => (
           <button
@@ -204,14 +213,7 @@ export default function AoEControlPanel({
           </button>
         ))}
       </div>
-      <div className={styles.toggleRow}>
-        <input
-          type="checkbox"
-          checked={isAnchored}
-          onChange={(e) => setIsAnchored(e.target.checked)}
-        />
-        <label>Anchor to token</label>
-      </div>
+
       <div className={styles.toggleRow}>
         <label>Snap Mode:</label>
         <select value={snapMode} onChange={(e) => setSnapMode(e.target.value)}>
@@ -219,6 +221,7 @@ export default function AoEControlPanel({
           <option value="corner">Corner</option>
         </select>
       </div>
+
       {renderShapeInputs()}
     </div>
   );

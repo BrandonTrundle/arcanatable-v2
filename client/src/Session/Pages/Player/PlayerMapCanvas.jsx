@@ -300,19 +300,6 @@ export default function PlayerMapCanvas({
         <Layer>{/* Reserved for other layers */}</Layer>
       </Stage>
 
-      {toolMode === "aoe" && (
-        <AoEControlPanel
-          selectedShape={selectedShape}
-          setSelectedShape={setSelectedShape}
-          isAnchored={isAnchored}
-          setIsAnchored={setIsAnchored}
-          shapeSettings={shapeSettings}
-          setShapeSettings={setShapeSettings}
-          snapMode={snapMode}
-          setSnapMode={setSnapMode}
-        />
-      )}
-
       {tokenSettingsTarget && (
         <TokenSettingsPanel
           token={tokenSettingsTarget}

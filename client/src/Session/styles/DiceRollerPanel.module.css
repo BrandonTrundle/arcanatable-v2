@@ -3,12 +3,12 @@
   top: 100px;
   left: 100px;
   width: 520px;
-  background: var(--color-surface);
-  border: 2px solid var(--color-primary);
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
-  font-family: var(--font-main);
-  color: var(--color-light);
+  background-color: #2a2a2a;
+  border: 2px solid #777;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
+  font-family: Segoe UI, sans-serif;
+  color: #f0f0f0;
   z-index: 1000;
   cursor: move;
 }
@@ -17,22 +17,36 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0.5rem;
-  background: var(--color-primary);
-  border-radius: 10px 10px 0 0;
+  padding: 6px 10px;
+  background-color: #3c3c3c;
+  border-radius: 6px 6px 0 0;
+  font-weight: 600;
+  border-bottom: 1px solid #555;
+  user-select: none;
 }
 
 .controls button {
   margin-left: 5px;
-  background: none;
-  border: none;
-  color: var(--color-light);
-  font-size: 1rem;
+  background-color: #3a3a3a;
+  border: 1px solid #555;
+  color: #f0f0f0;
+  font-size: 0.9rem;
+  padding: 4px 6px;
+  border-radius: 4px;
   cursor: pointer;
+  transition: background-color 0.2s, box-shadow 0.2s;
+}
+
+.controls button:hover {
+  background-color: #555;
+  box-shadow: 0 0 5px rgba(255, 255, 255, 0.1);
 }
 
 .content {
   padding: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
 }
 
 .diceList {
@@ -48,29 +62,35 @@
   margin: 5px;
   cursor: pointer;
   opacity: 0.4;
-  transition: transform 0.5s ease;
+  transition: transform 0.3s ease, opacity 0.3s ease;
 }
 
-.dieIcon:hover,
+.dieIcon:hover {
+  transform: scale(1.6);
+  opacity: 1;
+}
+
 .selected {
   transform: scale(1.6);
   opacity: 1;
+  filter: drop-shadow(0 0 4px #007acc);
 }
 
 .modifierRow {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 1rem;
+  gap: 8px;
 }
 
 .modifierRow input {
   width: 60px;
-  padding: 0.25rem;
-  background: var(--color-background);
-  color: var(--color-light);
-  border: 1px solid var(--color-neutral);
-  border-radius: 6px;
+  padding: 4px;
+  background-color: #1f1f1f;
+  color: #eee;
+  border: 1px solid #555;
+  border-radius: 4px;
+  text-align: center;
 }
 
 .buttons {
@@ -81,18 +101,19 @@
 
 .buttons button {
   flex: 1;
-  padding: 0.4rem;
-  background: var(--color-highlight);
-  border: none;
-  border-radius: 8px;
-  color: var(--color-light);
+  padding: 6px 8px;
+  background-color: #3a3a3a;
+  border: 1px solid #555;
+  border-radius: 6px;
+  color: #f0f0f0;
   font-weight: bold;
   cursor: pointer;
-  transition: background 0.3s;
+  transition: background-color 0.2s, box-shadow 0.2s;
 }
 
 .buttons button:hover {
-  background: var(--color-info);
+  background-color: #555;
+  box-shadow: 0 0 5px rgba(255, 255, 255, 0.1);
 }
 
 .savedRolls {
@@ -108,11 +129,11 @@
 }
 
 .savedRollDropdown select {
-  padding: 0.4rem;
-  background: var(--color-background);
-  color: var(--color-light);
-  border: 1px solid var(--color-neutral);
-  border-radius: 6px;
+  padding: 6px;
+  background-color: #1f1f1f;
+  color: #eee;
+  border: 1px solid #555;
+  border-radius: 4px;
   font-size: 1rem;
 }
 
@@ -123,32 +144,35 @@
 }
 
 .rollOptions button {
-  padding: 0.4rem 0.6rem;
-  background: var(--color-highlight);
-  border: none;
-  border-radius: 8px;
-  color: var(--color-light);
+  padding: 6px 10px;
+  background-color: #3a3a3a;
+  border: 1px solid #555;
+  border-radius: 6px;
+  color: #f0f0f0;
   font-weight: bold;
   cursor: pointer;
-  transition: background 0.3s;
+  transition: background-color 0.2s, box-shadow 0.2s;
 }
 
 .rollOptions button:hover {
-  background: var(--color-info);
+  background-color: #555;
+  box-shadow: 0 0 5px rgba(255, 255, 255, 0.1);
 }
 
 .newRollForm {
+  display: flex;
+  flex-wrap: wrap;
   gap: 0.5rem;
 }
 
 .newRollForm input,
 .newRollForm select {
   flex: 1 1 120px;
-  padding: 0.4rem;
-  background: var(--color-background);
-  color: var(--color-light);
-  border: 1px solid var(--color-neutral);
-  border-radius: 6px;
+  padding: 6px;
+  background-color: #1f1f1f;
+  color: #eee;
+  border: 1px solid #555;
+  border-radius: 4px;
 }
 
 .SRPLabel {

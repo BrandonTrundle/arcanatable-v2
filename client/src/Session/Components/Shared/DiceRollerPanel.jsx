@@ -14,6 +14,7 @@ import SavedRollsPanel from "./DiceRollerPanel/SavedRollsPanel";
 import DiceIconList from "./DiceRollerPanel/DiceIconList";
 import ModifierInputs from "./DiceRollerPanel/ModifierInputs";
 import RollControls from "./DiceRollerPanel/RollControls";
+import { getNextZIndex } from "../../utils/zIndexManager";
 
 const diceTypes = [
   { type: "d4", icon: d4Icon },
@@ -38,6 +39,7 @@ export default function DiceRollerPanel({
   const [dragging, setDragging] = useState(false);
   const dragOffset = useRef({ x: 0, y: 0 });
   const [isSavedRollsView, setIsSavedRollsView] = useState(false);
+  const [zIndex, setZIndex] = useState(getNextZIndex());
 
   const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
@@ -69,6 +71,7 @@ export default function DiceRollerPanel({
   const toggleCollapse = () => setIsCollapsed(!isCollapsed);
 
   const handleMouseDown = (e) => {
+    setZIndex(getNextZIndex());
     setDragging(true);
     dragOffset.current = {
       x: e.clientX - position.x,
@@ -89,7 +92,12 @@ export default function DiceRollerPanel({
   return (
     <div
       className={styles.panel}
-      style={{ left: position.x, top: position.y }}
+      style={{
+        left: position.x,
+        top: position.y,
+        zIndex,
+        position: "absolute",
+      }}
       onMouseMove={handleMouseMove}
       onMouseUp={handleMouseUp}
       onMouseLeave={handleMouseUp}

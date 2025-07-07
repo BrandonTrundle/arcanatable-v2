@@ -1,43 +1,90 @@
 .combatTracker {
-  background: var(--color-surface);
-  color: var(--color-light);
-  padding: 1rem;
-  border: 2px solid var(--color-primary);
-  border-radius: 8px;
-  width: 700px;
-  z-index: 10;
-}
-
-.combatTracker h3 {
-  margin-top: 0;
-  text-align: center;
-}
-
-.combatTracker button {
-  margin: 2px;
-  background: var(--color-primary);
-  color: var(--color-light);
-  border: none;
-  padding: 4px 6px;
+  background-color: #2a2a2a;
+  color: #f0f0f0;
+  border: 1px solid #777;
   border-radius: 4px;
+  width: 700px;
+  box-shadow: 3px 3px 6px rgba(0, 0, 0, 0.6);
+  overflow: hidden;
+  font-family: Segoe UI, sans-serif;
+  padding: 10px;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background-color: #3c3c3c;
+  padding: 6px 10px;
+  font-weight: 600;
+  border-bottom: 1px solid #555;
+  user-select: none;
+  box-shadow: inset 0 -1px 0 #555;
+}
+
+.header h3 {
+  margin: 0;
+  font-size: 1.1rem;
+  color: #f0f0f0;
+}
+
+.header button {
+  background: none;
+  border: none;
+  color: #f0f0f0;
+  font-size: 14px;
   cursor: pointer;
+  padding: 2px 6px;
+  transition: background-color 0.2s;
+}
+
+.header button:hover {
+  background-color: #444;
+}
+
+button {
+  background-color: #3a3a3a;
+  color: #f0f0f0;
+  border: 1px solid #555;
+  border-radius: 4px;
+  padding: 4px 8px;
+  margin: 4px 2px;
+  cursor: pointer;
+  transition: background-color 0.2s, box-shadow 0.2s;
+}
+
+button:hover {
+  background-color: #555;
+  box-shadow: 0 0 5px rgba(255, 255, 255, 0.1);
 }
 
 .tokenList {
-  margin-top: 1rem;
+  margin-top: 12px;
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 8px;
+  max-height: 250px;
+  overflow-y: auto;
+  background-color: #1f1f1f;
+  border: 1px solid #555;
+  border-radius: 4px;
+  padding: 8px;
 }
 
 .tokenRow {
   display: flex;
   flex-direction: column;
-  background: var(--color-surface);
-  border: 1px solid var(--color-muted);
-  border-radius: 6px;
-  padding: 4px;
+  background-color: #2a2a2a;
+  border: 1px solid #555;
+  border-radius: 4px;
+  padding: 6px;
   gap: 6px;
+  transition: background-color 0.2s;
+  cursor: pointer;
+}
+
+.tokenRow:hover {
+  background-color: #444;
 }
 
 .tokenHeader {
@@ -48,18 +95,46 @@
 }
 
 .initiative {
-  width: 24px;
+  width: 28px;
   text-align: center;
   font-weight: bold;
-  background: var(--color-background);
-  color: var(--color-highlight);
+  background-color: #1f1f1f;
+  color: #00bfff;
   padding: 2px 4px;
+  border: 1px solid #555;
   border-radius: 4px;
 }
 
 .name {
   flex: 1;
   font-weight: bold;
+  color: #f0f0f0;
+}
+
+label {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.85rem;
+  color: #f0f0f0;
+}
+
+.hpInput {
+  width: 50px;
+  padding: 2px;
+  border: 1px solid #555;
+  border-radius: 4px;
+  background-color: #1f1f1f;
+  color: #eee;
+  text-align: center;
+}
+
+select {
+  background-color: #1f1f1f;
+  color: #eee;
+  border: 1px solid #555;
+  border-radius: 4px;
+  padding: 2px 6px;
 }
 
 .conditions {
@@ -70,33 +145,10 @@
 }
 
 .conditionBadge {
-  background: var(--color-accent);
-  color: var(--color-light);
-  padding: 2px 4px;
+  background-color: #5a5aff;
+  color: #f0f0f0;
+  padding: 2px 6px;
   border-radius: 4px;
   font-size: 0.75rem;
-}
-
-.hpInput {
-  width: 50px;
-  margin-left: 4px;
-  padding: 2px;
-  border: 1px solid var(--color-muted);
-  border-radius: 4px;
-  background: var(--color-surface);
-  color: var(--color-light);
-  text-align: center;
-}
-
-label {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  font-size: 0.85rem;
-}
-
-.header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+  border: 1px solid #444;
 }

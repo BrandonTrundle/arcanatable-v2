@@ -10,6 +10,7 @@ import DiceRollerPanel from "../../Components/Shared/DiceRollerPanel";
 import SelectorBar from "../../Components/Shared/SelectorBar";
 import CombatTracker from "../../Components/DM/Panel/CombatTracker";
 import socket from "../../../socket";
+import AoEControlPanel from "../../Components/Shared/AoEControlPanel";
 
 import { useDMInitialData } from "./hooks/useDMInitialData";
 import { useDMSocketEvents } from "./hooks/useDMSocketEvents";
@@ -34,6 +35,10 @@ export default function DMView({ sessionCode }) {
   const [showCombatTracker, setShowCombatTracker] = useState(false);
   const [activeTurnTokenId, setActiveTurnTokenId] = useState(null);
   const [aoes, setAoes] = useState([]);
+  const [selectedShape, setSelectedShape] = useState("circle");
+  const [shapeSettings, setShapeSettings] = useState({});
+  const [isAnchored, setIsAnchored] = useState(false);
+  const [snapMode, setSnapMode] = useState("center");
 
   const { campaign, maps, activeMap, setActiveMap } = useDMInitialData(
     sessionCode,
@@ -157,6 +162,9 @@ export default function DMView({ sessionCode }) {
         activeTurnTokenId={activeTurnTokenId}
         aoes={aoes}
         setAoes={setAoes}
+        selectedShape={selectedShape}
+        shapeSettings={shapeSettings}
+        snapMode={snapMode}
       />
 
       {showDicePanel && (
@@ -184,6 +192,19 @@ export default function DMView({ sessionCode }) {
           selectorMode={selectorMode}
           setSelectorMode={setSelectorMode}
           isDM={true}
+        />
+      )}
+
+      {toolMode === "aoe" && (
+        <AoEControlPanel
+          selectedShape={selectedShape}
+          setSelectedShape={setSelectedShape}
+          isAnchored={isAnchored}
+          setIsAnchored={setIsAnchored}
+          shapeSettings={shapeSettings}
+          setShapeSettings={setShapeSettings}
+          snapMode={snapMode}
+          setSnapMode={setSnapMode}
         />
       )}
 

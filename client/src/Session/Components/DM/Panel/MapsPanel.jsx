@@ -2,6 +2,7 @@ import { useState, useRef } from "react";
 import styles from "../../../styles/MapsPanel.module.css";
 import mapIcon from "../../../../assets/icons/mapIcon.png";
 import socket from "../../../../socket";
+import { getNextZIndex } from "../../../utils/zIndexManager";
 
 export default function MapsPanel({
   maps,
@@ -14,8 +15,11 @@ export default function MapsPanel({
   const panelRef = useRef(null);
   const pos = useRef({ x: 0, y: 0 });
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const [zIndex, setZIndex] = useState(getNextZIndex());
+  const bringToFront = () => setZIndex(getNextZIndex());
 
   const startDrag = (e) => {
+    bringToFront();
     const panel = panelRef.current;
     pos.current = {
       x: e.clientX - panel.offsetLeft,
@@ -37,7 +41,12 @@ export default function MapsPanel({
   };
 
   return (
-    <div className={styles.panel} ref={panelRef} style={{ top: 80, left: 80 }}>
+    <div
+      className={styles.panel}
+      ref={panelRef}
+      style={{ position: "absolute", top: 80, left: 80, zIndex }}
+      onMouseDown={bringToFront}
+    >
       <div
         className={styles.header}
         onMouseDown={startDrag}
