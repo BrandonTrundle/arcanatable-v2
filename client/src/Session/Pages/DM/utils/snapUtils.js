@@ -1,5 +1,5 @@
 export const snapToGrid = (value, gridSize) => {
-  return Math.round(value / gridSize) * gridSize;
+  return Math.floor(value / gridSize) * gridSize;
 };
 
 export const applySnap = (x, y, gridSize, mode) => {
