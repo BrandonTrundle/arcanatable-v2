@@ -8,6 +8,8 @@ import CharacterSheetPanel from "../../Components/Shared/CharacterSheetPanel";
 import ChatPanel from "../../Components/Shared/ChatPanel";
 import DiceRollerPanel from "../../Components/Shared/DiceRollerPanel";
 import SelectorBar from "../../Components/Shared/SelectorBar";
+import MeasurementPanel from "../../Components/Shared/MeasurementPanel";
+import socket from "../../../socket";
 
 import usePlayerSocketHandlers from "./hooks/usePlayerSocketHandlers";
 import usePlayerSessionLoader from "./hooks/usePlayerSessionLoader";
@@ -35,6 +37,10 @@ export default function PlayerView({ inviteCode }) {
   const [shapeSettings, setShapeSettings] = useState({});
   const [isAnchored, setIsAnchored] = useState(false);
   const [snapMode, setSnapMode] = useState("center");
+  const [lockedMeasurements, setLockedMeasurements] = useState([]);
+  const [measurementColor, setMeasurementColor] = useState("#ff0000");
+  const [broadcastEnabled, setBroadcastEnabled] = useState(false);
+  const [lockMeasurement, setLockMeasurement] = useState(false);
 
   const stageRef = useRef();
 
@@ -68,7 +74,8 @@ export default function PlayerView({ inviteCode }) {
     stageRef,
     activeMap,
     setActiveTurnTokenId,
-    setAoes
+    setAoes,
+    setLockedMeasurements
   );
 
   return (
@@ -106,6 +113,11 @@ export default function PlayerView({ inviteCode }) {
           selectedShape={selectedShape}
           shapeSettings={shapeSettings}
           snapMode={snapMode}
+          measurementColor={measurementColor}
+          broadcastEnabled={broadcastEnabled}
+          lockMeasurement={lockMeasurement}
+          setLockedMeasurements={setLockedMeasurements}
+          lockedMeasurements={lockedMeasurements}
         />
       ) : (
         <div className={styles.selectMapPrompt}>
@@ -160,6 +172,30 @@ export default function PlayerView({ inviteCode }) {
           selectorMode={selectorMode}
           setSelectorMode={setSelectorMode}
           isDM={false}
+        />
+      )}
+
+      {toolMode === "ruler" && (
+        <MeasurementPanel
+          broadcastEnabled={broadcastEnabled}
+          setBroadcastEnabled={setBroadcastEnabled}
+          measurementColor={measurementColor}
+          setMeasurementColor={setMeasurementColor}
+          snapSetting={snapMode}
+          setSnapSetting={setSnapMode}
+          lockMeasurement={lockMeasurement}
+          setLockMeasurement={setLockMeasurement}
+          lockedMeasurements={lockedMeasurements}
+          setLockedMeasurements={setLockedMeasurements}
+          isDM={false}
+          mapId={activeMap?._id}
+          userId={user?.id}
+          socket={socket}
+          sessionCode={inviteCode}
+          onClose={() => {
+            setToolMode(null);
+            // Do NOT clear locked measurements here
+          }}
         />
       )}
 

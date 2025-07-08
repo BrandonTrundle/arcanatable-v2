@@ -222,6 +222,31 @@ module.exports = function registerSessionSockets(io) {
       );
     });
 
+    // Broadcast placed measurement to other players
+    socket.on("measurement:placed", ({ sessionCode, measurement }) => {
+      console.log(
+        `[Server] Measurement placed in session ${sessionCode}:`,
+        measurement
+      );
+      socket.to(sessionCode).emit("measurement:placed", measurement);
+    });
+
+    // Clear locked measurements for a specific user
+    socket.on("measurement:clearLocked", ({ sessionCode, userId }) => {
+      console.log(
+        `[Server] Clearing locked measurements for user ${userId} in session ${sessionCode}`
+      );
+      io.to(sessionCode).emit("measurement:clearLocked", { userId });
+    });
+
+    // Clear all measurements for a session
+    socket.on("measurement:clearAll", ({ sessionCode }) => {
+      console.log(
+        `[Server] Clearing all measurements in session ${sessionCode}`
+      );
+      io.to(sessionCode).emit("measurement:clearAll");
+    });
+
     // Player moves a token and broadcasts it
     socket.on("playerMoveToken", ({ sessionCode, tokenData }) => {
       const userId = socketToUser.get(socket.id);

@@ -3,6 +3,8 @@ import { Stage, Layer } from "react-konva";
 import useImage from "use-image";
 import { AuthContext } from "../../../context/AuthContext";
 import { usePingBroadcast } from "../DM/hooks/usePingBroadcast";
+import { useRulerControl } from "../DM/hooks/useRulerControl";
+import { getSnappedPointer } from "../DM/utils/snapUtils";
 import usePlayerMapZoomHandler from "./hooks/usePlayerZoomHandler";
 import usePlayerMapClickHandler from "./hooks/usePlayerMapClickHandler";
 import usePlayerTokenSelection from "./hooks/usePlayerTokenSelection";
@@ -12,6 +14,7 @@ import usePlayerTokenDeletion from "./hooks/usePlayerTokenDeletion";
 import usePlayerTokenSettings from "./hooks/usePlayerTokenSettings";
 
 import SessionStaticMapLayer from "../../MapLayers/SessionStaticMapLayer";
+import MeasurementLayer from "../../MapLayers/MeasurementLayer";
 import SessionFogAndBlockerLayer from "../../MapLayers/SessionFogAndBlockerLayer";
 import SessionMapAssetLayer from "../../MapLayers/SessionMapAssetLayer";
 import SessionMapTokenLayer from "../../MapLayers/SessionMapTokenLayer";
@@ -33,11 +36,39 @@ export default function PlayerMapCanvas({
   activeTurnTokenId,
   aoes,
   setAoes,
+  selectedShape,
+  shapeSettings,
+  snapMode,
+  measurementColor,
+  broadcastEnabled,
+  lockMeasurement,
+  setLockedMeasurements,
+  lockedMeasurements,
 }) {
   const { user } = useContext(AuthContext);
+  const {
+    isMeasuring,
+    measureOrigin,
+    measureTarget,
+    startMeasurement,
+    updateMeasurementTarget,
+    finalizeMeasurement,
+  } = useRulerControl({
+    map,
+    measurementColor,
+    user,
+    lockMeasurement,
+    broadcastEnabled,
+    setLockedMeasurements,
+    sessionCode,
+  });
   const [mapImage] = useImage(map?.image, "anonymous");
   const [tokenSettingsTarget, setTokenSettingsTarget] = useState(null);
   const imageReady = !!mapImage;
+  const getSnappedPointerPos = (e) => {
+    const pointer = e.target.getStage().getPointerPosition();
+    return getSnappedPointer(pointer, stageRef.current, map.gridSize, snapMode);
+  };
 
   const [stageScale, setStageScale] = useState(1);
   const [stagePos, setStagePos] = useState({ x: 0, y: 0 });
@@ -90,10 +121,8 @@ export default function PlayerMapCanvas({
   const [isDraggingAoE, setIsDraggingAoE] = useState(false);
   const [aoeDragOrigin, setAoeDragOrigin] = useState(null);
   const [aoeDragTarget, setAoeDragTarget] = useState(null);
-  const [selectedShape, setSelectedShape] = useState("circle");
-  const [shapeSettings, setShapeSettings] = useState({});
+
   const [isAnchored, setIsAnchored] = useState(false);
-  const [snapMode, setSnapMode] = useState("center");
 
   const snapToGrid = (value, gridSize) =>
     Math.round(value / gridSize) * gridSize;
@@ -116,7 +145,7 @@ export default function PlayerMapCanvas({
         width={stageWidth}
         height={stageHeight}
         ref={stageRef}
-        draggable={!isDraggingAoE}
+        draggable={!isDraggingAoE && !isMeasuring}
         scaleX={stageScale}
         scaleY={stageScale}
         x={stagePos.x}
@@ -127,107 +156,79 @@ export default function PlayerMapCanvas({
         onWheel={handleZoom}
         onClick={handleMapClick}
         onMouseDown={(e) => {
-          if (toolMode === "aoe" && e.evt.button === 0) {
-            const pointer = e.target.getStage().getPointerPosition();
-            const scale = stageRef.current.scaleX();
-            let x = (pointer.x - stageRef.current.x()) / scale;
-            let y = (pointer.y - stageRef.current.y()) / scale;
-
-            if (snapMode === "center") {
-              x = snapToGrid(x, map.gridSize) + map.gridSize / 2;
-              y = snapToGrid(y, map.gridSize) + map.gridSize / 2;
-            } else if (snapMode === "corner") {
-              x = snapToGrid(x, map.gridSize);
-              y = snapToGrid(y, map.gridSize);
-            }
-
-            setIsDraggingAoE(true);
-            setAoeDragOrigin({ x, y });
-            setAoeDragTarget({ x, y });
+          if (toolMode === "ruler" && e.evt.button === 0) {
+            const snapped = getSnappedPointerPos(e);
+            startMeasurement(snapped);
           }
         }}
         onMouseMove={(e) => {
+          const snapped = getSnappedPointerPos(e);
+
           if (isDraggingAoE) {
-            const pointer = e.target.getStage().getPointerPosition();
-            const scale = stageRef.current.scaleX();
-            let x = (pointer.x - stageRef.current.x()) / scale;
-            let y = (pointer.y - stageRef.current.y()) / scale;
+            setAoeDragTarget(snapped);
+          }
 
-            if (snapMode === "center") {
-              x = snapToGrid(x, map.gridSize) + map.gridSize / 2;
-              y = snapToGrid(y, map.gridSize) + map.gridSize / 2;
-            } else if (snapMode === "corner") {
-              x = snapToGrid(x, map.gridSize);
-              y = snapToGrid(y, map.gridSize);
-            }
-
-            setAoeDragTarget({ x, y });
+          if (toolMode === "ruler" && isMeasuring) {
+            updateMeasurementTarget(snapped);
           }
         }}
         onMouseUp={(e) => {
-          if (isDraggingAoE) {
-            if (e.evt.button === 0) {
-              const pointer = e.target.getStage().getPointerPosition();
-              const scale = stageRef.current.scaleX();
-              let x = (pointer.x - stageRef.current.x()) / scale;
-              let y = (pointer.y - stageRef.current.y()) / scale;
+          const snapped = getSnappedPointerPos(e);
 
-              if (snapMode === "center") {
-                x = snapToGrid(x, map.gridSize) + map.gridSize / 2;
-                y = snapToGrid(y, map.gridSize) + map.gridSize / 2;
-              } else if (snapMode === "corner") {
-                x = snapToGrid(x, map.gridSize);
-                y = snapToGrid(y, map.gridSize);
-              }
+          if (isDraggingAoE && e.evt.button === 0) {
+            const newAoE = {
+              id: Date.now(),
+              x: snapped.x,
+              y: snapped.y,
+              type: selectedShape,
+              color: shapeSettings[selectedShape]?.color || "#ff0000",
+              opacity: 0.4,
+            };
 
-              const newAoE = {
-                id: Date.now(),
-                x,
-                y,
-                type: selectedShape,
-                color: shapeSettings[selectedShape]?.color || "#ff0000",
-                opacity: 0.4,
-              };
+            const ftToPx = (ft) => (map.gridSize / 5) * ft;
 
-              const ftToPx = (ft) => (map.gridSize / 5) * ft;
-
-              if (selectedShape === "circle")
-                newAoE.radius = ftToPx(
-                  shapeSettings[selectedShape]?.radius || 20
-                );
-              if (selectedShape === "cone") {
-                newAoE.radius = ftToPx(
-                  shapeSettings[selectedShape]?.radius || 30
-                );
-                newAoE.angle = shapeSettings[selectedShape]?.angle || 60;
-
-                const dx = x - aoeDragOrigin.x;
-                const dy = y - aoeDragOrigin.y;
-                newAoE.direction = (Math.atan2(dy, dx) * 180) / Math.PI;
-              }
-              if (selectedShape === "square")
-                newAoE.width = ftToPx(
-                  shapeSettings[selectedShape]?.width || 30
-                );
-              if (selectedShape === "rectangle") {
-                newAoE.width = ftToPx(
-                  shapeSettings[selectedShape]?.width || 40
-                );
-                newAoE.height = ftToPx(
-                  shapeSettings[selectedShape]?.height || 20
-                );
-              }
-
-              setAoes((prev) => [...prev, newAoE]);
-              socket.emit("aoePlaced", { sessionCode, aoe: newAoE });
+            if (selectedShape === "circle") {
+              newAoE.radius = ftToPx(
+                shapeSettings[selectedShape]?.radius || 20
+              );
             }
 
+            if (selectedShape === "cone") {
+              newAoE.radius = ftToPx(
+                shapeSettings[selectedShape]?.radius || 30
+              );
+              newAoE.angle = shapeSettings[selectedShape]?.angle || 60;
+
+              const dx = snapped.x - aoeDragOrigin.x;
+              const dy = snapped.y - aoeDragOrigin.y;
+              newAoE.direction = (Math.atan2(dy, dx) * 180) / Math.PI;
+            }
+
+            if (selectedShape === "square") {
+              newAoE.width = ftToPx(shapeSettings[selectedShape]?.width || 30);
+            }
+
+            if (selectedShape === "rectangle") {
+              newAoE.width = ftToPx(shapeSettings[selectedShape]?.width || 40);
+              newAoE.height = ftToPx(
+                shapeSettings[selectedShape]?.height || 20
+              );
+            }
+
+            setAoes((prev) => [...prev, newAoE]);
+            socket.emit("aoePlaced", { sessionCode, aoe: newAoE });
+          }
+
+          if (isDraggingAoE) {
             setIsDraggingAoE(false);
             setAoeDragOrigin(null);
             setAoeDragTarget(null);
           }
+
+          if (isMeasuring && e.evt.button === 0) {
+            finalizeMeasurement(snapped);
+          }
         }}
-        style={{ border: "2px solid #444" }}
       >
         <SessionStaticMapLayer
           mapImage={mapImage}
@@ -296,6 +297,20 @@ export default function PlayerMapCanvas({
             activeTurnTokenId={activeTurnTokenId}
           />
         </Layer>
+
+        <MeasurementLayer
+          lockedMeasurements={lockedMeasurements}
+          activeMeasurement={
+            isMeasuring && measureOrigin && measureTarget
+              ? {
+                  origin: measureOrigin,
+                  target: measureTarget,
+                  color: measurementColor,
+                }
+              : null
+          }
+          gridSize={map.gridSize}
+        />
 
         <Layer>{/* Reserved for other layers */}</Layer>
       </Stage>

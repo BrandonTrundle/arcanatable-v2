@@ -11,7 +11,8 @@ export default function usePlayerSocketHandlers(
   stageRef,
   map,
   setActiveTurnTokenId,
-  setAoes
+  setAoes,
+  setLockedMeasurements
 ) {
   const authToken = user?.token;
 
@@ -374,6 +375,18 @@ export default function usePlayerSocketHandlers(
       setAoes((prev) => prev.filter((a) => a.id !== aoeId));
     });
 
+    const handleMeasurementPlaced = (measurement) => {
+      setLockedMeasurements((prev) => [...prev, measurement]);
+    };
+
+    const handleMeasurementClearLocked = ({ userId }) => {
+      setLockedMeasurements((prev) => prev.filter((m) => m.userId !== userId));
+    };
+
+    const handleMeasurementClearAll = () => {
+      setLockedMeasurements([]);
+    };
+
     socket.on("playerReceiveMap", handleReceiveMap);
     socket.on("playerReceiveTokenOwnershipChange", handleTokenOwnershipChange);
     socket.on("playerReceiveTokenMove", handleTokenMove);
@@ -385,6 +398,9 @@ export default function usePlayerSocketHandlers(
     socket.on("tokenHPUpdated", handleTokenHPUpdated);
     socket.on("activeTurnChanged", handleActiveTurnChanged);
     socket.on("aoePlaced", handleAoEPlaced);
+    socket.on("measurement:placed", handleMeasurementPlaced);
+    socket.on("measurement:clearLocked", handleMeasurementClearLocked);
+    socket.on("measurement:clearAll", handleMeasurementClearAll);
     socket.on("updateTokenStatus", ({ tokenId, statusConditions }) => {
       setActiveMap((prevMap) => {
         const updatedMap = { ...prevMap };
@@ -426,6 +442,9 @@ export default function usePlayerSocketHandlers(
       socket.off("tokenHPUpdated", handleTokenHPUpdated);
       socket.off("activeTurnChanged", handleActiveTurnChanged);
       socket.off("aoePlaced", handleAoEPlaced);
+      socket.off("measurement:placed", handleMeasurementPlaced);
+      socket.off("measurement:clearLocked", handleMeasurementClearLocked);
+      socket.off("measurement:clearAll", handleMeasurementClearAll);
     };
   }, [inviteCode, setActiveMap, user]);
 }

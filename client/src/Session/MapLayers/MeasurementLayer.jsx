@@ -1,3 +1,4 @@
+import React from "react";
 import { Layer, Arrow, Text } from "react-konva";
 
 export default function MeasurementLayer({
@@ -6,7 +7,7 @@ export default function MeasurementLayer({
   gridSize,
 }) {
   return (
-    <>
+    <Layer>
       {lockedMeasurements.map((m) =>
         renderMeasurement(m.origin, m.target, m.color, gridSize, m.id)
       )}
@@ -21,7 +22,7 @@ export default function MeasurementLayer({
           gridSize,
           "active"
         )}
-    </>
+    </Layer>
   );
 }
 
@@ -35,7 +36,7 @@ function renderMeasurement(origin, target, color, gridSize, key) {
   const midY = origin.y + (target.y - origin.y) / 2;
 
   return (
-    <Layer key={key}>
+    <React.Fragment key={key}>
       <Arrow
         points={[origin.x, origin.y, target.x, target.y]}
         stroke={color}
@@ -55,6 +56,6 @@ function renderMeasurement(origin, target, color, gridSize, key) {
         stroke="black"
         strokeWidth={0.5}
       />
-    </Layer>
+    </React.Fragment>
   );
 }

@@ -85,7 +85,8 @@ export default function DMView({ sessionCode }) {
       }
     },
     user,
-    setAoes
+    setAoes,
+    setLockedMeasurements
   );
 
   const { showMapsPanel, toggleMapsPanel, handleLoadMap } =
@@ -236,6 +237,7 @@ export default function DMView({ sessionCode }) {
           userId={user?.id}
           socket={socket}
           onClose={() => setToolMode(null)}
+          sessionCode={sessionCode}
         />
       )}
 

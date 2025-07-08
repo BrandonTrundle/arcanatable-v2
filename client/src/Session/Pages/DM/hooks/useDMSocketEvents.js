@@ -6,7 +6,8 @@ export function useDMSocketEvents(
   sessionCode,
   onChatMessage,
   user,
-  setAoes
+  setAoes,
+  setLockedMeasurements
 ) {
   useEffect(() => {
     if (sessionCode) {
@@ -116,6 +117,18 @@ export function useDMSocketEvents(
       onChatMessage(message);
     }
 
+    function handleMeasurementPlaced(measurement) {
+      setLockedMeasurements((prev) => [...prev, measurement]);
+    }
+
+    function handleMeasurementClearLocked({ userId }) {
+      setLockedMeasurements((prev) => prev.filter((m) => m.userId !== userId));
+    }
+
+    function handleMeasurementClearAll() {
+      setLockedMeasurements([]);
+    }
+
     socket.on("playerDropToken", handlePlayerDropToken);
     socket.on("playerReceiveTokenDelete", handleTokenDelete);
     socket.on("playerReceiveTokenMove", handlePlayerTokenMove);
@@ -123,6 +136,9 @@ export function useDMSocketEvents(
     socket.on("tokenHPUpdated", handleTokenHPUpdated);
     socket.on("aoePlaced", handleAoEPlaced);
     socket.on("aoeDeleted", handleAoEDeleted);
+    socket.on("measurement:placed", handleMeasurementPlaced);
+    socket.on("measurement:clearLocked", handleMeasurementClearLocked);
+    socket.on("measurement:clearAll", handleMeasurementClearAll);
 
     return () => {
       socket.off("playerDropToken", handlePlayerDropToken);
@@ -132,6 +148,9 @@ export function useDMSocketEvents(
       socket.off("tokenHPUpdated", handleTokenHPUpdated);
       socket.off("aoePlaced", handleAoEPlaced);
       socket.off("aoeDeleted", handleAoEDeleted);
+      socket.off("measurement:placed", handleMeasurementPlaced);
+      socket.off("measurement:clearLocked", handleMeasurementClearLocked);
+      socket.off("measurement:clearAll", handleMeasurementClearAll);
     };
   }, [setActiveMap, sessionCode, onChatMessage, user]);
 }

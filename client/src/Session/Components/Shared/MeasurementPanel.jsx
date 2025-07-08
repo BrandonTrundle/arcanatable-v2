@@ -14,7 +14,7 @@ export default function MeasurementPanel({
   lockedMeasurements,
   setLockedMeasurements,
   isDM,
-  mapId,
+  sessionCode,
   userId,
   socket,
   onClose,
@@ -45,12 +45,12 @@ export default function MeasurementPanel({
   const handleMouseUp = () => setDragging(false);
 
   const clearMyMeasurements = () => {
-    socket.emit("measurement:clearLocked", { mapId, userId });
+    socket.emit("measurement:clearLocked", { sessionCode, userId });
     setLockedMeasurements((prev) => prev.filter((m) => m.userId !== userId));
   };
 
   const clearAllMeasurements = () => {
-    socket.emit("measurement:clearAll", { mapId });
+    socket.emit("measurement:clearAll", { sessionCode });
   };
 
   return (
@@ -74,16 +74,11 @@ export default function MeasurementPanel({
       {!isCollapsed && (
         <div className={styles.content}>
           {lockedMeasurements.length > 0 && (
-            <button className={styles.button} onClick={clearMyMeasurements}>
-              Clear My Measurements
-            </button>
+            <button onClick={clearMyMeasurements}>Clear My Measurements</button>
           )}
 
           {isDM && (
-            <button
-              className={`${styles.button} ${styles.clearAll}`}
-              onClick={clearAllMeasurements}
-            >
+            <button onClick={clearAllMeasurements}>
               Clear All Measurements
             </button>
           )}

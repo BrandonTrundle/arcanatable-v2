@@ -29,6 +29,7 @@ export function useRulerControl({
 
   const finalizeMeasurement = (pointer, snapMode) => {
     const snapped = applySnap(pointer.x, pointer.y, map.gridSize, snapMode);
+
     const measurement = {
       id: Date.now(),
       origin: measureOrigin,
@@ -43,12 +44,31 @@ export function useRulerControl({
     }
 
     if (broadcastEnabled) {
+      console.log(
+        "Emitting measurement:",
+        measurement,
+        "Session:",
+        sessionCode
+      );
       socket.emit("measurement:placed", { sessionCode, measurement });
     }
 
+    cancelMeasurement();
+  };
+
+  const cancelMeasurement = () => {
     setIsMeasuring(false);
     setMeasureOrigin(null);
     setMeasureTarget(null);
+  };
+
+  const clearMyMeasurements = () => {
+    socket.emit("measurement:clearLocked", { sessionCode, userId: user.id });
+    setLockedMeasurements((prev) => prev.filter((m) => m.userId !== user.id));
+  };
+
+  const clearAllMeasurements = () => {
+    socket.emit("measurement:clearAll", { sessionCode });
   };
 
   return {
@@ -58,5 +78,8 @@ export function useRulerControl({
     startMeasurement,
     updateMeasurementTarget,
     finalizeMeasurement,
+    cancelMeasurement,
+    clearMyMeasurements,
+    clearAllMeasurements,
   };
 }
