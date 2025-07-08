@@ -1,10 +1,13 @@
-import { useRef, useState, useContext } from "react";
+import { useState, useContext } from "react";
 import { Stage, Layer } from "react-konva";
 import useImage from "use-image";
 import { AuthContext } from "../../../context/AuthContext";
 import { usePingBroadcast } from "../DM/hooks/usePingBroadcast";
 import { useRulerControl } from "../DM/hooks/useRulerControl";
 import { getSnappedPointer } from "../DM/utils/snapUtils";
+import { useAoEPlacement } from "./hooks/useAoEPlacement";
+import { useRulerMouseHandlers } from "./hooks/useRulerMouseHandlers";
+import { useAoEDragState } from "./hooks/useAoEDragState";
 import usePlayerMapZoomHandler from "./hooks/usePlayerZoomHandler";
 import usePlayerMapClickHandler from "./hooks/usePlayerMapClickHandler";
 import usePlayerTokenSelection from "./hooks/usePlayerTokenSelection";
@@ -12,7 +15,6 @@ import usePlayerTokenDropHandler from "./hooks/usePlayerTokenDropHandler";
 import usePlayerTokenMovement from "./hooks/usePlayerTokenMovement";
 import usePlayerTokenDeletion from "./hooks/usePlayerTokenDeletion";
 import usePlayerTokenSettings from "./hooks/usePlayerTokenSettings";
-
 import SessionStaticMapLayer from "../../MapLayers/SessionStaticMapLayer";
 import MeasurementLayer from "../../MapLayers/MeasurementLayer";
 import SessionFogAndBlockerLayer from "../../MapLayers/SessionFogAndBlockerLayer";
@@ -20,7 +22,6 @@ import SessionMapAssetLayer from "../../MapLayers/SessionMapAssetLayer";
 import SessionMapTokenLayer from "../../MapLayers/SessionMapTokenLayer";
 import SessionAoELayer from "../../MapLayers/SessionAoELayer";
 import TokenSettingsPanel from "../../Components/Shared/TokenSettingsPanel";
-import AoEControlPanel from "../../Components/Shared/AoEControlPanel";
 import socket from "../../../socket";
 import styles from "../../styles/MapCanvas.module.css";
 
@@ -62,18 +63,36 @@ export default function PlayerMapCanvas({
     setLockedMeasurements,
     sessionCode,
   });
-  const [mapImage] = useImage(map?.image, "anonymous");
-  const [tokenSettingsTarget, setTokenSettingsTarget] = useState(null);
-  const imageReady = !!mapImage;
-  const getSnappedPointerPos = (e) => {
-    const pointer = e.target.getStage().getPointerPosition();
-    return getSnappedPointer(pointer, stageRef.current, map.gridSize, snapMode);
-  };
 
+  const [mapImage] = useImage(map?.image, "anonymous");
+  const imageReady = !!mapImage;
+
+  const placeAoE = useAoEPlacement(
+    map,
+    shapeSettings,
+    selectedShape,
+    sessionCode,
+    setAoes
+  );
+
+  const [tokenSettingsTarget, setTokenSettingsTarget] = useState(null);
   const [stageScale, setStageScale] = useState(1);
   const [stagePos, setStagePos] = useState({ x: 0, y: 0 });
-  const handleZoom = usePlayerMapZoomHandler(setStageScale, setStagePos);
+  const {
+    isDraggingAoE,
+    setIsDraggingAoE,
+    aoeDragOrigin,
+    setAoeDragOrigin,
+    aoeDragTarget,
+    setAoeDragTarget,
+    resetAoEDrag,
+  } = useAoEDragState();
 
+  const isAoEToolActive = ["cone", "circle", "square", "rectangle"].includes(
+    selectedShape
+  );
+
+  const handleZoom = usePlayerMapZoomHandler(setStageScale, setStagePos);
   usePingBroadcast(stageRef, map, stageScale, stagePos, sessionCode);
 
   const handleMapClick = usePlayerMapClickHandler({
@@ -118,14 +137,20 @@ export default function PlayerMapCanvas({
     user
   );
 
-  const [isDraggingAoE, setIsDraggingAoE] = useState(false);
-  const [aoeDragOrigin, setAoeDragOrigin] = useState(null);
-  const [aoeDragTarget, setAoeDragTarget] = useState(null);
-
-  const [isAnchored, setIsAnchored] = useState(false);
-
-  const snapToGrid = (value, gridSize) =>
-    Math.round(value / gridSize) * gridSize;
+  const {
+    onMouseDown: handleRulerMouseDown,
+    onMouseMove: handleRulerMouseMove,
+    onMouseUp: handleRulerMouseUp,
+  } = useRulerMouseHandlers({
+    toolMode,
+    isMeasuring,
+    startMeasurement,
+    updateMeasurementTarget,
+    finalizeMeasurement,
+    stageRef,
+    map,
+    snapMode,
+  });
 
   const allPlayers = campaign?.players || [];
   const stageWidth = map?.width * map?.gridSize || 0;
@@ -145,7 +170,7 @@ export default function PlayerMapCanvas({
         width={stageWidth}
         height={stageHeight}
         ref={stageRef}
-        draggable={!isDraggingAoE && !isMeasuring}
+        draggable={!isAoEToolActive && !isMeasuring}
         scaleX={stageScale}
         scaleY={stageScale}
         x={stagePos.x}
@@ -156,78 +181,46 @@ export default function PlayerMapCanvas({
         onWheel={handleZoom}
         onClick={handleMapClick}
         onMouseDown={(e) => {
-          if (toolMode === "ruler" && e.evt.button === 0) {
-            const snapped = getSnappedPointerPos(e);
-            startMeasurement(snapped);
-          }
-        }}
-        onMouseMove={(e) => {
-          const snapped = getSnappedPointerPos(e);
+          const snapped = getSnappedPointer(
+            e.target.getStage().getPointerPosition(),
+            stageRef.current,
+            map.gridSize,
+            snapMode
+          );
 
-          if (isDraggingAoE) {
+          if (toolMode === "aoe" && e.evt.button === 0) {
+            setIsDraggingAoE(true);
+            setAoeDragOrigin(snapped);
             setAoeDragTarget(snapped);
           }
 
-          if (toolMode === "ruler" && isMeasuring) {
-            updateMeasurementTarget(snapped);
+          if (toolMode === "ruler") {
+            handleRulerMouseDown(e);
           }
         }}
+        onMouseMove={(e) => {
+          const snapped = getSnappedPointer(
+            e.target.getStage().getPointerPosition(),
+            stageRef.current,
+            map.gridSize,
+            snapMode
+          );
+          if (isDraggingAoE) setAoeDragTarget(snapped);
+          if (toolMode === "ruler") handleRulerMouseMove(e);
+        }}
         onMouseUp={(e) => {
-          const snapped = getSnappedPointerPos(e);
-
-          if (isDraggingAoE && e.evt.button === 0) {
-            const newAoE = {
-              id: Date.now(),
-              x: snapped.x,
-              y: snapped.y,
-              type: selectedShape,
-              color: shapeSettings[selectedShape]?.color || "#ff0000",
-              opacity: 0.4,
-            };
-
-            const ftToPx = (ft) => (map.gridSize / 5) * ft;
-
-            if (selectedShape === "circle") {
-              newAoE.radius = ftToPx(
-                shapeSettings[selectedShape]?.radius || 20
-              );
-            }
-
-            if (selectedShape === "cone") {
-              newAoE.radius = ftToPx(
-                shapeSettings[selectedShape]?.radius || 30
-              );
-              newAoE.angle = shapeSettings[selectedShape]?.angle || 60;
-
-              const dx = snapped.x - aoeDragOrigin.x;
-              const dy = snapped.y - aoeDragOrigin.y;
-              newAoE.direction = (Math.atan2(dy, dx) * 180) / Math.PI;
-            }
-
-            if (selectedShape === "square") {
-              newAoE.width = ftToPx(shapeSettings[selectedShape]?.width || 30);
-            }
-
-            if (selectedShape === "rectangle") {
-              newAoE.width = ftToPx(shapeSettings[selectedShape]?.width || 40);
-              newAoE.height = ftToPx(
-                shapeSettings[selectedShape]?.height || 20
-              );
-            }
-
-            setAoes((prev) => [...prev, newAoE]);
-            socket.emit("aoePlaced", { sessionCode, aoe: newAoE });
-          }
-
+          const snapped = getSnappedPointer(
+            e.target.getStage().getPointerPosition(),
+            stageRef.current,
+            map.gridSize,
+            snapMode
+          );
+          if (isDraggingAoE && e.evt.button === 0)
+            placeAoE(snapped, aoeDragOrigin);
           if (isDraggingAoE) {
-            setIsDraggingAoE(false);
-            setAoeDragOrigin(null);
-            setAoeDragTarget(null);
+            resetAoEDrag();
           }
-
-          if (isMeasuring && e.evt.button === 0) {
-            finalizeMeasurement(snapped);
-          }
+          if (toolMode === "ruler") handleRulerMouseUp(e);
         }}
       >
         <SessionStaticMapLayer

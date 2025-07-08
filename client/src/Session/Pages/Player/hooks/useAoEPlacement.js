@@ -1,37 +1,18 @@
-import { useState } from "react";
+// client/src/Player/hooks/useAoEPlacement.js
 import socket from "../../../../socket";
-import { applySnap } from "../utils/snapUtils";
 import { nanoid } from "nanoid";
 
-export function useAoEControl({
+export function useAoEPlacement(
   map,
-  selectedShape,
   shapeSettings,
-  setAoes,
+  selectedShape,
   sessionCode,
-  snapMode,
-}) {
-  const [isDraggingAoE, setIsDraggingAoE] = useState(false);
-  const [aoeDragOrigin, setAoeDragOrigin] = useState(null);
-  const [aoeDragTarget, setAoeDragTarget] = useState(null);
-
-  const startAoEDrag = (pointer) => {
-    const snapped = applySnap(pointer.x, pointer.y, map.gridSize, snapMode);
-    setIsDraggingAoE(true);
-    setAoeDragOrigin(snapped);
-    setAoeDragTarget(snapped);
-  };
-
-  const updateAoEDragTarget = (pointer) => {
-    const snapped = applySnap(pointer.x, pointer.y, map.gridSize, snapMode);
-    setAoeDragTarget(snapped);
-  };
-
-  const finalizeAoE = (pointer) => {
-    const snapped = applySnap(pointer.x, pointer.y, map.gridSize, snapMode);
+  setAoes
+) {
+  return function placeAoE(snapped, aoeDragOrigin) {
     const ftToPx = (ft) => (map.gridSize / 5) * ft;
-
     const isCone = selectedShape === "cone";
+
     const origin = aoeDragOrigin;
     const target = snapped;
 
@@ -66,25 +47,7 @@ export function useAoEControl({
     }
 
     setAoes((prev) => [...prev, newAoE]);
+    console.log("Placing AoE:", newAoE);
     socket.emit("aoePlaced", { sessionCode, aoe: newAoE });
-
-    setIsDraggingAoE(false);
-    setAoeDragOrigin(null);
-    setAoeDragTarget(null);
-  };
-
-  const deleteAoE = (id) => {
-    setAoes((prev) => prev.filter((a) => a.id !== id));
-    socket.emit("aoeDeleted", { sessionCode, aoeId: id });
-  };
-
-  return {
-    isDraggingAoE,
-    aoeDragOrigin,
-    aoeDragTarget,
-    startAoEDrag,
-    updateAoEDragTarget,
-    finalizeAoE,
-    deleteAoE, // <- You NEED this in your return block
   };
 }

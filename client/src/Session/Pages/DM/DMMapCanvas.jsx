@@ -58,6 +58,8 @@ export default function DMMapCanvas({
   broadcastEnabled,
   setLockedMeasurements,
   lockedMeasurements,
+  selectedShape,
+  shapeSettings,
 }) {
   const stageRef = useRef();
   const { stageScale, stagePos, setStagePos, handleWheel } =
@@ -66,8 +68,6 @@ export default function DMMapCanvas({
   const allPlayers = campaign?.players || [];
   const { mapImage, imageReady } = useMapImage(map);
   const { handleCanvasMouseUp } = useMapDropHandler(map, onCanvasDrop);
-  const [selectedShape, setSelectedShape] = useState("circle");
-  const [shapeSettings, setShapeSettings] = useState({});
 
   const {
     isDraggingAoE,

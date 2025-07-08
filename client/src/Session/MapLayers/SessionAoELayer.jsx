@@ -27,56 +27,60 @@ export default function SessionAoELayer({
 
   return (
     <Layer listening={true}>
-      {/* Render placed AoEs */}
+      {/* Placed AoEs */}
       {aoes.map((aoe) => {
-        const sharedProps = {
-          key: aoe.id,
+        const handleContextMenu = (e) => {
+          e.evt.preventDefault();
+          onRightClickAoE(aoe);
+        };
+
+        const baseProps = {
           fill: aoe.color || "rgba(255,0,0,0.4)",
           opacity: aoe.opacity ?? 0.4,
           stroke: "black",
           strokeWidth: 1,
-          onContextMenu: (e) => {
-            e.evt.preventDefault();
-            onRightClickAoE(aoe);
-          },
+          onContextMenu: handleContextMenu,
         };
 
         switch (aoe.type) {
           case "circle":
             return (
               <Circle
-                {...sharedProps}
+                key={aoe.id}
                 x={aoe.x}
                 y={aoe.y}
                 radius={aoe.radius}
+                {...baseProps}
               />
             );
           case "cone":
             return (
               <Arc
-                {...sharedProps}
+                key={aoe.id}
                 x={aoe.x}
                 y={aoe.y}
                 innerRadius={0}
                 outerRadius={aoe.radius}
                 angle={aoe.angle}
                 rotation={aoe.direction}
+                {...baseProps}
               />
             );
           case "square":
             return (
               <Rect
-                {...sharedProps}
+                key={aoe.id}
                 x={aoe.x - aoe.width / 2}
                 y={aoe.y - aoe.width / 2}
                 width={aoe.width}
                 height={aoe.width}
+                {...baseProps}
               />
             );
           case "rectangle":
             return (
               <Rect
-                {...sharedProps}
+                key={aoe.id}
                 x={aoe.x}
                 y={aoe.y}
                 width={aoe.width}
@@ -84,6 +88,7 @@ export default function SessionAoELayer({
                 rotation={aoe.direction || 0}
                 offsetX={aoe.width / 2}
                 offsetY={aoe.height / 2}
+                {...baseProps}
               />
             );
           default:
@@ -101,16 +106,16 @@ export default function SessionAoELayer({
           const angle = (Math.atan2(dy, dx) * 180) / Math.PI;
 
           switch (selectedShape) {
-            case "cone":
+            case "cone": {
+              const radiusPx = feetToPixels(shapeSettings.cone?.radius || 30);
+              const angleDeg = shapeSettings.cone?.angle || 60;
               return (
                 <Arc
                   x={aoeDragOrigin.x}
                   y={aoeDragOrigin.y}
                   innerRadius={0}
-                  outerRadius={feetToPixels(
-                    shapeSettings[selectedShape]?.radius || 30
-                  )}
-                  angle={shapeSettings[selectedShape]?.angle || 60}
+                  outerRadius={radiusPx}
+                  angle={angleDeg}
                   rotation={angle}
                   fill={previewColor}
                   stroke="black"
@@ -119,24 +124,23 @@ export default function SessionAoELayer({
                   dash={[10, 5]}
                 />
               );
-            case "circle":
+            }
+            case "circle": {
+              const radiusPx = feetToPixels(shapeSettings.circle?.radius || 20);
               return (
                 <Circle
                   x={aoeDragTarget.x}
                   y={aoeDragTarget.y}
-                  radius={feetToPixels(
-                    shapeSettings[selectedShape]?.radius || 20
-                  )}
+                  radius={radiusPx}
                   fill={previewColor}
                   stroke="black"
                   strokeWidth={1}
                   opacity={0.6}
                 />
               );
-            case "square":
-              const width = feetToPixels(
-                shapeSettings[selectedShape]?.width || 30
-              );
+            }
+            case "square": {
+              const width = feetToPixels(shapeSettings.square?.width || 30);
               return (
                 <Rect
                   x={aoeDragTarget.x - width / 2}
@@ -150,11 +154,10 @@ export default function SessionAoELayer({
                   dash={[10, 5]}
                 />
               );
-            case "rectangle":
-              const w = feetToPixels(shapeSettings[selectedShape]?.width || 40);
-              const h = feetToPixels(
-                shapeSettings[selectedShape]?.height || 20
-              );
+            }
+            case "rectangle": {
+              const w = feetToPixels(shapeSettings.rectangle?.width || 40);
+              const h = feetToPixels(shapeSettings.rectangle?.height || 20);
               return (
                 <Rect
                   x={aoeDragTarget.x - w / 2}
@@ -168,6 +171,7 @@ export default function SessionAoELayer({
                   dash={[10, 5]}
                 />
               );
+            }
             default:
               return null;
           }
