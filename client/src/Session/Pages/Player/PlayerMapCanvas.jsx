@@ -66,6 +66,8 @@ export default function PlayerMapCanvas({
 
   const [mapImage] = useImage(map?.image, "anonymous");
   const imageReady = !!mapImage;
+  const [isPanning, setIsPanning] = useState(false);
+  const [lastPointerPosition, setLastPointerPosition] = useState(null);
 
   const placeAoE = useAoEPlacement(
     map,
@@ -188,6 +190,11 @@ export default function PlayerMapCanvas({
             snapMode
           );
 
+          if (!toolMode && e.evt.button === 0) {
+            setIsPanning(true);
+            setLastPointerPosition(e.target.getStage().getPointerPosition());
+          }
+
           if (toolMode === "aoe" && e.evt.button === 0) {
             setIsDraggingAoE(true);
             setAoeDragOrigin(snapped);
@@ -205,8 +212,22 @@ export default function PlayerMapCanvas({
             map.gridSize,
             snapMode
           );
+
           if (isDraggingAoE) setAoeDragTarget(snapped);
           if (toolMode === "ruler") handleRulerMouseMove(e);
+
+          if (isPanning && lastPointerPosition) {
+            const stage = stageRef.current;
+            const pointer = stage.getPointerPosition();
+            const dx = pointer.x - lastPointerPosition.x;
+            const dy = pointer.y - lastPointerPosition.y;
+
+            stage.x(stage.x() + dx);
+            stage.y(stage.y() + dy);
+            setStagePos({ x: stage.x(), y: stage.y() });
+
+            setLastPointerPosition(pointer);
+          }
         }}
         onMouseUp={(e) => {
           const snapped = getSnappedPointer(
@@ -215,12 +236,19 @@ export default function PlayerMapCanvas({
             map.gridSize,
             snapMode
           );
+
           if (isDraggingAoE && e.evt.button === 0)
             placeAoE(snapped, aoeDragOrigin);
           if (isDraggingAoE) {
             resetAoEDrag();
           }
+
           if (toolMode === "ruler") handleRulerMouseUp(e);
+
+          if (isPanning) {
+            setIsPanning(false);
+            setLastPointerPosition(null);
+          }
         }}
       >
         <SessionStaticMapLayer
