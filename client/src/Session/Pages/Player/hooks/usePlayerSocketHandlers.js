@@ -366,6 +366,141 @@ export default function usePlayerSocketHandlers(
       setActiveTurnTokenId(tokenId);
     };
 
+    const handleMapAssetPlaced = ({ asset, layer }) => {
+      console.log("[Player] Asset placed on layer:", layer, asset);
+
+      setActiveMap((prev) => {
+        if (!prev) return prev;
+
+        const existingAssets = prev.layers[layer]?.assets || [];
+
+        const updatedMap = {
+          ...prev,
+          layers: {
+            ...prev.layers,
+            [layer]: {
+              ...prev.layers[layer],
+              assets: [...existingAssets, asset],
+            },
+          },
+        };
+
+        debounceSave(() => saveMap(updatedMap, authToken));
+        return updatedMap;
+      });
+    };
+
+    const handleMapAssetMoved = ({ assetId, position }) => {
+      console.log("[Player] Asset moved:", assetId, position);
+
+      setActiveMap((prev) => {
+        const updated = { ...prev };
+        for (const [layerKey, layer] of Object.entries(updated.layers || {})) {
+          if (!layer.assets) continue;
+
+          const assetIndex = layer.assets.findIndex((a) => a.id === assetId);
+          if (assetIndex !== -1) {
+            const newAssets = [...layer.assets]; // ✅ declare newAssets
+            newAssets[assetIndex] = {
+              ...newAssets[assetIndex],
+              position,
+              entityId:
+                newAssets[assetIndex].entityId ?? newAssets[assetIndex].id,
+              entityType: newAssets[assetIndex].entityType ?? "mapAsset",
+            };
+            updated.layers[layerKey].assets = newAssets;
+            break;
+          }
+        }
+
+        debounceSave(() => saveMap(updated, authToken));
+        return updated;
+      });
+    };
+
+    const handleMapAssetRotated = ({ assetId, rotation }) => {
+      console.log("[Player] Asset rotated:", assetId, rotation);
+
+      setActiveMap((prev) => {
+        const updated = { ...prev };
+        for (const [layerKey, layer] of Object.entries(updated.layers || {})) {
+          if (!layer.assets) continue;
+
+          const assetIndex = layer.assets.findIndex((a) => a.id === assetId);
+          if (assetIndex !== -1) {
+            const newAssets = [...layer.assets]; // ✅ declare newAssets
+            newAssets[assetIndex] = {
+              ...newAssets[assetIndex],
+              rotation,
+              entityId:
+                newAssets[assetIndex].entityId ?? newAssets[assetIndex].id,
+              entityType: newAssets[assetIndex].entityType ?? "mapAsset",
+            };
+            updated.layers[layerKey].assets = newAssets;
+            break;
+          }
+        }
+
+        debounceSave(() => saveMap(updated, authToken));
+        return updated;
+      });
+    };
+
+    const handleMapAssetLayerChanged = ({ assetId, fromLayer, toLayer }) => {
+      console.log(
+        "[Player] Asset moved between layers:",
+        assetId,
+        fromLayer,
+        "→",
+        toLayer
+      );
+
+      setActiveMap((prev) => {
+        const asset = prev.layers?.[fromLayer]?.assets?.find(
+          (a) => a.id === assetId
+        );
+        if (!asset) return prev;
+
+        const updated = { ...prev };
+        updated.layers[fromLayer].assets = updated.layers[
+          fromLayer
+        ].assets.filter((a) => a.id !== assetId);
+
+        const toAssets = updated.layers[toLayer]?.assets || [];
+        updated.layers[toLayer] = {
+          ...updated.layers[toLayer],
+          assets: [...toAssets, asset],
+        };
+
+        debounceSave(() => saveMap(updated, authToken));
+        return updated;
+      });
+
+      // ✅ Manually force draw on layer to reflect visual update
+      const stage = stageRef?.current?.getStage?.();
+      if (stage) {
+        const toLayerNode = stage.findOne(`#${toLayer}AssetLayer`);
+        toLayerNode?.batchDraw();
+      }
+    };
+
+    const handleMapAssetDeleted = ({ assetId, layer }) => {
+      console.log("[Player] Asset deleted:", assetId, "from", layer);
+
+      setActiveMap((prev) => {
+        const updated = { ...prev };
+
+        if (!updated.layers?.[layer]?.assets) return prev;
+
+        updated.layers[layer].assets = updated.layers[layer].assets.filter(
+          (a) => a.id !== assetId
+        );
+
+        debounceSave(() => saveMap(updated, authToken));
+        return updated;
+      });
+    };
+
     const handleAoEPlaced = ({ aoe }) => {
       console.log("[Player] Received AoE placement:", aoe);
       setAoes((prev) => [...prev, aoe]);
@@ -401,6 +536,11 @@ export default function usePlayerSocketHandlers(
     socket.on("measurement:placed", handleMeasurementPlaced);
     socket.on("measurement:clearLocked", handleMeasurementClearLocked);
     socket.on("measurement:clearAll", handleMeasurementClearAll);
+    socket.on("mapAssetPlaced", handleMapAssetPlaced);
+    socket.on("mapAssetMoved", handleMapAssetMoved);
+    socket.on("mapAssetRotated", handleMapAssetRotated);
+    socket.on("mapAssetLayerChanged", handleMapAssetLayerChanged);
+    socket.on("mapAssetDeleted", handleMapAssetDeleted);
     socket.on("updateTokenStatus", ({ tokenId, statusConditions }) => {
       setActiveMap((prevMap) => {
         const updatedMap = { ...prevMap };
@@ -445,6 +585,11 @@ export default function usePlayerSocketHandlers(
       socket.off("measurement:placed", handleMeasurementPlaced);
       socket.off("measurement:clearLocked", handleMeasurementClearLocked);
       socket.off("measurement:clearAll", handleMeasurementClearAll);
+      socket.off("mapAssetPlaced", handleMapAssetPlaced);
+      socket.off("mapAssetMoved", handleMapAssetMoved);
+      socket.off("mapAssetRotated", handleMapAssetRotated);
+      socket.off("mapAssetLayerChanged", handleMapAssetLayerChanged);
+      socket.off("mapAssetDeleted", handleMapAssetDeleted);
     };
   }, [inviteCode, setActiveMap, user]);
 }

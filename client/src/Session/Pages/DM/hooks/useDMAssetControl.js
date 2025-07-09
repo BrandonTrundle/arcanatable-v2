@@ -1,25 +1,37 @@
 import { useState } from "react";
+import socket from "../../../../socket";
 
-export function useDMAssetControl(setMapData, activeLayer) {
+export function useDMAssetControl(setMapData, sessionCode) {
   const [selectedAssetId, setSelectedAssetId] = useState(null);
 
   const handleMoveAsset = (id, newPos) => {
     setMapData((prev) => {
-      const assets = prev.layers[activeLayer]?.assets || [];
-      const updatedAssets = assets.map((a) =>
-        a.id === id ? { ...a, position: newPos } : a
-      );
+      const updated = { ...prev };
+      let moved = false;
 
-      return {
-        ...prev,
-        layers: {
-          ...prev.layers,
-          [activeLayer]: {
-            ...prev.layers[activeLayer],
-            assets: updatedAssets,
-          },
-        },
-      };
+      for (const layerKey of Object.keys(updated.layers || {})) {
+        const layer = updated.layers[layerKey];
+        if (!layer.assets) continue;
+
+        updated.layers[layerKey].assets = layer.assets.map((a) => {
+          if (a.id === id) {
+            moved = true;
+            const updatedAsset = { ...a, position: newPos };
+            // Emit move event
+            socket.emit("mapAssetMoved", {
+              sessionCode,
+              assetId: id,
+              position: newPos,
+            });
+            return updatedAsset;
+          }
+          return a;
+        });
+
+        if (moved) break;
+      }
+
+      return updated;
     });
   };
 

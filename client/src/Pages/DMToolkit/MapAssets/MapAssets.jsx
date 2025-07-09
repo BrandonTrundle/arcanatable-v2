@@ -37,18 +37,6 @@ export default function MapAssets() {
   const handleAssetSubmit = async (formData) => {
     setShowForm(false);
 
-    const payload = new FormData();
-    payload.append("name", formData.name);
-    payload.append("width", formData.width);
-    payload.append("height", formData.height);
-    payload.append("description", formData.description);
-    payload.append("tags", JSON.stringify(formData.tags));
-    payload.append("userId", user.id);
-
-    if (formData.imageFile) {
-      payload.append("image", formData.imageFile);
-    }
-
     try {
       const res = await fetch(
         `${import.meta.env.VITE_API_BASE_URL}/api/mapassets`,
@@ -57,17 +45,18 @@ export default function MapAssets() {
           headers: {
             Authorization: `Bearer ${user.token}`,
           },
-          body: payload,
+          body: formData, // ✅ use the raw FormData from MapAssetForm
         }
       );
 
       const data = await res.json();
-      if (!res.ok)
-        throw new Error(data.message || "Failed to upload map asset");
+      if (!res.ok) {
+        throw new Error(data.message || "Failed to upload map asset.");
+      }
 
       setMapAssets((prev) => [...prev, data.mapAsset]);
     } catch (err) {
-      console.error("Error saving map asset:", err);
+      console.error("Error saving map asset:", err.message);
       alert("Failed to save map asset.");
     }
   };
@@ -127,6 +116,7 @@ export default function MapAssets() {
       {showForm && (
         <MapAssetForm
           currentCampaign={currentCampaign}
+          userId={user.id}
           onSubmit={handleAssetSubmit}
         />
       )}

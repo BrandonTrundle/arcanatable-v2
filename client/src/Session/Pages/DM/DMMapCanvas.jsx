@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import { Stage, Layer } from "react-konva";
 import { useDMTokenControl } from "./hooks/useDMTokenControl";
 import { useDMAssetControl } from "./hooks/useDMAssetControl";
@@ -21,6 +21,8 @@ import MeasurementLayer from "../../MapLayers/MeasurementLayer";
 import SessionAoELayer from "../../MapLayers/SessionAoELayer";
 import TokenSettingsPanel from "../../Components/Shared/TokenSettingsPanel";
 import styles from "../../styles/MapCanvas.module.css";
+import AssetSettingsPanel from "../../Components/Shared/AssetSettingsPanel";
+import socket from "../../../socket";
 
 const getStageDimensions = (map) => ({
   width: map?.width * map?.gridSize || 0,
@@ -60,14 +62,16 @@ export default function DMMapCanvas({
   lockedMeasurements,
   selectedShape,
   shapeSettings,
+  stagePos,
+  setStagePos,
 }) {
   const stageRef = useRef();
-  const { stageScale, stagePos, setStagePos, handleWheel } =
-    useZoomAndPan(stageRef);
+  const { stageScale, handleWheel } = useZoomAndPan(stageRef);
   useTokenDropHandler(stageRef, map, setMapData, activeLayer, sessionCode);
   const allPlayers = campaign?.players || [];
   const { mapImage, imageReady } = useMapImage(map);
-  const { handleCanvasMouseUp } = useMapDropHandler(map, onCanvasDrop);
+  useMapDropHandler(map, setMapData, activeLayer, stageRef, sessionCode);
+  const [assetSettingsTarget, setAssetSettingsTarget] = useState(null);
 
   const {
     isDraggingAoE,
@@ -120,7 +124,7 @@ export default function DMMapCanvas({
   });
 
   const { selectedAssetId, setSelectedAssetId, handleMoveAsset } =
-    useDMAssetControl(setMapData, activeLayer);
+    useDMAssetControl(setMapData, sessionCode);
   const { deleteToken, changeTokenLayer, changeShowNameplate, changeOwner } =
     useTokenSettings({
       map,
@@ -131,6 +135,66 @@ export default function DMMapCanvas({
 
   const { width: stageWidth, height: stageHeight } = getStageDimensions(map);
   usePingBroadcast(stageRef, map);
+
+  console.log("[RENDER] Stage with position:", stagePos);
+
+  const findAssetLayer = (map, assetId) => {
+    for (const [layerName, layer] of Object.entries(map.layers || {})) {
+      if ((layer.assets || []).some((a) => a.id === assetId)) {
+        return layerName;
+      }
+    }
+    return "dm";
+  };
+
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape") {
+        setSelectedAssetId(null); // Deselect the asset
+        return;
+      }
+
+      if ((e.key === "q" || e.key === "e") && selectedAssetId) {
+        setMapData((prev) => {
+          const updated = { ...prev };
+
+          for (const layerKey in updated.layers) {
+            const layer = updated.layers[layerKey];
+            if (!layer.assets) continue;
+
+            const assetIndex = layer.assets.findIndex(
+              (a) => a.id === selectedAssetId
+            );
+            if (assetIndex !== -1) {
+              const current = layer.assets[assetIndex];
+              const newRotation =
+                e.key === "q"
+                  ? (current.rotation || 0) - 15
+                  : (current.rotation || 0) + 15;
+
+              layer.assets[assetIndex] = {
+                ...current,
+                rotation: ((newRotation % 360) + 360) % 360, // wrap rotation
+              };
+
+              socket.emit("mapAssetRotated", {
+                sessionCode,
+                assetId: selectedAssetId,
+                rotation: ((newRotation % 360) + 360) % 360,
+              });
+
+              break; // exit loop early once found
+            }
+          }
+
+          return updated;
+        });
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [selectedAssetId, setMapData]);
 
   if (!map) return <div className={styles.mapCanvas}>No map loaded.</div>;
 
@@ -145,7 +209,11 @@ export default function DMMapCanvas({
         scaleY={stageScale}
         x={stagePos.x}
         y={stagePos.y}
-        onDragEnd={(e) => setStagePos({ x: e.target.x(), y: e.target.y() })}
+        onDragEnd={(e) => {
+          const newPos = { x: e.target.x(), y: e.target.y() };
+          console.log("[STAGE DRAG END] newStagePos:", newPos);
+          setStagePos(newPos);
+        }}
         onWheel={handleWheel}
         onMouseDown={(e) => {
           const snapped = getSnappedPointerPos(
@@ -169,7 +237,6 @@ export default function DMMapCanvas({
           if (isMeasuring) updateMeasurementTarget(snapped);
         }}
         onMouseUp={(e) => {
-          handleCanvasMouseUp(e);
           const snapped = getSnappedPointerPos(
             e,
             stageRef,
@@ -221,8 +288,18 @@ export default function DMMapCanvas({
             gridSize={map.gridSize}
             activeLayer={activeLayer}
             selectedAssetId={selectedAssetId}
-            onSelectAsset={setSelectedAssetId}
+            onSelectAsset={(id) => {
+              setSelectedAssetId(id);
+            }}
+            onOpenSettings={(asset) => {
+              setAssetSettingsTarget({
+                ...asset,
+                _layer: findAssetLayer(map, asset.id),
+              });
+            }}
             onMoveAsset={handleMoveAsset}
+            toolMode={toolMode}
+            selectorMode={selectorMode}
           />
 
           <SessionMapTokenLayer
@@ -257,6 +334,59 @@ export default function DMMapCanvas({
           gridSize={map.gridSize}
         />
       </Stage>
+
+      {assetSettingsTarget && (
+        <AssetSettingsPanel
+          asset={assetSettingsTarget}
+          isDM={true}
+          onClose={() => setAssetSettingsTarget(null)}
+          onChangeLayer={(asset, newLayer) => {
+            setMapData((prev) => {
+              const updated = { ...prev };
+              for (const layerKey in updated.layers) {
+                const layer = updated.layers[layerKey];
+                if (!layer.assets) continue;
+                updated.layers[layerKey].assets = layer.assets.filter(
+                  (a) => a.id !== asset.id
+                );
+                socket.emit("mapAssetLayerChanged", {
+                  sessionCode,
+                  assetId: asset.id,
+                  fromLayer: asset._layer,
+                  toLayer: newLayer,
+                });
+              }
+
+              if (!updated.layers[newLayer].assets)
+                updated.layers[newLayer].assets = [];
+
+              updated.layers[newLayer].assets.push({ ...asset });
+              return updated;
+            });
+
+            setAssetSettingsTarget(null); // auto-close for now
+          }}
+          onDeleteAsset={(asset) => {
+            setMapData((prev) => {
+              const updated = { ...prev };
+              for (const layerKey in updated.layers) {
+                if (!updated.layers[layerKey].assets) continue;
+                updated.layers[layerKey].assets = updated.layers[
+                  layerKey
+                ].assets.filter((a) => a.id !== asset.id);
+                socket.emit("mapAssetDeleted", {
+                  sessionCode,
+                  assetId: asset.id,
+                  layer: asset._layer,
+                });
+              }
+              return updated;
+            });
+
+            setAssetSettingsTarget(null);
+          }}
+        />
+      )}
 
       {tokenSettingsTarget && (
         <TokenSettingsPanel

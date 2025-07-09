@@ -151,6 +151,42 @@ module.exports = function registerSessionSockets(io) {
       );
     });
 
+    socket.on("mapAssetPlaced", ({ sessionCode, asset, layer }) => {
+      console.log(`[Server] mapAssetPlaced in session ${sessionCode}`);
+      socket.to(sessionCode).emit("mapAssetPlaced", { asset, layer });
+    });
+
+    socket.on("mapAssetRotated", ({ sessionCode, assetId, rotation }) => {
+      console.log(`[Server] mapAssetRotated: ${assetId} → ${rotation}°`);
+      socket.to(sessionCode).emit("mapAssetRotated", { assetId, rotation });
+    });
+
+    socket.on(
+      "mapAssetLayerChanged",
+      ({ sessionCode, assetId, fromLayer, toLayer }) => {
+        console.log(
+          `[Server] mapAssetLayerChanged: ${assetId} moved from ${fromLayer} → ${toLayer}`
+        );
+        socket.to(sessionCode).emit("mapAssetLayerChanged", {
+          assetId,
+          fromLayer,
+          toLayer,
+        });
+      }
+    );
+
+    socket.on("mapAssetDeleted", ({ sessionCode, assetId, layer }) => {
+      console.log(`[Server] mapAssetDeleted: ${assetId} from ${layer}`);
+      socket.to(sessionCode).emit("mapAssetDeleted", { assetId, layer });
+    });
+
+    socket.on("mapAssetMoved", ({ sessionCode, assetId, position }) => {
+      console.log(
+        `[Server] mapAssetMoved: ${assetId} to (${position.x}, ${position.y})`
+      );
+      socket.to(sessionCode).emit("mapAssetMoved", { assetId, position });
+    });
+
     socket.on("player_ping", ({ sessionCode, cellX, cellY }) => {
       socket.to(sessionCode).emit("broadcast_ping", {
         cellX,

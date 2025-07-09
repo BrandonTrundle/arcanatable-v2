@@ -1,9 +1,12 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import styles from "../../../styles/DMToolkit/MapAssetForm.module.css";
+import { AuthContext } from "../../../context/AuthContext";
+import { fetchCampaigns } from "../../../hooks/dmtoolkit/fetchCampaigns";
 
 export default function MapAssetForm({
   onSubmit,
   currentCampaign,
+  userId,
   defaultValues = {},
 }) {
   const [formData, setFormData] = useState({
@@ -12,16 +15,36 @@ export default function MapAssetForm({
     height: 1,
     description: "",
     tags: "",
-    campaigns: [currentCampaign],
+    campaignId: currentCampaign || "", // default from props
     ...defaultValues,
   });
 
   const [imageFile, setImageFile] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
+  const { user } = useContext(AuthContext);
+  const [campaignList, setCampaignList] = useState([]);
+
+  useEffect(() => {
+    const loadCampaigns = async () => {
+      try {
+        const campaigns = await fetchCampaigns(user);
+        setCampaignList(campaigns);
+      } catch (err) {
+        console.error("Could not load campaigns:", err);
+      }
+    };
+
+    if (user?.token) {
+      loadCampaigns();
+    }
+  }, [user]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    setFormData((prev) => ({
+      ...prev,
+      [name]: name === "width" || name === "height" ? parseInt(value) : value,
+    }));
   };
 
   const handleImageChange = (e) => {
@@ -34,19 +57,32 @@ export default function MapAssetForm({
 
   const handleSubmit = (e) => {
     e.preventDefault();
+
+    if (!imageFile) {
+      alert("Please select an image for this asset.");
+      return;
+    }
+
     const cleanTags = formData.tags
       .split(",")
       .map((t) => t.trim())
       .filter(Boolean);
 
-    onSubmit(
-      {
-        ...formData,
-        tags: cleanTags,
-        imageFile,
-      },
-      currentCampaign
-    );
+    const payload = new FormData();
+    payload.append("name", formData.name);
+    payload.append("width", formData.width.toString());
+    payload.append("height", formData.height.toString());
+    payload.append("description", formData.description);
+    payload.append("tags", JSON.stringify(cleanTags));
+    payload.append("userId", userId);
+    payload.append("campaignId", currentCampaign);
+    payload.append("image", imageFile);
+
+    for (let [key, value] of payload.entries()) {
+      console.log(`${key}:`, value);
+    }
+
+    onSubmit(payload); // send to backend
   };
 
   return (
@@ -60,12 +96,18 @@ export default function MapAssetForm({
           value={formData.name}
           onChange={handleChange}
           placeholder="Asset Name"
+          required
         />
       </label>
 
       <label>
         Image:
-        <input type="file" accept="image/*" onChange={handleImageChange} />
+        <input
+          type="file"
+          accept="image/*"
+          onChange={handleImageChange}
+          required
+        />
       </label>
       {imagePreview && (
         <img src={imagePreview} alt="Preview" className={styles.preview} />
@@ -76,6 +118,7 @@ export default function MapAssetForm({
         <input
           name="width"
           type="number"
+          min="1"
           value={formData.width}
           onChange={handleChange}
         />
@@ -86,6 +129,7 @@ export default function MapAssetForm({
         <input
           name="height"
           type="number"
+          min="1"
           value={formData.height}
           onChange={handleChange}
         />
@@ -103,6 +147,27 @@ export default function MapAssetForm({
       <label>
         Tags (comma-separated):
         <input name="tags" value={formData.tags} onChange={handleChange} />
+      </label>
+
+      <label>
+        Assign to Campaign
+        <select
+          name="campaignId"
+          value={formData.campaignId}
+          onChange={(e) =>
+            setFormData((prev) => ({
+              ...prev,
+              campaignId: e.target.value,
+            }))
+          }
+        >
+          <option value="">-- Select a campaign --</option>
+          {campaignList.map((campaign) => (
+            <option key={campaign._id} value={campaign._id}>
+              {campaign.name}
+            </option>
+          ))}
+        </select>
       </label>
 
       <button type="submit" className={styles.submitBtn}>

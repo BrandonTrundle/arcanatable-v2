@@ -58,7 +58,7 @@ const tokenSchema = new mongoose.Schema(
 const assetSchema = new mongoose.Schema(
   {
     id: { type: String, required: true },
-    entityType: { type: String, enum: ["MapAsset"], required: true },
+    entityType: { type: String, enum: ["mapAsset"], required: true },
     entityId: { type: String, required: true },
     image: String,
     name: String,

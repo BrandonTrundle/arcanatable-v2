@@ -1,4 +1,4 @@
-import { useContext, useState, useEffect } from "react";
+import { useContext, useState, useEffect, useRef } from "react";
 import { AuthContext } from "../../../context/AuthContext";
 import styles from "../../styles/DMView.module.css";
 import MapsPanel from "../../Components/DM/Panel/MapsPanel";
@@ -12,6 +12,8 @@ import CombatTracker from "../../Components/DM/Panel/CombatTracker";
 import socket from "../../../socket";
 import AoEControlPanel from "../../Components/Shared/AoEControlPanel";
 import MeasurementPanel from "../../Components/Shared/MeasurementPanel";
+import MapAssetsPanel from "../../Components/DM/Panel/MapAssetsPanel";
+import useMapAssets from "./hooks/useMapAssets";
 
 import { useDMInitialData } from "./hooks/useDMInitialData";
 import { useDMSocketEvents } from "./hooks/useDMSocketEvents";
@@ -45,11 +47,28 @@ export default function DMView({ sessionCode }) {
   const [snapSetting, setSnapSetting] = useState("center");
   const [lockMeasurement, setLockMeasurement] = useState(false);
   const [lockedMeasurements, setLockedMeasurements] = useState([]);
+  const [showMapAssetsPanel, setShowMapAssetsPanel] = useState(false);
+  const stagePosRef = useRef({ x: 0, y: 0 });
+  const [stageRenderPos, setStageRenderPos] = useState(stagePosRef.current);
+
+  const setStagePos = (pos) => {
+    stagePosRef.current = pos;
+    setStageRenderPos(pos); // triggers re-render in canvas
+  };
 
   const { campaign, maps, activeMap, setActiveMap } = useDMInitialData(
     sessionCode,
     user
   );
+
+  const { mapAssets, loading: assetsLoading } = useMapAssets(campaign?._id);
+  const [filteredMapAssets, setFilteredMapAssets] = useState([]);
+
+  useEffect(() => {
+    if (mapAssets.length > 0) {
+      setFilteredMapAssets(mapAssets);
+    }
+  }, [mapAssets]);
 
   const dmOwnedTokens = Object.values(activeMap?.layers || {})
     .flatMap((layer) => layer.tokens || [])
@@ -113,6 +132,8 @@ export default function DMView({ sessionCode }) {
         isTokenPanelOpen={showTokenPanel}
         onSelectTool={setToolMode}
         currentTool={toolMode}
+        onToggleMapAssets={() => setShowMapAssetsPanel((prev) => !prev)}
+        isMapAssetsPanelOpen={showMapAssetsPanel}
         onToggleCombat={() => {
           setShowCombatTracker((prev) => {
             const next = !prev;
@@ -177,6 +198,8 @@ export default function DMView({ sessionCode }) {
         lockMeasurement={lockMeasurement}
         setLockedMeasurements={setLockedMeasurements}
         lockedMeasurements={lockedMeasurements}
+        stagePos={stageRenderPos}
+        setStagePos={setStagePos}
       />
 
       {showDicePanel && (
@@ -238,6 +261,27 @@ export default function DMView({ sessionCode }) {
           socket={socket}
           onClose={() => setToolMode(null)}
           sessionCode={sessionCode}
+        />
+      )}
+
+      {showMapAssetsPanel && (
+        <MapAssetsPanel
+          assets={filteredMapAssets}
+          onSearch={(query) => {
+            const lower = query.toLowerCase();
+            setFilteredMapAssets(
+              mapAssets.filter((asset) =>
+                asset.name.toLowerCase().includes(lower)
+              )
+            );
+          }}
+          onSelectAsset={(asset) => {
+            // TODO: handle selection or drag
+          }}
+          onCreateNew={() => {
+            console.log("Create new asset clicked");
+          }}
+          onClose={() => setShowMapAssetsPanel(false)}
         />
       )}
 

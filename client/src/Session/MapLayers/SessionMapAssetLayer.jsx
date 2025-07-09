@@ -9,6 +9,9 @@ export default function SessionMapAssetLayer({
   selectedAssetId,
   onSelectAsset,
   onMoveAsset,
+  toolMode,
+  selectorMode,
+  onOpenSettings,
 }) {
   return (
     <Group>
@@ -16,12 +19,16 @@ export default function SessionMapAssetLayer({
         (layerData.assets || []).map((asset) => (
           <SessionMapAssetSprite
             key={asset.id}
-            asset={asset}
+            asset={{ ...asset }}
             gridSize={gridSize}
             isSelected={asset.id === selectedAssetId}
             onSelect={onSelectAsset}
             onMove={onMoveAsset}
+            onOpenSettings={onOpenSettings}
             opacity={layerKey === "dm" ? 0.5 : 1}
+            disableInteraction={
+              toolMode !== "select" || selectorMode !== "selector"
+            }
           />
         ))
       )}

@@ -10,7 +10,8 @@ const supabase = createClient(
 
 exports.createMapAsset = async (req, res) => {
   try {
-    const { name, width, height, description, tags, userId } = req.body;
+    const { name, width, height, description, tags, userId, campaignId } =
+      req.body;
     const parsedTags = JSON.parse(tags);
 
     if (!req.file)
@@ -40,6 +41,9 @@ exports.createMapAsset = async (req, res) => {
       tags: parsedTags,
       image: publicUrlData.publicUrl,
       userId,
+      campaignId,
+      entityId: crypto.randomUUID(), // or new mongoose.Types.ObjectId().toString()
+      entityType: "mapAsset",
     });
 
     await newAsset.save();
@@ -52,7 +56,11 @@ exports.createMapAsset = async (req, res) => {
 
 exports.getAllMapAssets = async (req, res) => {
   try {
-    const assets = await MapAsset.find().sort({ name: 1 });
+    const { campaignId } = req.query;
+
+    const query = campaignId ? { campaignId } : {};
+
+    const assets = await MapAsset.find(query).sort({ name: 1 });
     res.json({ mapAssets: assets });
   } catch (err) {
     console.error("Error fetching map assets:", err.message);

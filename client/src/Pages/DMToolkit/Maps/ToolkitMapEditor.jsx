@@ -107,6 +107,8 @@ export default function ToolkitMapEditor() {
           height: parseInt(draggingAsset.height, 10),
         },
         rotation: 0,
+        entityId: `asset-${Date.now()}`,
+        entityType: "mapAsset",
       };
 
       setMapData((prev) => {

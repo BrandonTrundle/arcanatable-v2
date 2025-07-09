@@ -22,7 +22,22 @@ export function useTokenDropHandler(
         return;
       }
 
-      const droppedToken = JSON.parse(json);
+      let payload;
+      try {
+        payload = JSON.parse(json);
+      } catch (err) {
+        console.error("Failed to parse drop payload:", err);
+        return;
+      }
+
+      // Skip if it's a mapAsset — let another hook handle it
+      if (payload?.type === "mapAsset") {
+        console.log("Drop payload is a mapAsset — skipping token handling.");
+        return;
+      }
+
+      const droppedToken = payload;
+
       console.log("Dropped token payload:", droppedToken);
 
       const stage = stageRef.current.getStage();

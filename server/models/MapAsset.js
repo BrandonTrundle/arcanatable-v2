@@ -8,6 +8,7 @@ const MapAssetSchema = new mongoose.Schema({
   tags: [String],
   image: { type: String, required: true },
   userId: { type: String, required: true },
+  campaignId: { type: String, required: true }, // ✅ ADD THIS
 });
 
 module.exports = mongoose.model("MapAsset", MapAssetSchema);

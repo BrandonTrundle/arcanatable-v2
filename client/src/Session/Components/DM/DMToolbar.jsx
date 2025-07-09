@@ -15,6 +15,7 @@ import settingsIcon from "../../../assets/icons/settingsIcon.png";
 import tokenIcon from "../../../assets/icons/tokenIcon.png";
 import aoeIcon from "../../../assets/icons/AoEIcon.png";
 import rulerIcon from "../../../assets/icons/rulerIcon.png";
+import mapAssetIcon from "../../../assets/icons/mapAssetIcon.png";
 
 const DMToolbar = ({
   onToggleMaps,
@@ -25,6 +26,8 @@ const DMToolbar = ({
   currentTool,
   onToggleDice,
   onToggleCombat,
+  isMapAssetsPanelOpen,
+  onToggleMapAssets,
 }) => {
   const icons = [
     {
@@ -72,6 +75,13 @@ const DMToolbar = ({
       onClick: () => onToggleTokens(),
       active: isTokenPanelOpen,
       key: "tokens",
+    },
+    {
+      src: mapAssetIcon,
+      alt: "Map Assets",
+      onClick: onToggleMapAssets,
+      active: isMapAssetsPanelOpen,
+      key: "mapAsset",
     },
     { src: settingsIcon, alt: "Settings", onClick: null },
   ];
