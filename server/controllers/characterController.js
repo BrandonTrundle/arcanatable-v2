@@ -3,6 +3,7 @@ const fs = require("fs");
 const { v4: uuidv4 } = require("uuid");
 const { createClient } = require("@supabase/supabase-js");
 const Character = require("../models/Character");
+const Campaign = require("../models/Campaign");
 
 const supabase = createClient(
   process.env.SUPABASE_URL,
@@ -100,6 +101,41 @@ const getUserCharacters = async (req, res) => {
   }
 };
 
+const getCampaignCharacters = async (req, res) => {
+  try {
+    const { campaignId } = req.query;
+    const userId = req.user.id;
+
+    console.log("🧪 DM is requesting characters for campaign:", campaignId);
+
+    if (!campaignId) {
+      console.log("❌ Missing campaignId in query");
+      return res.status(400).json({ error: "Missing campaignId" });
+    }
+
+    const campaign = await Campaign.findOne({ _id: campaignId });
+    if (!campaign) {
+      console.log("❌ Campaign not found");
+      return res.status(404).json({ error: "Campaign not found" });
+    }
+
+    if (String(campaign.creatorId) !== String(userId)) {
+      console.log("🚫 Unauthorized access by user:", userId);
+      return res.status(403).json({ error: "Unauthorized" });
+    }
+
+    console.log("✅ Authorized DM. Fetching characters in campaign...");
+
+    const characters = await Character.find({ campaignIds: campaignId });
+
+    console.log("✅ Characters found:", characters.length);
+    res.status(200).json({ characters });
+  } catch (err) {
+    console.error("❌ Failed to fetch characters for campaign:", err.message);
+    res.status(500).json({ error: "Internal error" });
+  }
+};
+
 const getCharacterById = async (req, res) => {
   try {
     const userId = req.user.id;
@@ -186,12 +222,23 @@ const updateCharacter = async (req, res) => {
     const userId = req.user.id;
     const { id } = req.params;
 
-    const existingCharacter = await Character.findOne({
-      _id: id,
-      creator: userId,
-    });
+    const existingCharacter = await Character.findById(id);
     if (!existingCharacter) {
       return res.status(404).json({ error: "Character not found" });
+    }
+
+    // Check if user is creator OR DM of the campaign
+    const isCreator = String(existingCharacter.creator) === String(userId);
+
+    const campaign = await Campaign.findOne({
+      _id: { $in: existingCharacter.campaignIds },
+    });
+    const isDM = campaign && String(campaign.creatorId) === String(userId);
+
+    if (!isCreator && !isDM) {
+      return res
+        .status(403)
+        .json({ error: "Not authorized to update this character" });
     }
 
     const parsed = JSON.parse(req.body.characterData);
@@ -267,4 +314,5 @@ module.exports = {
   getCharacterById,
   deleteCharacter,
   updateCharacter,
+  getCampaignCharacters,
 };

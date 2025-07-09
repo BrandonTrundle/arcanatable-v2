@@ -19,6 +19,7 @@ const CharacterPanel = forwardRef(
     const [characters, setCharacters] = useState([]);
     const [zIndex, setZIndex] = useState(getNextZIndex());
     const bringToFront = () => setZIndex(getNextZIndex());
+
     const isDM = campaign?.creatorId === user._id;
 
     const fetchCharacters = async () => {
@@ -26,23 +27,34 @@ const CharacterPanel = forwardRef(
 
       try {
         const token = user.token;
-        const query =
-          campaign.creatorId === user._id
-            ? `campaignId=${campaign._id}`
-            : `campaignId=${campaign._id}&creator=${user._id}`;
 
-        const res = await fetch(
-          `${import.meta.env.VITE_API_BASE_URL}/api/characters?${query}`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
+        const url = isDM
+          ? `${
+              import.meta.env.VITE_API_BASE_URL
+            }/api/characters/campaign?campaignId=${campaign._id}`
+          : `${import.meta.env.VITE_API_BASE_URL}/api/characters?campaignId=${
+              campaign._id
+            }&creator=${user._id}`;
+
+        // console.log("[CharacterPanel] Fetching characters with URL:", url);
+
+        const res = await fetch(url, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        if (!res.ok) {
+          console.error("[CharacterPanel] Bad response:", res.status);
+          return;
+        }
+
         const data = await res.json();
+        //  console.log("[CharacterPanel] Characters fetched:", data.characters);
+
         setCharacters(data.characters || []);
       } catch (err) {
-        console.error("Failed to fetch characters:", err);
+        console.error("[CharacterPanel] Failed to fetch characters:", err);
       }
     };
 
@@ -100,57 +112,61 @@ const CharacterPanel = forwardRef(
 
         {!isCollapsed && (
           <div className={styles.content}>
-            {characters.map((char) => (
-              <div
-                key={char._id}
-                className={styles.characterCard}
-                draggable
-                onDragStart={(e) => {
-                  const tokenPayload = {
-                    acitveToken: false,
-                    effects: [],
-                    id: crypto.randomUUID(),
-                    name: char.name,
-                    image: char.portraitImage,
-                    size: { width: 1, height: 1 },
-                    position: { x: 0, y: 0 },
-                    hp: char.hp || 1,
-                    maxHp: char.maxHp || 1,
-                    isVisible: true,
-                    lightEmit: null,
-                    rotation: 0,
-                    isPC: true,
-                    entityType: "PC",
-                    pcId: char._id,
-                    ownerId: user._id,
-                    ownerIds: [user._id],
-                  };
-                  e.dataTransfer.setData(
-                    "application/json",
-                    JSON.stringify(tokenPayload)
-                  );
-                  e.dataTransfer.effectAllowed = "copy";
-                }}
-              >
-                <img
-                  src={char.portraitImage}
-                  alt={char.name}
-                  className={styles.portrait}
-                />
-                <div className={styles.details}>
-                  <div className={styles.name}>{char.name}</div>
-                  <div className={styles.meta}>
-                    {char.class} - Level {char.level}
+            {characters.length === 0 ? (
+              <div className={styles.emptyState}>No characters found.</div>
+            ) : (
+              characters.map((char) => (
+                <div
+                  key={char._id}
+                  className={styles.characterCard}
+                  draggable
+                  onDragStart={(e) => {
+                    const tokenPayload = {
+                      acitveToken: false,
+                      effects: [],
+                      id: crypto.randomUUID(),
+                      name: char.name,
+                      image: char.portraitImage,
+                      size: { width: 1, height: 1 },
+                      position: { x: 0, y: 0 },
+                      hp: char.hp || 1,
+                      maxHp: char.maxHp || 1,
+                      isVisible: true,
+                      lightEmit: null,
+                      rotation: 0,
+                      isPC: true,
+                      entityType: "PC",
+                      pcId: char._id,
+                      ownerId: user._id,
+                      ownerIds: [user._id],
+                    };
+                    e.dataTransfer.setData(
+                      "application/json",
+                      JSON.stringify(tokenPayload)
+                    );
+                    e.dataTransfer.effectAllowed = "copy";
+                  }}
+                >
+                  <img
+                    src={char.portraitImage}
+                    alt={char.name}
+                    className={styles.portrait}
+                  />
+                  <div className={styles.details}>
+                    <div className={styles.name}>{char.name}</div>
+                    <div className={styles.meta}>
+                      {char.class} - Level {char.level}
+                    </div>
+                    <button
+                      className={styles.openButton}
+                      onClick={() => onOpenCharacter(char)}
+                    >
+                      Open Character Sheet
+                    </button>
                   </div>
-                  <button
-                    className={styles.openButton}
-                    onClick={() => onOpenCharacter(char)}
-                  >
-                    Open Character Sheet
-                  </button>
                 </div>
-              </div>
-            ))}
+              ))
+            )}
           </div>
         )}
       </div>

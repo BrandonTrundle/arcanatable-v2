@@ -10,11 +10,25 @@ const {
   getCharacterById,
   updateCharacter,
   deleteCharacter,
+  getCampaignCharacters,
 } = require("../controllers/characterController");
 
 const authMiddleware = require("../middleware/authMiddleware");
 
-// Create character with image uploads
+// ------------------------------------
+// DM: Get all characters in a campaign
+// ------------------------------------
+router.get("/campaign", authMiddleware, getCampaignCharacters);
+
+// ------------------------------------
+// Player: Get own characters
+// ------------------------------------
+router.get("/", authMiddleware, getUserCharacters);
+router.get("/:id", authMiddleware, getCharacterById);
+
+// ------------------------------------
+// Create, update, delete
+// ------------------------------------
 router.post(
   "/",
   authMiddleware,
@@ -25,7 +39,6 @@ router.post(
   createCharacter
 );
 
-// Update character with image handling
 router.put(
   "/:id",
   authMiddleware,
@@ -36,9 +49,6 @@ router.put(
   updateCharacter
 );
 
-// Other character routes
-router.get("/", authMiddleware, getUserCharacters);
-router.get("/:id", authMiddleware, getCharacterById);
 router.delete("/:id", authMiddleware, deleteCharacter);
 
 module.exports = router;

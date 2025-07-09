@@ -136,7 +136,7 @@ export default function DMMapCanvas({
   const { width: stageWidth, height: stageHeight } = getStageDimensions(map);
   usePingBroadcast(stageRef, map);
 
-  console.log("[RENDER] Stage with position:", stagePos);
+  //console.log("[RENDER] Stage with position:", stagePos);
 
   const findAssetLayer = (map, assetId) => {
     for (const [layerName, layer] of Object.entries(map.layers || {})) {

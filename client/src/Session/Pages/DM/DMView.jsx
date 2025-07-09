@@ -14,6 +14,8 @@ import AoEControlPanel from "../../Components/Shared/AoEControlPanel";
 import MeasurementPanel from "../../Components/Shared/MeasurementPanel";
 import MapAssetsPanel from "../../Components/DM/Panel/MapAssetsPanel";
 import useMapAssets from "./hooks/useMapAssets";
+import CharacterPanel from "../../Components/Shared/CharacterPanel";
+import CharacterSheetPanel from "../../Components/Shared/CharacterSheetPanel";
 
 import { useDMInitialData } from "./hooks/useDMInitialData";
 import { useDMSocketEvents } from "./hooks/useDMSocketEvents";
@@ -50,6 +52,9 @@ export default function DMView({ sessionCode }) {
   const [showMapAssetsPanel, setShowMapAssetsPanel] = useState(false);
   const stagePosRef = useRef({ x: 0, y: 0 });
   const [stageRenderPos, setStageRenderPos] = useState(stagePosRef.current);
+  const [showCharacterPanel, setShowCharacterPanel] = useState(false);
+  const [activeCharacter, setActiveCharacter] = useState(null);
+  const characterPanelRef = useRef();
 
   const setStagePos = (pos) => {
     stagePosRef.current = pos;
@@ -127,6 +132,7 @@ export default function DMView({ sessionCode }) {
       <DMToolbar
         onToggleMaps={toggleMapsPanel}
         onToggleDice={() => setShowDicePanel((prev) => !prev)}
+        onToggleCharacters={() => setShowCharacterPanel((prev) => !prev)}
         isMapsPanelOpen={showMapsPanel}
         onToggleTokens={toggleTokenPanel}
         isTokenPanelOpen={showTokenPanel}
@@ -150,6 +156,28 @@ export default function DMView({ sessionCode }) {
           });
         }}
       />
+
+      {showCharacterPanel && campaign && user && (
+        <CharacterPanel
+          ref={characterPanelRef}
+          onClose={() => setShowCharacterPanel(false)}
+          campaign={campaign}
+          user={{ ...user, _id: user?._id || user?.id }}
+          onOpenCharacter={(char) => setActiveCharacter(char)}
+        />
+      )}
+
+      {activeCharacter && (
+        <CharacterSheetPanel
+          character={activeCharacter}
+          onClose={(saved) => {
+            setActiveCharacter(null);
+            if (saved && characterPanelRef.current?.refreshCharacters) {
+              characterPanelRef.current.refreshCharacters();
+            }
+          }}
+        />
+      )}
       {showMapsPanel && (
         <MapsPanel
           maps={maps}

@@ -12,6 +12,7 @@ export function useDMSocketEvents(
   useEffect(() => {
     if (sessionCode) {
       socket.emit("joinSession", { sessionCode });
+      console.log("[SOCKET] Emitting joinSession:", sessionCode);
     }
   }, [sessionCode]);
 

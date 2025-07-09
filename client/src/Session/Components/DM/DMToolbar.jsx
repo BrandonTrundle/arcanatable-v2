@@ -28,6 +28,7 @@ const DMToolbar = ({
   onToggleCombat,
   isMapAssetsPanelOpen,
   onToggleMapAssets,
+  onToggleCharacters,
 }) => {
   const icons = [
     {
@@ -68,7 +69,12 @@ const DMToolbar = ({
       active: isMapsPanelOpen,
     },
     { src: musicIcon, alt: "Music", onClick: null },
-    { src: pcIcon, alt: "PC Tools", onClick: null },
+    {
+      src: pcIcon,
+      alt: "Characters",
+      onClick: onToggleCharacters, // 👈 Use the new handler
+      key: "characters", // 👈 Add a unique key
+    },
     {
       src: tokenIcon,
       alt: "Tokens",

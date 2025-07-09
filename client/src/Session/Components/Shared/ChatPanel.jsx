@@ -20,13 +20,13 @@ export default function ChatPanel({
       if (!container) return;
 
       const shouldScroll = shouldScrollRef.current;
-      console.log("Auto-scroll decision:", shouldScroll);
+      //console.log("Auto-scroll decision:", shouldScroll);
 
       if (shouldScroll) {
         container.scrollTop = container.scrollHeight;
-        console.log("Auto-scrolling to bottom.");
+        //console.log("Auto-scrolling to bottom.");
       } else {
-        console.log("User not near bottom; no auto-scroll.");
+        //console.log("User not near bottom; no auto-scroll.");
       }
     });
   }, [messages]);

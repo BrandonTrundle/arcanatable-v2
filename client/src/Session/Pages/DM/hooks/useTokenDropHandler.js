@@ -95,8 +95,8 @@ export function useTokenDropHandler(
           },
         };
 
-        console.log("Tokens after drop:", tokens);
-        console.log("Updated map state with new token:", updatedMap);
+        //     console.log("Tokens after drop:", tokens);
+        //     console.log("Updated map state with new token:", updatedMap);
 
         socket.emit("dmDropToken", {
           sessionCode,
@@ -104,11 +104,11 @@ export function useTokenDropHandler(
           token: droppedToken,
         });
 
-        console.log("Token drop emitted to server:", {
-          sessionCode,
-          mapId: updatedMap._id,
-          token: droppedToken,
-        });
+        //       console.log("Token drop emitted to server:", {
+        //         sessionCode,
+        //         mapId: updatedMap._id,
+        //         token: droppedToken,
+        //       });
 
         return updatedMap;
       });
@@ -122,12 +122,12 @@ export function useTokenDropHandler(
     container.addEventListener("dragover", preventDefault);
     container.addEventListener("drop", handleDrop);
 
-    console.log("Token drop handler registered");
+    //   console.log("Token drop handler registered");
 
     return () => {
       container.removeEventListener("dragover", preventDefault);
       container.removeEventListener("drop", handleDrop);
-      console.log("Token drop handler unregistered");
+      //     console.log("Token drop handler unregistered");
     };
   }, [stageRef, map, setMapData, activeLayer, sessionCode]);
 }
