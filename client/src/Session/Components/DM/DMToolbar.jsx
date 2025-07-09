@@ -29,6 +29,7 @@ const DMToolbar = ({
   isMapAssetsPanelOpen,
   onToggleMapAssets,
   onToggleCharacters,
+  onToggleSettings,
 }) => {
   const icons = [
     {
@@ -89,7 +90,12 @@ const DMToolbar = ({
       active: isMapAssetsPanelOpen,
       key: "mapAsset",
     },
-    { src: settingsIcon, alt: "Settings", onClick: null },
+    {
+      src: settingsIcon,
+      alt: "Settings",
+      onClick: onToggleSettings, // ✅ wire it up
+      key: "settings",
+    },
   ];
 
   return (

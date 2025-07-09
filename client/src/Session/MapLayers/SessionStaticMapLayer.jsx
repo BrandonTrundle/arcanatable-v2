@@ -5,6 +5,7 @@ export default function SessionStaticMapLayer({
   mapImage,
   imageReady,
   gridVisible,
+  gridColor = "#444444",
   map,
   notes,
   activeNoteCell,
@@ -21,7 +22,7 @@ export default function SessionStaticMapLayer({
         <Line
           key={`v-${i}`}
           points={[i * gridSize, 0, i * gridSize, height * gridSize]}
-          stroke="#444"
+          stroke={gridColor}
           strokeWidth={1}
         />
       );
@@ -31,7 +32,7 @@ export default function SessionStaticMapLayer({
         <Line
           key={`h-${i}`}
           points={[0, i * gridSize, width * gridSize, i * gridSize]}
-          stroke="#444"
+          stroke={gridColor}
           strokeWidth={1}
         />
       );

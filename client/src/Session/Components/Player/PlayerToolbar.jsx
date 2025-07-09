@@ -14,6 +14,7 @@ const PlayerToolbar = ({
   onSelectTool,
   currentTool,
   onToggleDice,
+  onToggleSettings,
 }) => {
   const icons = [
     {
@@ -41,7 +42,12 @@ const PlayerToolbar = ({
       key: "ruler",
     },
     { src: pcIcon, alt: "Characters", onClick: onSelectCharacters },
-    { src: settingsIcon, alt: "Settings", onClick: null },
+    {
+      src: settingsIcon,
+      alt: "Settings",
+      onClick: onToggleSettings,
+      key: "settings",
+    },
   ];
 
   return (

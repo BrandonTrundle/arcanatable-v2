@@ -39,6 +39,7 @@ export default function DMMapCanvas({
   map,
   notes,
   gridVisible,
+  gridColor,
   onCanvasDrop,
   setMapData,
   campaign,
@@ -255,6 +256,7 @@ export default function DMMapCanvas({
           mapImage={mapImage}
           imageReady={imageReady}
           gridVisible={gridVisible}
+          gridColor={gridColor}
           map={map}
           notes={notes}
           activeNoteCell={toolMode === "notes" ? activeNoteCell : null}

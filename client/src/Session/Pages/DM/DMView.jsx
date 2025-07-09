@@ -16,6 +16,7 @@ import MapAssetsPanel from "../../Components/DM/Panel/MapAssetsPanel";
 import useMapAssets from "./hooks/useMapAssets";
 import CharacterPanel from "../../Components/Shared/CharacterPanel";
 import CharacterSheetPanel from "../../Components/Shared/CharacterSheetPanel";
+import SettingsPanel from "../../Components/Shared/SettingsPanel";
 
 import { useDMInitialData } from "./hooks/useDMInitialData";
 import { useDMSocketEvents } from "./hooks/useDMSocketEvents";
@@ -30,6 +31,7 @@ export default function DMView({ sessionCode }) {
   const [selectedNoteCell, setSelectedNoteCell] = useState(null);
   const [selectedMapId, setSelectedMapId] = useState(null);
   const [gridVisible, setGridVisible] = useState(true);
+  const [gridColor, setGridColor] = useState("#444444");
   const [fogVisible, setFogVisible] = useState(false);
   const [showTokenPanel, setShowTokenPanel] = useState(false);
   const [chatMessages, setChatMessages] = useState([]);
@@ -55,6 +57,7 @@ export default function DMView({ sessionCode }) {
   const [showCharacterPanel, setShowCharacterPanel] = useState(false);
   const [activeCharacter, setActiveCharacter] = useState(null);
   const characterPanelRef = useRef();
+  const [showSettingsPanel, setShowSettingsPanel] = useState(false);
 
   const setStagePos = (pos) => {
     stagePosRef.current = pos;
@@ -133,6 +136,7 @@ export default function DMView({ sessionCode }) {
         onToggleMaps={toggleMapsPanel}
         onToggleDice={() => setShowDicePanel((prev) => !prev)}
         onToggleCharacters={() => setShowCharacterPanel((prev) => !prev)}
+        onToggleSettings={() => setShowSettingsPanel((prev) => !prev)}
         isMapsPanelOpen={showMapsPanel}
         onToggleTokens={toggleTokenPanel}
         isTokenPanelOpen={showTokenPanel}
@@ -203,6 +207,7 @@ export default function DMView({ sessionCode }) {
         map={activeMap}
         notes={activeMap?.notes || []}
         gridVisible={gridVisible}
+        gridColor={gridColor}
         onCanvasDrop={() => {}}
         setMapData={setActiveMap}
         activeLayer={activeLayer}
@@ -247,6 +252,16 @@ export default function DMView({ sessionCode }) {
           sendMessage={handleSendMessage}
           sessionCode={sessionCode}
           setActiveTurnTokenId={setActiveTurnTokenId}
+        />
+      )}
+
+      {showSettingsPanel && (
+        <SettingsPanel
+          gridVisible={gridVisible}
+          setGridVisible={setGridVisible}
+          gridColor={gridColor}
+          setGridColor={setGridColor}
+          onClose={() => setShowSettingsPanel(false)}
         />
       )}
 

@@ -9,6 +9,7 @@ import ChatPanel from "../../Components/Shared/ChatPanel";
 import DiceRollerPanel from "../../Components/Shared/DiceRollerPanel";
 import SelectorBar from "../../Components/Shared/SelectorBar";
 import MeasurementPanel from "../../Components/Shared/MeasurementPanel";
+import SettingsPanel from "../../Components/Shared/SettingsPanel";
 import socket from "../../../socket";
 
 import usePlayerSocketHandlers from "./hooks/usePlayerSocketHandlers";
@@ -41,6 +42,9 @@ export default function PlayerView({ inviteCode }) {
   const [measurementColor, setMeasurementColor] = useState("#ff0000");
   const [broadcastEnabled, setBroadcastEnabled] = useState(false);
   const [lockMeasurement, setLockMeasurement] = useState(false);
+  const [gridVisible, setGridVisible] = useState(true);
+  const [gridColor, setGridColor] = useState("#444444");
+  const [showSettingsPanel, setShowSettingsPanel] = useState(false);
 
   const stageRef = useRef();
 
@@ -85,6 +89,7 @@ export default function PlayerView({ inviteCode }) {
         onSelectTool={setToolMode}
         currentTool={toolMode}
         onToggleDice={() => setShowDicePanel((prev) => !prev)}
+        onToggleSettings={() => setShowSettingsPanel((prev) => !prev)}
       />
 
       {showCharacterPanel && (
@@ -118,6 +123,8 @@ export default function PlayerView({ inviteCode }) {
           lockMeasurement={lockMeasurement}
           setLockedMeasurements={setLockedMeasurements}
           lockedMeasurements={lockedMeasurements}
+          gridVisible={gridVisible}
+          gridColor={gridColor}
         />
       ) : (
         <div className={styles.selectMapPrompt}>
@@ -196,6 +203,16 @@ export default function PlayerView({ inviteCode }) {
             setToolMode(null);
             // Do NOT clear locked measurements here
           }}
+        />
+      )}
+
+      {showSettingsPanel && (
+        <SettingsPanel
+          gridVisible={gridVisible}
+          setGridVisible={setGridVisible}
+          gridColor={gridColor}
+          setGridColor={setGridColor}
+          onClose={() => setShowSettingsPanel(false)}
         />
       )}
 

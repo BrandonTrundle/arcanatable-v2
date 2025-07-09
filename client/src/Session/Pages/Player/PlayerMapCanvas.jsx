@@ -45,6 +45,8 @@ export default function PlayerMapCanvas({
   lockMeasurement,
   setLockedMeasurements,
   lockedMeasurements,
+  gridVisible,
+  gridColor,
 }) {
   const { user } = useContext(AuthContext);
   const {
@@ -254,7 +256,8 @@ export default function PlayerMapCanvas({
         <SessionStaticMapLayer
           mapImage={mapImage}
           imageReady={imageReady}
-          gridVisible={true}
+          gridVisible={gridVisible}
+          gridColor={gridColor}
           map={map}
           notes={map.notes || []}
         />
