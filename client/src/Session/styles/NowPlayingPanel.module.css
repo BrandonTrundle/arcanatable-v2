@@ -1,0 +1,96 @@
+.panel {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  width: 300px;
+  background-color: #2a2a2a;
+  border: 2px solid #777;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
+  font-family: Segoe UI, sans-serif;
+  color: #f0f0f0;
+  cursor: move;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 10px;
+  background-color: #3c3c3c;
+  border-radius: 6px 6px 0 0;
+  font-weight: 600;
+  border-bottom: 1px solid #555;
+  user-select: none;
+}
+
+.controls button {
+  margin-left: 5px;
+  background-color: #3a3a3a;
+  border: 1px solid #555;
+  color: #f0f0f0;
+  font-size: 0.9rem;
+  padding: 4px 6px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s, box-shadow 0.2s;
+}
+
+.controls button:hover {
+  background-color: #555;
+  box-shadow: 0 0 5px rgba(255, 255, 255, 0.1);
+}
+
+.content {
+  padding: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.trackName {
+  font-weight: bold;
+  font-size: 1rem;
+  padding-bottom: 0.25rem;
+}
+
+.playerControls {
+  display: flex;
+  gap: 6px;
+  justify-content: center;
+}
+
+.playerControls button {
+  background-color: #3a3a3a;
+  border: 1px solid #555;
+  color: #f0f0f0;
+  padding: 6px;
+  font-size: 1.1rem;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.playerControls button:hover {
+  background-color: #555;
+}
+
+.loopActive {
+  background-color: #00bbaa;
+  color: #101010;
+  border: 1px solid #00ffcc;
+  box-shadow: 0 0 6px rgba(0, 255, 204, 0.4);
+  border-radius: 4px;
+  font-weight: bold;
+}
+
+.volumeControl {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.volumeControl input[type="range"] {
+  flex: 1;
+  height: 4px;
+  accent-color: #00ffcc;
+}

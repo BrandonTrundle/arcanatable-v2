@@ -30,6 +30,7 @@ const DMToolbar = ({
   onToggleMapAssets,
   onToggleCharacters,
   onToggleSettings,
+  onToggleMusicPanel,
 }) => {
   const icons = [
     {
@@ -69,7 +70,7 @@ const DMToolbar = ({
       onClick: onToggleMaps,
       active: isMapsPanelOpen,
     },
-    { src: musicIcon, alt: "Music", onClick: null },
+    { src: musicIcon, alt: "Music", onClick: onToggleMusicPanel, key: "music" },
     {
       src: pcIcon,
       alt: "Characters",

@@ -17,6 +17,9 @@ import useMapAssets from "./hooks/useMapAssets";
 import CharacterPanel from "../../Components/Shared/CharacterPanel";
 import CharacterSheetPanel from "../../Components/Shared/CharacterSheetPanel";
 import SettingsPanel from "../../Components/Shared/SettingsPanel";
+import MusicPanel from "../../Components/DM/Panel/MusicPanel";
+import useMusicPlayer from "./hooks/useMusicPlayer";
+import NowPlayingPanel from "../../Components/Shared/NowPlayingPanel";
 
 import { useDMInitialData } from "./hooks/useDMInitialData";
 import { useDMSocketEvents } from "./hooks/useDMSocketEvents";
@@ -58,6 +61,9 @@ export default function DMView({ sessionCode }) {
   const [activeCharacter, setActiveCharacter] = useState(null);
   const characterPanelRef = useRef();
   const [showSettingsPanel, setShowSettingsPanel] = useState(false);
+  const [showMusicPanel, setShowMusicPanel] = useState(false);
+  const [showNowPlaying, setShowNowPlaying] = useState(true);
+  const music = useMusicPlayer();
 
   const setStagePos = (pos) => {
     stagePosRef.current = pos;
@@ -148,17 +154,17 @@ export default function DMView({ sessionCode }) {
           setShowCombatTracker((prev) => {
             const next = !prev;
             if (!next) {
-              setSelectedTokenId(""); // Deselect any selected token
-              setActiveTurnTokenId(null); // Clear active turn indicator
-
+              setSelectedTokenId("");
+              setActiveTurnTokenId(null);
               socket.emit("activeTurnChanged", {
                 sessionCode,
-                tokenId: null, // Inform players to clear active turn highlight
+                tokenId: null,
               });
             }
             return next;
           });
         }}
+        onToggleMusicPanel={() => setShowMusicPanel((prev) => !prev)} // ✅ ADD THIS
       />
 
       {showCharacterPanel && campaign && user && (
@@ -200,6 +206,38 @@ export default function DMView({ sessionCode }) {
           onClosePanel={() => setShowTokenPanel(false)}
         />
       )}
+
+      {showMusicPanel && (
+        <MusicPanel
+          onPlayTrack={(input, options = {}) => {
+            if (options.isPlaylist && Array.isArray(input)) {
+              music.playPlaylist(input);
+            } else {
+              music.playTrack(input);
+            }
+            setShowNowPlaying(true);
+          }}
+          onClose={() => setShowMusicPanel(false)}
+        />
+      )}
+
+      {showNowPlaying && (
+        <NowPlayingPanel
+          currentTrack={music.currentTrack}
+          isPlaying={music.isPlaying}
+          onPlayPause={() => {
+            music.isPlaying ? music.pause() : music.resume();
+          }}
+          onSkipNext={music.skipToNext}
+          onSkipPrev={music.skipToPrevious}
+          onToggleLoop={() => music.setLoop(!music.loop)}
+          loop={music.loop}
+          volume={music.volume}
+          onVolumeChange={music.updateVolume}
+          onClose={() => setShowNowPlaying(false)}
+        />
+      )}
+
       <DMMapCanvas
         user={user}
         campaign={campaign}

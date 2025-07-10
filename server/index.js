@@ -39,6 +39,7 @@ app.use("/api/maps", require("./routes/mapRoutes"));
 app.use("/api/characters", require("./routes/characterRoutes"));
 app.use("/api/sessions", require("./routes/sessionRoutes"));
 app.use("/api/saved-rolls", require("./routes/savedRollRoutes"));
+app.use("/api/playlists", require("./routes/playlistRoutes"));
 
 app.get("/", (req, res) => {
   res.send("ArcanaTable API is running.");
