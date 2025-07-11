@@ -209,6 +209,7 @@ export default function DMView({ sessionCode }) {
         showTokenPanel={showTokenPanel}
         showMusicPanel={showMusicPanel}
         showNowPlaying={showNowPlaying}
+        setShowNowPlaying={setShowNowPlaying}
         showCharacterPanel={showCharacterPanel}
         showMapAssetsPanel={showMapAssetsPanel}
         activeCharacter={activeCharacter}

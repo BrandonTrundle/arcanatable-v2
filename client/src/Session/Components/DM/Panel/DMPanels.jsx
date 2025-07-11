@@ -73,6 +73,7 @@ export default function DMPanels({
   onCloseDicePanel,
   onCloseMapAssetsPanel,
   onCloseMapsPanel,
+  setShowNowPlaying,
 }) {
   return (
     <>

@@ -84,5 +84,95 @@ const trackList = [
     name: "Test",
     url: "https://raw.githubusercontent.com/BrandonTrundle/arcana-music-assets/main/toy-story-short-happy-audio-logo-short-cartoony-intro-outro-music-125627.mp3",
   },
+  {
+    id: "medieval-ambient-236809",
+    name: "Medieval Ambient",
+    url: "https://raw.githubusercontent.com/BrandonTrundle/arcana-music-assets/main/medieval-ambient-236809.mp3",
+  },
+  {
+    id: "phantom-resonance-325412",
+    name: "Phantom Resonance",
+    url: "https://raw.githubusercontent.com/BrandonTrundle/arcana-music-assets/main/phantom-resonance-325412.mp3",
+  },
+  {
+    id: "desert-cloud-158702",
+    name: "Desert Cloud",
+    url: "https://raw.githubusercontent.com/BrandonTrundle/arcana-music-assets/main/desert-cloud-158702.mp3",
+  },
+  {
+    id: "subterranean-serenade-serenata-subterranea-288134",
+    name: "Subterranean Serenade",
+    url: "https://raw.githubusercontent.com/BrandonTrundle/arcana-music-assets/main/subterranean-serenade-serenata-subterranea-288134.mp3",
+  },
+  {
+    id: "battle-of-the-dragons-8037",
+    name: "Battle of the Dragons",
+    url: "https://raw.githubusercontent.com/BrandonTrundle/arcana-music-assets/main/battle-of-the-dragons-8037.mp3",
+  },
+  {
+    id: "pirate-tavern-117281",
+    name: "Pirate Tavern",
+    url: "https://raw.githubusercontent.com/BrandonTrundle/arcana-music-assets/main/pirate-tavern-117281.mp3",
+  },
+  {
+    id: "informa-irish-tavern-162997",
+    name: "Informa Irish Tavern",
+    url: "https://raw.githubusercontent.com/BrandonTrundle/arcana-music-assets/main/informa-irish-tavern-162997.mp3",
+  },
+  {
+    id: "pirate-bay-357746",
+    name: "Pirate Bay",
+    url: "https://raw.githubusercontent.com/BrandonTrundle/arcana-music-assets/main/pirate-bay-357746.mp3",
+  },
+  {
+    id: "fantasy-medieval-ambient-237371",
+    name: "Fantasy Medieval Ambient",
+    url: "https://raw.githubusercontent.com/BrandonTrundle/arcana-music-assets/main/fantasy-medieval-ambient-237371.mp3",
+  },
+  {
+    id: "medieval-citytavern-ambient-235876",
+    name: "Medieval City Tavern",
+    url: "https://raw.githubusercontent.com/BrandonTrundle/arcana-music-assets/main/medieval-citytavern-ambient-235876.mp3",
+  },
+  {
+    id: "midnight-forest-184304",
+    name: "Midnight Forest",
+    url: "https://raw.githubusercontent.com/BrandonTrundle/arcana-music-assets/main/midnight-forest-184304.mp3",
+  },
+  {
+    id: "tense-suspense-background-music-320439",
+    name: "Tense Suspense Background Music",
+    url: "https://raw.githubusercontent.com/BrandonTrundle/arcana-music-assets/main/tense-suspense-background-music-320439.mp3",
+  },
+  {
+    id: "scary-horror-dark-music-372674",
+    name: "Scary Horror Dark Music",
+    url: "https://raw.githubusercontent.com/BrandonTrundle/arcana-music-assets/main/scary-horror-dark-music-372674.mp3",
+  },
+  {
+    id: "scary-horror-creepy-music-371663",
+    name: "Scary Horror Creepy Music",
+    url: "https://raw.githubusercontent.com/BrandonTrundle/arcana-music-assets/main/scary-horror-creepy-music-371663.mp3",
+  },
+  {
+    id: "island-of-the-lost-dark-fantasy-background-music-110368",
+    name: "Island of the Lost (Dark Fantasy)",
+    url: "https://raw.githubusercontent.com/BrandonTrundle/arcana-music-assets/main/island-of-the-lost-dark-fantasy-background-music-110368.mp3",
+  },
+  {
+    id: "forgotten-land-epic-dark-fantasy-195835",
+    name: "Forgotten Land (Epic Dark Fantasy)",
+    url: "https://raw.githubusercontent.com/BrandonTrundle/arcana-music-assets/main/forgotten-land-epic-dark-fantasy-195835.mp3",
+  },
+  {
+    id: "forgotten-crypts-gothic-dark-fantasy-haunting-316858",
+    name: "Forgotten Crypts (Gothic Haunting)",
+    url: "https://raw.githubusercontent.com/BrandonTrundle/arcana-music-assets/main/forgotten-crypts-gothic-dark-fantasy-haunting-316858.mp3",
+  },
+  {
+    id: "wizard-rider-enchanted-fantasy-orchestral-369658",
+    name: "Wizard Rider (Fantasy Orchestral)",
+    url: "https://raw.githubusercontent.com/BrandonTrundle/arcana-music-assets/main/wizard-rider-enchanted-fantasy-orchestral-369658.mp3",
+  },
 ];
 export default trackList;
