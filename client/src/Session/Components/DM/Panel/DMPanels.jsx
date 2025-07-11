@@ -128,7 +128,7 @@ export default function DMPanels({
               music.playTrack(input);
               socket.emit("dmPlayTrack", { sessionCode, track: input });
             }
-            onCloseNowPlaying(false);
+            setShowNowPlaying(true);
           }}
           onClose={onCloseMusicPanel}
         />

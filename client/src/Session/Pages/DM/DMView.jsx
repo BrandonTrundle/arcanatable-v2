@@ -181,7 +181,7 @@ export default function DMView({ sessionCode }) {
         activeNoteCell={activeNoteCell}
         selectedNoteCell={selectedNoteCell}
         selectorMode={selectorMode}
-        onSelectToken={token}
+        onSelectToken={setSelectedTokenId}
         activeTurnTokenId={activeTurnTokenId}
         aoes={aoes}
         setAoes={setAoes}
