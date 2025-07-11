@@ -11,7 +11,6 @@ export default function usePlayerTokenSelection(map, user) {
       );
       const token = allTokens.find((t) => t.id === id);
       if (token) {
-        console.log(`[Player ${user?.id}] selected token:`, token);
       } else {
         console.log(
           `[Player ${user?.id}] selected token ID: ${id}, but token not found`
@@ -25,7 +24,6 @@ export default function usePlayerTokenSelection(map, user) {
     const handleKeyDown = (e) => {
       if (e.key === "Escape") {
         setSelectedTokenId(null);
-        console.log("[Player] Deselected token via Escape key");
       }
     };
     window.addEventListener("keydown", handleKeyDown);

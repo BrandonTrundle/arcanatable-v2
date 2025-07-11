@@ -26,7 +26,6 @@ export function useAssetDrag({ asset, gridSize, onAssetMove }) {
       startCell &&
       (ghostPos.x !== startCell.x || ghostPos.y !== startCell.y)
     ) {
-      console.log("[HOOK] Calling onAssetMove with:", asset.id, ghostPos);
       onAssetMove(asset.id, ghostPos); // ✅ FIXED
     }
 

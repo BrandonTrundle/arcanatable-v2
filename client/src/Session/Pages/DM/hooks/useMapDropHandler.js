@@ -71,8 +71,6 @@ export function useMapDropHandler(
         asset: newAsset,
         layer: activeLayer,
       });
-
-      console.log("[useMapDropHandler] Placed asset:", newAsset);
     };
 
     const preventDefault = (e) => e.preventDefault();

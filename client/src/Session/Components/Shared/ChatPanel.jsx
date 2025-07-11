@@ -43,13 +43,6 @@ export default function ChatPanel({
       const nearBottom = scrollTop + clientHeight >= scrollHeight - 500;
 
       shouldScrollRef.current = nearBottom;
-
-      console.log("Scroll updated:", {
-        scrollTop,
-        clientHeight,
-        scrollHeight,
-        nearBottom,
-      });
     };
 
     container.addEventListener("scroll", handleScroll);

@@ -44,12 +44,6 @@ export function useRulerControl({
     }
 
     if (broadcastEnabled) {
-      console.log(
-        "Emitting measurement:",
-        measurement,
-        "Session:",
-        sessionCode
-      );
       socket.emit("measurement:placed", { sessionCode, measurement });
     }
 

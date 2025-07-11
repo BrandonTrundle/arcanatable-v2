@@ -51,9 +51,7 @@ export function useDMTokenControl({
             if (!res.ok) throw new Error("Failed to save map");
             return res.json();
           })
-          .then((data) => {
-            console.log("DM map saved successfully", data);
-          })
+          .then((data) => {})
           .catch((err) => {
             console.error("Error saving DM map:", err);
           });

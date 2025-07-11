@@ -101,7 +101,6 @@ export default function usePlaylists(userId, incomingToken) {
 
   useEffect(() => {
     if (userId && token) {
-      console.log("🎵 Fetching playlists with token:", token);
       fetchPlaylists();
     }
   }, [userId, token]);

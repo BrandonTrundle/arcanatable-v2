@@ -96,10 +96,8 @@ function SessionMapAssetSprite({
         onDragMove={moveGhost}
         onDragEnd={() => {
           if (!hasMoved) {
-            console.log("[GHOST END] Drag ended, but asset didn't move");
             setIsDragging(false);
           } else {
-            console.log("[GHOST END] Drag ended, updating position...");
             endDrag(groupRef);
             setTimeout(() => onSelect(null), 0);
           }

@@ -283,6 +283,20 @@ module.exports = function registerSessionSockets(io) {
       io.to(sessionCode).emit("measurement:clearAll");
     });
 
+    // DM plays a single track
+    socket.on("dmPlayTrack", ({ sessionCode, track }) => {
+      console.log(`[Server] DM is playing a track in session ${sessionCode}`);
+      socket.to(sessionCode).emit("dmPlayTrack", { track });
+    });
+
+    // DM plays a playlist
+    socket.on("dmPlayPlaylist", ({ sessionCode, tracks }) => {
+      console.log(
+        `[Server] DM is playing a playlist in session ${sessionCode}`
+      );
+      socket.to(sessionCode).emit("dmPlayPlaylist", { tracks });
+    });
+
     // Player moves a token and broadcasts it
     socket.on("playerMoveToken", ({ sessionCode, tokenData }) => {
       const userId = socketToUser.get(socket.id);

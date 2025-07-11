@@ -11,8 +11,12 @@ import SelectorBar from "../../Components/Shared/SelectorBar";
 import MeasurementPanel from "../../Components/Shared/MeasurementPanel";
 import SettingsPanel from "../../Components/Shared/SettingsPanel";
 import socket from "../../../socket";
+import useMusicPlayer from "../DM/hooks/useMusicPlayer";
+import PlayerNowPlayingPanel from "../../Components/Player/PlayerNowPlayingPanel";
 
 import usePlayerSocketHandlers from "./hooks/usePlayerSocketHandlers";
+import useMusicSocketHandlers from "./hooks/useMusicSocketHandlers";
+import useAoEMeasurementHandlers from "./hooks/useAoEMeasurementHandlers";
 import usePlayerSessionLoader from "./hooks/usePlayerSessionLoader";
 import { usePlayerChatEmitter } from "./hooks/usePlayerSocketHandlers";
 import AoEControlPanel from "../../Components/Shared/AoEControlPanel";
@@ -45,6 +49,22 @@ export default function PlayerView({ inviteCode }) {
   const [gridVisible, setGridVisible] = useState(true);
   const [gridColor, setGridColor] = useState("#444444");
   const [showSettingsPanel, setShowSettingsPanel] = useState(false);
+  const [showNowPlaying, setShowNowPlaying] = useState(false);
+
+  const [musicConsent, setMusicConsent] = useState(() => {
+    const stored = localStorage.getItem("musicConsent");
+    return stored === null ? null : stored === "true";
+  });
+
+  const music = useMusicPlayer();
+  useEffect(() => {
+    if (music.currentTrack) {
+      setShowNowPlaying(true);
+    }
+  }, [music.currentTrack]);
+
+  useMusicSocketHandlers(music, musicConsent);
+  useAoEMeasurementHandlers(setAoes, setLockedMeasurements);
 
   const stageRef = useRef();
 
@@ -79,7 +99,9 @@ export default function PlayerView({ inviteCode }) {
     activeMap,
     setActiveTurnTokenId,
     setAoes,
-    setLockedMeasurements
+    setLockedMeasurements,
+    music,
+    musicConsent
   );
 
   return (
@@ -159,6 +181,15 @@ export default function PlayerView({ inviteCode }) {
           setShapeSettings={setShapeSettings}
           snapMode={snapMode}
           setSnapMode={setSnapMode}
+        />
+      )}
+
+      {showNowPlaying && (
+        <PlayerNowPlayingPanel
+          currentTrack={music.currentTrack}
+          volume={music.volume}
+          setVolume={music.updateVolume}
+          onClose={() => setShowNowPlaying(false)}
         />
       )}
 

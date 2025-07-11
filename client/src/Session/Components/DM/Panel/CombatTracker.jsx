@@ -22,7 +22,7 @@ export default function CombatTracker({
   const offset = useRef({ x: 0, y: 0 });
   const [currentTurnIndex, setCurrentTurnIndex] = useState(0);
   const [zIndex, setZIndex] = useState(getNextZIndex());
-  console.log("CombatTracker initial zIndex:", zIndex);
+  // console.log("CombatTracker initial zIndex:", zIndex);
   const bringToFront = () => setZIndex(getNextZIndex());
 
   const availableConditions = [

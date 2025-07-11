@@ -20,7 +20,6 @@ export default function usePlayerMapClickHandler({
       const cellY = Math.floor(pointer.y / map.gridSize);
 
       if (selectorMode === "point") {
-        console.log(`[Player] Teleporting view to (${cellX}, ${cellY})`);
         stage.to({
           x: -cellX * map.gridSize * stage.scaleX() + stage.width() / 2,
           y: -cellY * map.gridSize * stage.scaleY() + stage.height() / 2,
@@ -30,8 +29,6 @@ export default function usePlayerMapClickHandler({
       }
 
       if (selectorMode === "ring") {
-        console.log(`[Player] Pinging cell at (${cellX}, ${cellY})`);
-
         const layer = stage.findOne("#PingLayer");
         if (layer) {
           const x = cellX * map.gridSize + map.gridSize / 2;

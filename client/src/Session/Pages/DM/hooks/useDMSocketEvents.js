@@ -12,7 +12,6 @@ export function useDMSocketEvents(
   useEffect(() => {
     if (sessionCode) {
       socket.emit("joinSession", { sessionCode });
-      console.log("[SOCKET] Emitting joinSession:", sessionCode);
     }
   }, [sessionCode]);
 
@@ -38,7 +37,6 @@ export function useDMSocketEvents(
     }
 
     function handleAoEPlaced({ aoe }) {
-      console.log("[DM Socket] Received AoE placement:", aoe);
       setAoes((prev) => {
         const exists = prev.some((a) => a.id === aoe.id);
         if (exists) return prev;
@@ -114,7 +112,7 @@ export function useDMSocketEvents(
 
     function handleChatMessageReceived({ sessionCode: code, message }) {
       if (message._local) return; // Skip local echo
-      console.log("[DM Socket] Received chat message:", message);
+
       onChatMessage(message);
     }
 

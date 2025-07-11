@@ -14,11 +14,8 @@ export function useTokenDropHandler(
     const handleDrop = (e) => {
       e.preventDefault();
 
-      console.log("Drop event detected");
-
       const json = e.dataTransfer.getData("application/json");
       if (!json) {
-        console.log("No JSON payload found in drop event");
         return;
       }
 

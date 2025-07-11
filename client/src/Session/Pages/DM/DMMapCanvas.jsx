@@ -212,7 +212,7 @@ export default function DMMapCanvas({
         y={stagePos.y}
         onDragEnd={(e) => {
           const newPos = { x: e.target.x(), y: e.target.y() };
-          console.log("[STAGE DRAG END] newStagePos:", newPos);
+
           setStagePos(newPos);
         }}
         onWheel={handleWheel}

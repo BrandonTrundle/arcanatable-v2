@@ -1,7 +1,10 @@
 import { useEffect } from "react";
 import socket from "../../../../socket";
-import { debounceSave } from "../../../utils/debounceSave";
-import { saveMap } from "../../../utils/saveMap";
+import useChatSocketHandlers from "./useChatSocketHandlers";
+import useMusicSocketHandlers from "./useMusicSocketHandlers";
+import useAoEMeasurementHandlers from "./useAoEMeasurementHandlers";
+import useMapAssetSocketHandlers from "./useMapAssetSocketHandlers";
+import useMapTokenSocketHandlers from "./useMapTokenSocketHandlers";
 
 export default function usePlayerSocketHandlers(
   inviteCode,
@@ -12,10 +15,20 @@ export default function usePlayerSocketHandlers(
   map,
   setActiveTurnTokenId,
   setAoes,
-  setLockedMeasurements
+  setLockedMeasurements,
+  music,
+  musicConsent
 ) {
   const authToken = user?.token;
 
+  // Delegated socket event hooks
+  useChatSocketHandlers(user, onChatMessage);
+  useMusicSocketHandlers(music, musicConsent);
+  useAoEMeasurementHandlers(setAoes, setLockedMeasurements);
+  useMapAssetSocketHandlers(setActiveMap, stageRef, authToken);
+  useMapTokenSocketHandlers(setActiveMap, setActiveTurnTokenId, authToken);
+
+  // Ping and teleport remain here because they are short and map/stage specific
   useEffect(() => {
     if (!map || !stageRef?.current) return;
 
@@ -60,8 +73,6 @@ export default function usePlayerSocketHandlers(
     if (!map || !stageRef?.current) return;
 
     const handleTeleport = ({ cell }) => {
-      console.log("[Player] Received teleport to cell:", cell);
-
       const stage = stageRef.current.getStage();
       const gridSize = map.gridSize;
       const scale = stage.scaleX();
@@ -75,23 +86,6 @@ export default function usePlayerSocketHandlers(
       const newX = containerWidth / 2 - centerX;
       const newY = containerHeight / 2 - centerY;
 
-      console.log("[Player] Teleport Debug:", {
-        gridSize,
-        scale,
-        cell,
-        centerX,
-        centerY,
-        containerWidth,
-        containerHeight,
-        newX,
-        newY,
-        stagePosition: {
-          x: stage.x(),
-          y: stage.y(),
-        },
-        stageScale: stage.scale(),
-      });
-
       stage.to({
         x: newX,
         y: newY,
@@ -101,499 +95,18 @@ export default function usePlayerSocketHandlers(
     };
 
     socket.on("dm:teleportPlayerView", handleTeleport);
-
-    return () => {
-      socket.off("dm:teleportPlayerView", handleTeleport);
-    };
+    return () => socket.off("dm:teleportPlayerView", handleTeleport);
   }, [map, stageRef]);
 
+  // Join session
   useEffect(() => {
     if (inviteCode && user?.id) {
-      console.log("[Player] Joining session:", inviteCode, "as", user.id);
       socket.emit("joinSession", { sessionCode: inviteCode, userId: user.id });
     }
   }, [inviteCode, user?.id]);
-
-  useEffect(() => {
-    const handleChatMessageReceived = ({ sessionCode: code, message }) => {
-      if (message.sender === user?.username) return; // Skip local echo
-      console.log("[Player Socket] Received chat message:", message);
-      onChatMessage(message);
-    };
-
-    socket.on("chatMessageReceived", handleChatMessageReceived);
-
-    return () => {
-      socket.off("chatMessageReceived", handleChatMessageReceived);
-    };
-  }, [onChatMessage, user]);
-
-  useEffect(() => {
-    const handleReceiveMap = (map) => {
-      console.log("[Player] Received map update:", map);
-      setActiveMap(() => {
-        debounceSave(() => saveMap(map, authToken));
-        return map;
-      });
-    };
-
-    const handleTokenOwnershipChange = ({ tokenId, newOwnerIds }) => {
-      console.log("[Player] Token ownership change:", { tokenId, newOwnerIds });
-      setActiveMap((prev) => {
-        if (!prev) return prev;
-
-        const layerKey = Object.entries(prev.layers).find(([_, l]) =>
-          (l.tokens || []).some((t) => t.id === tokenId)
-        )?.[0];
-        if (!layerKey) {
-          console.warn("[Player] Token not found for ownership change.");
-          return prev;
-        }
-
-        const updatedTokens = prev.layers[layerKey].tokens.map((t) =>
-          t.id === tokenId ? { ...t, ownerIds: newOwnerIds } : t
-        );
-
-        const updatedMap = {
-          ...prev,
-          layers: {
-            ...prev.layers,
-            [layerKey]: {
-              ...prev.layers[layerKey],
-              tokens: updatedTokens,
-            },
-          },
-        };
-
-        debounceSave(() => saveMap(updatedMap, authToken));
-        return updatedMap;
-      });
-    };
-
-    const handleTokenMove = ({ id, newPos, layer }) => {
-      console.log("[Player] Token move:", { id, newPos, layer });
-      setActiveMap((prev) => {
-        if (!prev?.layers?.[layer]) {
-          console.warn("[Player] Layer not found for token move:", layer);
-          return prev;
-        }
-
-        const updatedTokens = prev.layers[layer].tokens.map((token) =>
-          token.id === id ? { ...token, position: newPos } : token
-        );
-
-        const updatedMap = {
-          ...prev,
-          layers: {
-            ...prev.layers,
-            [layer]: {
-              ...prev.layers[layer],
-              tokens: updatedTokens,
-            },
-          },
-        };
-
-        debounceSave(() => saveMap(updatedMap, authToken));
-        return updatedMap;
-      });
-    };
-
-    const handleTokenLayerChange = ({ tokenId, fromLayer, toLayer }) => {
-      console.log("[Player] Token layer change:", {
-        tokenId,
-        fromLayer,
-        toLayer,
-      });
-      setActiveMap((prev) => {
-        if (!prev?.layers?.[fromLayer] || !prev.layers[toLayer]) {
-          console.warn("[Player] Missing fromLayer or toLayer.");
-          return prev;
-        }
-
-        const token = prev.layers[fromLayer].tokens.find(
-          (t) => t.id === tokenId
-        );
-        if (!token) {
-          console.warn("[Player] Token not found in fromLayer:", fromLayer);
-          return prev;
-        }
-
-        const fromTokens = prev.layers[fromLayer].tokens.filter(
-          (t) => t.id !== tokenId
-        );
-        const toTokens = [...(prev.layers[toLayer].tokens || []), token];
-
-        const updatedMap = {
-          ...prev,
-          layers: {
-            ...prev.layers,
-            [fromLayer]: {
-              ...prev.layers[fromLayer],
-              tokens: fromTokens,
-            },
-            [toLayer]: {
-              ...prev.layers[toLayer],
-              tokens: toTokens,
-            },
-          },
-        };
-
-        console.log("[Player] Token successfully moved between layers.");
-        debounceSave(() => saveMap(updatedMap, authToken));
-        return updatedMap;
-      });
-    };
-
-    const handlePlayerDropToken = ({ mapId, token }) => {
-      console.log("[Player] Player drop token event:", token);
-      setActiveMap((prev) => {
-        if (!prev || prev._id !== mapId) {
-          console.warn("[Player] Map ID mismatch on playerDropToken.");
-          return prev;
-        }
-
-        const layerKey = token._layer || "player";
-        console.log("[Player] Adding token to layer:", layerKey);
-
-        const currentLayer = prev.layers[layerKey] || {
-          tokens: [],
-          assets: [],
-        };
-
-        const updatedTokens = [...(currentLayer.tokens || []), token];
-
-        const updatedMap = {
-          ...prev,
-          layers: {
-            ...prev.layers,
-            [layerKey]: {
-              ...currentLayer,
-              tokens: updatedTokens,
-            },
-          },
-        };
-
-        debounceSave(() => saveMap(updatedMap, authToken));
-        return updatedMap;
-      });
-    };
-
-    const handleDMTokenDrop = ({ sessionCode, mapId, token }) => {
-      console.log("[Player] Received dmDropToken:", token);
-
-      setActiveMap((prev) => {
-        if (!prev || prev._id !== mapId) {
-          console.warn("[Player] Map ID mismatch. Ignored token drop.");
-          return prev;
-        }
-
-        const layerKey = token._layer || "player";
-        console.log("[Player] Adding token to layer:", layerKey);
-
-        const currentLayer = prev.layers[layerKey] || {
-          tokens: [],
-          assets: [],
-        };
-        const updatedTokens = [...(currentLayer.tokens || []), token];
-
-        const updatedMap = {
-          ...prev,
-          layers: {
-            ...prev.layers,
-            [layerKey]: {
-              ...currentLayer,
-              tokens: updatedTokens,
-            },
-          },
-        };
-
-        debounceSave(() => saveMap(updatedMap, authToken));
-        return updatedMap;
-      });
-    };
-
-    const handleTokenDelete = ({ tokenId, layer }) => {
-      console.log("[Player] Token delete event:", { tokenId, layer });
-      setActiveMap((prev) => {
-        if (!prev?.layers?.[layer]) {
-          console.warn("[Player] Layer not found for token delete:", layer);
-          return prev;
-        }
-
-        const updatedTokens = prev.layers[layer].tokens.filter(
-          (t) => t.id !== tokenId
-        );
-
-        const updatedMap = {
-          ...prev,
-          layers: {
-            ...prev.layers,
-            [layer]: {
-              ...prev.layers[layer],
-              tokens: updatedTokens,
-            },
-          },
-        };
-
-        debounceSave(() => saveMap(updatedMap, authToken));
-        return updatedMap;
-      });
-    };
-
-    const handleTokenHPUpdated = ({ tokenId, hp, maxHp }) => {
-      console.log("[Player] Token HP updated:", { tokenId, hp, maxHp });
-      setActiveMap((prev) => {
-        const updatedMap = { ...prev };
-        for (const layerKey of Object.keys(updatedMap.layers || {})) {
-          const layer = updatedMap.layers[layerKey];
-          if (layer?.tokens) {
-            const updatedTokens = layer.tokens.map((t) =>
-              t.id === tokenId ? { ...t, hp, maxHp } : t
-            );
-
-            updatedMap.layers[layerKey] = {
-              ...layer,
-              tokens: updatedTokens,
-            };
-          }
-        }
-        return updatedMap;
-      });
-    };
-
-    const handleActiveTurnChanged = ({ tokenId }) => {
-      console.log("[Player] Active turn updated:", tokenId);
-      setActiveTurnTokenId(tokenId);
-    };
-
-    const handleMapAssetPlaced = ({ asset, layer }) => {
-      console.log("[Player] Asset placed on layer:", layer, asset);
-
-      setActiveMap((prev) => {
-        if (!prev) return prev;
-
-        const existingAssets = prev.layers[layer]?.assets || [];
-
-        const updatedMap = {
-          ...prev,
-          layers: {
-            ...prev.layers,
-            [layer]: {
-              ...prev.layers[layer],
-              assets: [...existingAssets, asset],
-            },
-          },
-        };
-
-        debounceSave(() => saveMap(updatedMap, authToken));
-        return updatedMap;
-      });
-    };
-
-    const handleMapAssetMoved = ({ assetId, position }) => {
-      console.log("[Player] Asset moved:", assetId, position);
-
-      setActiveMap((prev) => {
-        const updated = { ...prev };
-        for (const [layerKey, layer] of Object.entries(updated.layers || {})) {
-          if (!layer.assets) continue;
-
-          const assetIndex = layer.assets.findIndex((a) => a.id === assetId);
-          if (assetIndex !== -1) {
-            const newAssets = [...layer.assets]; // ✅ declare newAssets
-            newAssets[assetIndex] = {
-              ...newAssets[assetIndex],
-              position,
-              entityId:
-                newAssets[assetIndex].entityId ?? newAssets[assetIndex].id,
-              entityType: newAssets[assetIndex].entityType ?? "mapAsset",
-            };
-            updated.layers[layerKey].assets = newAssets;
-            break;
-          }
-        }
-
-        debounceSave(() => saveMap(updated, authToken));
-        return updated;
-      });
-    };
-
-    const handleMapAssetRotated = ({ assetId, rotation }) => {
-      console.log("[Player] Asset rotated:", assetId, rotation);
-
-      setActiveMap((prev) => {
-        const updated = { ...prev };
-        for (const [layerKey, layer] of Object.entries(updated.layers || {})) {
-          if (!layer.assets) continue;
-
-          const assetIndex = layer.assets.findIndex((a) => a.id === assetId);
-          if (assetIndex !== -1) {
-            const newAssets = [...layer.assets]; // ✅ declare newAssets
-            newAssets[assetIndex] = {
-              ...newAssets[assetIndex],
-              rotation,
-              entityId:
-                newAssets[assetIndex].entityId ?? newAssets[assetIndex].id,
-              entityType: newAssets[assetIndex].entityType ?? "mapAsset",
-            };
-            updated.layers[layerKey].assets = newAssets;
-            break;
-          }
-        }
-
-        debounceSave(() => saveMap(updated, authToken));
-        return updated;
-      });
-    };
-
-    const handleMapAssetLayerChanged = ({ assetId, fromLayer, toLayer }) => {
-      console.log(
-        "[Player] Asset moved between layers:",
-        assetId,
-        fromLayer,
-        "→",
-        toLayer
-      );
-
-      setActiveMap((prev) => {
-        const asset = prev.layers?.[fromLayer]?.assets?.find(
-          (a) => a.id === assetId
-        );
-        if (!asset) return prev;
-
-        const updated = { ...prev };
-        updated.layers[fromLayer].assets = updated.layers[
-          fromLayer
-        ].assets.filter((a) => a.id !== assetId);
-
-        const toAssets = updated.layers[toLayer]?.assets || [];
-        updated.layers[toLayer] = {
-          ...updated.layers[toLayer],
-          assets: [...toAssets, asset],
-        };
-
-        debounceSave(() => saveMap(updated, authToken));
-        return updated;
-      });
-
-      // ✅ Manually force draw on layer to reflect visual update
-      const stage = stageRef?.current?.getStage?.();
-      if (stage) {
-        const toLayerNode = stage.findOne(`#${toLayer}AssetLayer`);
-        toLayerNode?.batchDraw();
-      }
-    };
-
-    const handleMapAssetDeleted = ({ assetId, layer }) => {
-      console.log("[Player] Asset deleted:", assetId, "from", layer);
-
-      setActiveMap((prev) => {
-        const updated = { ...prev };
-
-        if (!updated.layers?.[layer]?.assets) return prev;
-
-        updated.layers[layer].assets = updated.layers[layer].assets.filter(
-          (a) => a.id !== assetId
-        );
-
-        debounceSave(() => saveMap(updated, authToken));
-        return updated;
-      });
-    };
-
-    const handleAoEPlaced = ({ aoe }) => {
-      console.log("[Player] Received AoE placement:", aoe);
-      setAoes((prev) => [...prev, aoe]);
-    };
-
-    socket.on("aoeDeleted", ({ aoeId }) => {
-      setAoes((prev) => prev.filter((a) => a.id !== aoeId));
-    });
-
-    const handleMeasurementPlaced = (measurement) => {
-      setLockedMeasurements((prev) => [...prev, measurement]);
-    };
-
-    const handleMeasurementClearLocked = ({ userId }) => {
-      setLockedMeasurements((prev) => prev.filter((m) => m.userId !== userId));
-    };
-
-    const handleMeasurementClearAll = () => {
-      setLockedMeasurements([]);
-    };
-
-    socket.on("playerReceiveMap", handleReceiveMap);
-    socket.on("playerReceiveTokenOwnershipChange", handleTokenOwnershipChange);
-    socket.on("playerReceiveTokenMove", handleTokenMove);
-    socket.on("playerReceiveTokenLayerChange", handleTokenLayerChange);
-    socket.on("playerDropToken", handlePlayerDropToken);
-    socket.on("playerReceiveTokenDelete", handleTokenDelete);
-    socket.on("dmTokenMove", handleTokenMove);
-    socket.on("dmDropToken", handleDMTokenDrop);
-    socket.on("tokenHPUpdated", handleTokenHPUpdated);
-    socket.on("activeTurnChanged", handleActiveTurnChanged);
-    socket.on("aoePlaced", handleAoEPlaced);
-    socket.on("measurement:placed", handleMeasurementPlaced);
-    socket.on("measurement:clearLocked", handleMeasurementClearLocked);
-    socket.on("measurement:clearAll", handleMeasurementClearAll);
-    socket.on("mapAssetPlaced", handleMapAssetPlaced);
-    socket.on("mapAssetMoved", handleMapAssetMoved);
-    socket.on("mapAssetRotated", handleMapAssetRotated);
-    socket.on("mapAssetLayerChanged", handleMapAssetLayerChanged);
-    socket.on("mapAssetDeleted", handleMapAssetDeleted);
-    socket.on("updateTokenStatus", ({ tokenId, statusConditions }) => {
-      setActiveMap((prevMap) => {
-        const updatedMap = { ...prevMap };
-        for (const layerKey of Object.keys(updatedMap.layers || {})) {
-          const layer = updatedMap.layers[layerKey];
-          if (layer?.tokens) {
-            const tokenIndex = layer.tokens.findIndex((t) => t.id === tokenId);
-            if (tokenIndex !== -1) {
-              const token = layer.tokens[tokenIndex];
-              const updatedToken = { ...token, statusConditions };
-              updatedMap.layers[layerKey] = {
-                ...layer,
-                tokens: [
-                  ...layer.tokens.slice(0, tokenIndex),
-                  updatedToken,
-                  ...layer.tokens.slice(tokenIndex + 1),
-                ],
-              };
-            }
-          }
-        }
-        return updatedMap;
-      });
-    });
-
-    return () => {
-      socket.off("playerReceiveMap", handleReceiveMap);
-      socket.off(
-        "playerReceiveTokenOwnershipChange",
-        handleTokenOwnershipChange
-      );
-      socket.off("playerReceiveTokenMove", handleTokenMove);
-      socket.off("playerReceiveTokenLayerChange", handleTokenLayerChange);
-      socket.off("playerDropToken", handlePlayerDropToken);
-      socket.off("playerReceiveTokenDelete", handleTokenDelete);
-      socket.off("dmTokenMove", handleTokenMove);
-      socket.off("dmDropToken", handleDMTokenDrop);
-      socket.off("updateTokenStatus");
-      socket.off("tokenHPUpdated", handleTokenHPUpdated);
-      socket.off("activeTurnChanged", handleActiveTurnChanged);
-      socket.off("aoePlaced", handleAoEPlaced);
-      socket.off("measurement:placed", handleMeasurementPlaced);
-      socket.off("measurement:clearLocked", handleMeasurementClearLocked);
-      socket.off("measurement:clearAll", handleMeasurementClearAll);
-      socket.off("mapAssetPlaced", handleMapAssetPlaced);
-      socket.off("mapAssetMoved", handleMapAssetMoved);
-      socket.off("mapAssetRotated", handleMapAssetRotated);
-      socket.off("mapAssetLayerChanged", handleMapAssetLayerChanged);
-      socket.off("mapAssetDeleted", handleMapAssetDeleted);
-    };
-  }, [inviteCode, setActiveMap, user]);
 }
 
+// Separate export remains for emitting chat messages
 export function usePlayerChatEmitter(sessionCode) {
   return (message) => {
     socket.emit("chatMessageSent", { sessionCode, message });

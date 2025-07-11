@@ -47,7 +47,7 @@ export function useAoEPlacement(
     }
 
     setAoes((prev) => [...prev, newAoE]);
-    console.log("Placing AoE:", newAoE);
+
     socket.emit("aoePlaced", { sessionCode, aoe: newAoE });
   };
 }

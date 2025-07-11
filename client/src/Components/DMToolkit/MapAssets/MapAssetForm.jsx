@@ -79,7 +79,7 @@ export default function MapAssetForm({
     payload.append("image", imageFile);
 
     for (let [key, value] of payload.entries()) {
-      console.log(`${key}:`, value);
+      // console.log(`${key}:`, value);
     }
 
     onSubmit(payload); // send to backend

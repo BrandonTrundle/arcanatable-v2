@@ -22,7 +22,6 @@ export function handleMapClickAction({
       sessionCode,
       cell: { x: cellX, y: cellY },
     });
-    console.log(`[DM] Emitted teleport to (${cellX}, ${cellY})`);
   }
 
   if (selectorMode === "ring") {
@@ -30,7 +29,6 @@ export function handleMapClickAction({
       sessionCode,
       cell: { x: cellX, y: cellY },
     });
-    console.log(`[DM] Emitted ping to (${cellX}, ${cellY})`);
 
     const layer = stage.findOne("#PingLayer");
     if (!layer) return;

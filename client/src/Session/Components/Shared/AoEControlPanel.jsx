@@ -18,11 +18,9 @@ export default function AoEControlPanel({
   const panelRef = useRef(null);
   const pos = useRef({ x: 0, y: 0 });
   const [zIndex, setZIndex] = useState(getNextZIndex());
-  console.log("AoEControlPanel initial zIndex:", zIndex);
 
   const bringToFront = () => {
     const next = getNextZIndex();
-    console.log("AoEControlPanel bringToFront zIndex:", next);
     setZIndex(next);
   };
   const startDrag = (e) => {
